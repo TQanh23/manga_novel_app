@@ -1,5 +1,4 @@
 import asyncio
-from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import pool
@@ -7,14 +6,15 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from api.core.config import get_settings
+from api.core.logging import configure_logging
 from api.core.models import Base
 
 # Import every module's models here so autogenerate sees their tables.
 
 config = context.config
 
-if config.config_file_name is not None:
-    fileConfig(config.config_file_name, disable_existing_loggers=False)
+# Same JSON lines as the API, so the migrate container's output parses the same way.
+configure_logging(get_settings().log_level)
 
 target_metadata = Base.metadata
 

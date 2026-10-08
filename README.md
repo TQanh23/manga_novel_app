@@ -29,7 +29,7 @@ docker compose --profile local-ai up      # the same plus Ollama
 
 uv sync --all-packages
 
-cd api && uv run pytest                   # starts its own Postgres through Testcontainers
+cd api && uv run pytest                   # starts its own Postgres and Redis through Testcontainers
 cd api && uv run ruff check . && uv run mypy .
 cd api && uv run alembic upgrade head     # against the Compose Postgres
 cd api && uv run uvicorn api.main:app --reload
@@ -42,5 +42,14 @@ cd app && npm run typecheck && npm run lint
 No `.env` file is needed. If a host port is already taken, copy [.env.example](.env.example) to
 `.env` and change it there. The API connects to Postgres as `app_rw`, a role that owns nothing;
 migrations run as the owner role.
+
+The API writes one JSON object per log line, each carrying the request's `X-Request-ID`. Content
+fields (`text`, `content`, `prompt`, ...) are masked before a line is written. `/healthz` reports
+that the process is up, `/readyz` that Postgres and Redis answer, and `/metrics` serves request
+latency for Prometheus. Errors share one shape: `{"error": {"code", "message", "request_id",
+"details"}}`.
+
+To run the tests against services that are already up instead of Testcontainers, set
+`TEST_DATABASE_URL` and `TEST_REDIS_URL` (see [.env.example](.env.example)).
 
 Conventions and architecture rules are in [CLAUDE.md](CLAUDE.md).

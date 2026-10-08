@@ -7,8 +7,11 @@ dependencies = [
     "alembic>=1.14",
     "asyncpg>=0.30",
     "fastapi>=0.115",
+    "prometheus-client>=0.21",
     "pydantic-settings>=2.6",
+    "redis>=5.2,<6",
     "sqlalchemy[asyncio]>=2.0.36",
+    "structlog>=24.4",
     "uuid-utils>=0.10",
     "uvicorn[standard]>=0.32",
 ]
@@ -45,4 +48,4 @@ testpaths = ["api", "tests"]
 [tool.coverage.run]
 source = ["api"]
 branch = true
-omit = ["*/tests/*"]
+omit = ["*/tests/*", "api/testing.py"]

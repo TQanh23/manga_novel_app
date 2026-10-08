@@ -47,18 +47,18 @@ Each one blocks the tasks listed next to it. The plan's default is in brackets; 
 Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API only), NFR-05, NFR-10, NFR-12, NFR-13 (UI i18n), NFR-14.
 
 ### 0.1 Repo skeleton
-- [ ] Create `api/`, `worker/`, `app/`, `infra/`, `eval/`, `docs/`
-- [ ] `api/`: `uv` project, `ruff`, `mypy --strict`, `pytest` configured and passing on an empty app
-- [ ] `app/`: Expo + Expo Router, TypeScript strict, ESLint, `typecheck` and `lint` scripts
-- [ ] `.gitignore`, `.env.example` (no secrets committed), root `README.md` stub
-- [ ] Fix the plan's `../CLAUDE.md` link (move the plan into `docs/` or correct the path)
+- [x] Create `api/`, `worker/`, `app/`, `infra/`, `eval/`, `docs/`
+- [x] `api/`: `uv` project, `ruff`, `mypy --strict`, `pytest` configured and passing on an empty app
+- [x] `app/`: Expo + Expo Router, TypeScript strict, ESLint, `typecheck` and `lint` scripts
+- [x] `.gitignore`, `.env.example` (no secrets committed), root `README.md` stub
+- [x] Fix the plan's `../CLAUDE.md` link (move the plan into `docs/` or correct the path)
 
 ### 0.2 Docker Compose (NFR-14)
 - [x] Postgres 16 + pgvector, Redis, MinIO services with healthchecks
 - [x] MinIO buckets `raw/` and `tiles/` created on start
 - [ ] `api` and `worker` services, started after their dependencies are healthy (`api` done; `worker` joins the stack with its first job)
 - [x] Ollama placed according to D2
-- [ ] `docker compose up` on a fresh clone works with no manual steps
+- [x] `docker compose up` on a fresh clone works with no manual steps
 
 ### 0.3 Database baseline
 - [x] Async SQLAlchemy 2 engine and session factory
@@ -84,13 +84,13 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [ ] Tests: register/login/refresh, rotation, role checks, lockout, rate limit
 
 ### 0.6 Cross-cutting (NFR-10)
-- [ ] structlog JSON logging
-- [ ] Request id middleware; the id is in every API log line
+- [x] structlog JSON logging
+- [x] Request id middleware; the id is in every API log line
 - [ ] Request id passed into the arq job context and into every worker log line
-- [ ] Content-field log filter (`text`, `content`, `messages`, `input`) with a unit test
-- [ ] Shared error envelope for all routes
-- [ ] `/healthz`
-- [ ] `/metrics` (Prometheus) for request latency (cut first)
+- [x] Content-field log filter (`text`, `content`, `messages`, `input`) with a unit test
+- [x] Shared error envelope for all routes
+- [x] `/healthz`
+- [x] `/metrics` (Prometheus) for request latency (cut first)
 
 ### 0.7 Worker skeleton
 - [ ] arq worker with a `ping` job, reachable from the API
@@ -106,9 +106,9 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [ ] Signed-in shell showing the user's roles
 
 ### 0.9 CI (NFR-12)
-- [ ] GitHub Actions: backend `ruff`, `mypy`, `pytest` against a Postgres + pgvector service container
-- [ ] GitHub Actions: app `typecheck` and `lint`
-- [ ] Coverage report for domain modules, with the 80% gate ready to switch on in Phase 3
+- [x] GitHub Actions: backend `ruff`, `mypy`, `pytest` against a Postgres + pgvector service container
+- [x] GitHub Actions: app `typecheck` and `lint`
+- [x] Coverage report for domain modules, with the 80% gate ready to switch on in Phase 3
 
 ### 0.10 Seed
 - [ ] Seed script: one admin, one author, two readers; runs on `docker compose up`
