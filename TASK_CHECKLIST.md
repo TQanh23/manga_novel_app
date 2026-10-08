@@ -41,24 +41,25 @@ Each one blocks the tasks listed next to it. The plan's default is in brackets; 
 - [ ] **D9.** Vietnamese search without diacritics in MVP [yes]. Blocks 1.5.
 - [ ] **D10. (gap)** What happens to an author's works when the account is deleted (`FR-AUTH-05`). The spec does not say. Blocks 3.8.
 - [ ] **D11. (gap)** `design/ai-architecture.md` is referenced by the plan but is not in the repo. Add it before Phase 4 starts.
+- [x] **D12. (gap)** How a Reader becomes an Author. The spec does not say. Decided: self-serve. Registration always creates a Reader; `POST /v1/me/roles/author` adds the Author role. Update the spec to match.
 
 ## Phase 0: Foundation
 
 Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API only), NFR-05, NFR-10, NFR-12, NFR-13 (UI i18n), NFR-14.
 
 ### 0.1 Repo skeleton
-- [ ] Create `api/`, `worker/`, `app/`, `infra/`, `eval/`, `docs/`
-- [ ] `api/`: `uv` project, `ruff`, `mypy --strict`, `pytest` configured and passing on an empty app
-- [ ] `app/`: Expo + Expo Router, TypeScript strict, ESLint, `typecheck` and `lint` scripts
-- [ ] `.gitignore`, `.env.example` (no secrets committed), root `README.md` stub
-- [ ] Fix the plan's `../CLAUDE.md` link (move the plan into `docs/` or correct the path)
+- [x] Create `api/`, `worker/`, `app/`, `infra/`, `eval/`, `docs/`
+- [x] `api/`: `uv` project, `ruff`, `mypy --strict`, `pytest` configured and passing on an empty app
+- [x] `app/`: Expo + Expo Router, TypeScript strict, ESLint, `typecheck` and `lint` scripts
+- [x] `.gitignore`, `.env.example` (no secrets committed), root `README.md` stub
+- [x] Fix the plan's `../CLAUDE.md` link (move the plan into `docs/` or correct the path)
 
 ### 0.2 Docker Compose (NFR-14)
 - [x] Postgres 16 + pgvector, Redis, MinIO services with healthchecks
 - [x] MinIO buckets `raw/` and `tiles/` created on start
-- [ ] `api` and `worker` services, started after their dependencies are healthy (`api` done; `worker` joins the stack with its first job)
+- [x] `api` and `worker` services, started after their dependencies are healthy
 - [x] Ollama placed according to D2
-- [ ] `docker compose up` on a fresh clone works with no manual steps
+- [x] `docker compose up` on a fresh clone works with no manual steps
 
 ### 0.3 Database baseline
 - [x] Async SQLAlchemy 2 engine and session factory
@@ -74,29 +75,29 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [x] Test: the API's DB role is not a superuser and not the table owner
 
 ### 0.5 Auth and RBAC (FR-AUTH-01, FR-AUTH-03, FR-AD-01, NFR-05)
-- [ ] `users`, `user_roles` models and migration (include `status` and `locale`)
-- [ ] `POST /v1/auth/register` with argon2 hashing
-- [ ] `POST /v1/auth/login` returning a short-lived JWT and a refresh token
-- [ ] `POST /v1/auth/refresh` with rotation; a reused refresh token is rejected
-- [ ] `require_role` dependency; one account can hold Reader and Author together
-- [ ] Redis rate limit by IP and by user on auth routes
-- [ ] `PATCH /v1/admin/users/{id}`: lock a user, change roles; a locked user cannot log in
-- [ ] Tests: register/login/refresh, rotation, role checks, lockout, rate limit
+- [x] `users`, `user_roles` models and migration (include `status` and `locale`)
+- [x] `POST /v1/auth/register` with argon2 hashing
+- [x] `POST /v1/auth/login` returning a short-lived JWT and a refresh token
+- [x] `POST /v1/auth/refresh` with rotation; a reused refresh token is rejected
+- [x] `require_role` dependency; one account can hold Reader and Author together
+- [x] Redis rate limit by IP and by user on auth routes
+- [x] `PATCH /v1/admin/users/{id}`: lock a user, change roles; a locked user cannot log in
+- [x] Tests: register/login/refresh, rotation, role checks, lockout, rate limit
 
 ### 0.6 Cross-cutting (NFR-10)
-- [ ] structlog JSON logging
-- [ ] Request id middleware; the id is in every API log line
-- [ ] Request id passed into the arq job context and into every worker log line
-- [ ] Content-field log filter (`text`, `content`, `messages`, `input`) with a unit test
-- [ ] Shared error envelope for all routes
-- [ ] `/healthz`
-- [ ] `/metrics` (Prometheus) for request latency (cut first)
+- [x] structlog JSON logging
+- [x] Request id middleware; the id is in every API log line
+- [x] Request id passed into the arq job context and into every worker log line
+- [x] Content-field log filter (`text`, `content`, `messages`, `input`) with a unit test
+- [x] Shared error envelope for all routes
+- [x] `/healthz`
+- [x] `/metrics` (Prometheus) for request latency (cut first)
 
 ### 0.7 Worker skeleton
-- [ ] arq worker with a `ping` job, reachable from the API
-- [ ] Retry at most 3 times with backoff
-- [ ] Dead-letter list on final failure
-- [ ] Idempotency helper keyed on `(kind, target_id, content_hash)`, with a test that a repeat is a no-op
+- [x] arq worker with a `ping` job, reachable from the API
+- [x] Retry at most 3 times with backoff
+- [x] Dead-letter list on final failure
+- [x] Idempotency helper keyed on `(kind, target_id, content_hash)`, with a test that a repeat is a no-op
 
 ### 0.8 Client
 - [ ] `npm run gen:api` generates the TS client from the OpenAPI spec
@@ -106,9 +107,9 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [ ] Signed-in shell showing the user's roles
 
 ### 0.9 CI (NFR-12)
-- [ ] GitHub Actions: backend `ruff`, `mypy`, `pytest` against a Postgres + pgvector service container
-- [ ] GitHub Actions: app `typecheck` and `lint`
-- [ ] Coverage report for domain modules, with the 80% gate ready to switch on in Phase 3
+- [x] GitHub Actions: backend `ruff`, `mypy`, `pytest` against a Postgres + pgvector service container
+- [x] GitHub Actions: app `typecheck` and `lint`
+- [x] Coverage report for domain modules, with the 80% gate ready to switch on in Phase 3
 
 ### 0.10 Seed
 - [ ] Seed script: one admin, one author, two readers; runs on `docker compose up`

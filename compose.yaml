@@ -14,6 +14,14 @@ x-api-image: &api-image
     context: .
     dockerfile: api/Dockerfile
 
+# What the api and the worker both read: they connect as app_rw, never as the owner.
+x-app-environment: &app-environment
+  DATABASE_URL: postgresql+asyncpg://app_rw:${APP_RW_PASSWORD:-app_rw}@postgres:5432/${POSTGRES_DB:-manga_novel}
+  REDIS_URL: redis://redis:6379/0
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  ENVIRONMENT: ${ENVIRONMENT:-local}
+  JWT_SECRET: ${JWT_SECRET:-local-development-jwt-secret-do-not-use-elsewhere}
+
 services:
   postgres:
     image: pgvector/pgvector:pg16
@@ -85,7 +93,8 @@ services:
   api:
     <<: *api-image
     environment:
-      DATABASE_URL: postgresql+asyncpg://app_rw:${APP_RW_PASSWORD:-app_rw}@postgres:5432/${POSTGRES_DB:-manga_novel}
+      <<: *app-environment
+      CORS_ORIGINS: '${CORS_ORIGINS:-["http://localhost:8081"]}'
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
@@ -104,6 +113,27 @@ services:
       interval: 5s
       timeout: 5s
       retries: 12
+
+  # Slow and scheduled work. The api only ever enqueues.
+  worker:
+    image: manga-novel-worker:dev
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    environment:
+      <<: *app-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      # Passes while the worker keeps refreshing its health key in Redis.
+      test: ["CMD", "python", "-m", "worker", "--check"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
 
   ollama:
     image: ollama/ollama:0.40.1

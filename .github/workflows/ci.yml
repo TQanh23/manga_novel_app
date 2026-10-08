@@ -56,8 +56,15 @@ jobs:
       - name: Tests (api)
         working-directory: api
         env:
-          TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/manga_novel_test
+          TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/manga_novel_test
+          TEST_REDIS_URL: redis://127.0.0.1:6379/0
         run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
+      - name: Tests (worker)
+        working-directory: worker
+        env:
+          TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/manga_novel_test
+          TEST_REDIS_URL: redis://127.0.0.1:6379/0
+        run: uv run pytest
       # NFR-12: domain logic needs at least 80% coverage. Reported from the
       # start, enforced from Phase 3 (drop continue-on-error then).
       - name: Domain coverage gate
@@ -78,6 +85,16 @@ jobs:
           curl --fail --silent --show-error
           --retry 30 --retry-delay 2 --retry-all-errors
           http://localhost:8000/healthz
+      - name: API reaches Postgres and Redis
+        run: curl --fail --silent --show-error http://localhost:8000/readyz
+      - name: Worker is healthy
+        run: |
+          for attempt in $(seq 1 30); do
+            status=$(docker compose ps worker --format '{{.Health}}')
+            [ "$status" = "healthy" ] && exit 0
+            sleep 2
+          done
+          echo "worker health: $status" && exit 1
       - name: Buckets exist
         run: docker compose run -T --rm --entrypoint mc minio-init stat local/raw local/tiles
       - name: API connects as app_rw
