@@ -4,7 +4,7 @@ Build plan for the manga/novel reading platform. It turns the build order in the
 
 - System spec (Vietnamese, source of truth, requirement IDs): https://claude.ai/code/artifact/2c8fd711-f47d-4e4a-a852-8d698d0cbf57
 - PRD (English): https://claude.ai/code/artifact/7258408e-a56a-4d5a-8971-b2b86481e522
-- Repo conventions and architecture rules: [`CLAUDE.md`](../CLAUDE.md)
+- Repo conventions and architecture rules: [`CLAUDE.md`](CLAUDE.md)
 
 If this plan and the spec disagree, the spec wins; fix the plan.
 
