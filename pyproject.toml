@@ -1,0 +1,29 @@
+# Workspace root. The Python projects live in api/ and worker/ and share one
+# lockfile and one virtualenv.
+[tool.uv.workspace]
+members = ["api", "worker"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["app"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # bugbear
+    "UP",  # pyupgrade
+    "SIM", # simplify
+    "ASYNC",
+    "S",   # bandit
+    "RUF",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# assert is the point of a test.
+"**/tests/**" = ["S101"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["api", "worker"]

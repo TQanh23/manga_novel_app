@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: manga_novel_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12.7"
+          enable-cache: true
+      - name: Install
+        run: uv sync --all-packages --locked
+      - name: Ruff
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+      - name: Mypy (api)
+        working-directory: api
+        run: uv run mypy .
+      - name: Mypy (worker)
+        working-directory: worker
+        run: uv run mypy .
+      - name: Tests (api)
+        working-directory: api
+        run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
+      # NFR-12: domain logic needs at least 80% coverage. Reported from the
+      # start, enforced from Phase 3 (drop continue-on-error then).
+      - name: Domain coverage gate
+        working-directory: api
+        continue-on-error: true
+        run: uv run coverage report --include="api/auth/*,api/billing/*" --fail-under=80
+
+  app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
