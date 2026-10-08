@@ -5,10 +5,11 @@ app_rw like the running API does.
 """
 
 import io
+import itertools
 import json
 import logging
 import os
-from collections.abc import AsyncIterator, Callable, Iterator
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -19,17 +20,25 @@ from alembic.config import Config
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
-from sqlalchemy import make_url
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
+from sqlalchemy import make_url, text
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 
+from api.auth import service as auth_service
+from api.auth.models import Role, User
 from api.core.config import Settings, get_settings
 from api.core.db import get_engine, get_session, get_sessionmaker
 from api.core.logging import build_handler, configure_logging
 from api.core.redis import get_redis
+from api.core.security import create_access_token
 
 API_DIR = Path(__file__).resolve().parents[1]
 POSTGRES_IMAGE = "pgvector/pgvector:pg16"
 REDIS_IMAGE = "redis:7-alpine"
+APP_SCHEMAS = ("core", "billing", "ai", "analytics")
+TEST_PASSWORD = "correct horse battery"  # noqa: S105
+
+MakeUser = Callable[..., Awaitable[User]]
+AuthHeaders = Callable[[User], dict[str, str]]
 
 
 def _alembic_config(database_url: str | None = None) -> Config:
@@ -91,6 +100,10 @@ def settings(owner_database_url: str, redis_url: str) -> Iterator[Settings]:
         # The Redis may be shared with a dev stack, so this run gets its own
         # namespace and only ever deletes keys inside it.
         patch.setenv("REDIS_KEY_PREFIX", f"test-{uuid4().hex}:")
+        # Real argon2id, at a cost that keeps the suite fast.
+        patch.setenv("ARGON2_TIME_COST", "1")
+        patch.setenv("ARGON2_MEMORY_COST_KIB", "64")
+        patch.setenv("ARGON2_PARALLELISM", "1")
         get_settings.cache_clear()
         yield get_settings()
 
@@ -161,6 +174,75 @@ def app(db_session: AsyncSession, redis: Redis) -> FastAPI:
 async def client(app: FastAPI) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
         yield client
+
+
+async def _truncate_app_tables(owner_url: str) -> None:
+    owner = create_async_engine(owner_url)
+    try:
+        async with owner.begin() as connection:
+            tables = (
+                await connection.execute(
+                    text(
+                        "SELECT format('%I.%I', schemaname, tablename) FROM pg_tables"
+                        " WHERE schemaname = ANY(:schemas)"
+                    ),
+                    {"schemas": list(APP_SCHEMAS)},
+                )
+            ).scalars()
+            if names := ", ".join(tables):
+                await connection.execute(text(f"TRUNCATE {names} CASCADE"))
+    finally:
+        await owner.dispose()
+
+
+@pytest.fixture
+async def committing_client(
+    engine: AsyncEngine, redis: Redis, settings: Settings
+) -> AsyncIterator[AsyncClient]:
+    """A client whose requests each get their own session and really commit.
+
+    For tests that need concurrent transactions (token rotation, later double
+    spend). Slower than `client`: every app table is truncated afterwards.
+    """
+    from api.main import create_app
+
+    transport = ASGITransport(app=create_app())
+    try:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield client
+    finally:
+        await _truncate_app_tables(settings.migration_database_url)
+
+
+@pytest.fixture
+def make_user(db_session: AsyncSession) -> MakeUser:
+    """Creates accounts through the auth service. Password is TEST_PASSWORD unless given."""
+    numbers = itertools.count(1)
+
+    async def make(
+        *roles: Role,
+        email: str | None = None,
+        password: str = TEST_PASSWORD,
+        display_name: str = "Test User",
+    ) -> User:
+        return await auth_service.register(
+            db_session,
+            email=email or f"user{next(numbers)}@example.com",
+            password=password,
+            display_name=display_name,
+            roles=roles or (Role.READER,),
+        )
+
+    return make
+
+
+@pytest.fixture
+def auth_headers() -> AuthHeaders:
+    def headers(user: User) -> dict[str, str]:
+        token, _ = create_access_token(user.id)
+        return {"Authorization": f"Bearer {token}"}
+
+    return headers
 
 
 @pytest.fixture

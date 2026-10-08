@@ -15,6 +15,22 @@ _QUIET_PATHS = frozenset({"/healthz", "/readyz", "/metrics"})
 _UNMATCHED_ROUTE = "unmatched"
 
 
+def _route_template(scope: Scope) -> str:
+    """The matched path with parameter values swapped back for their names.
+
+    Rebuilt from the path and its parameters because the route object's own
+    path is relative to its router and so lacks the /v1 prefix. Anything that
+    matched no route shares one label, which keeps metric cardinality bounded.
+    """
+    if "endpoint" not in scope:
+        return _UNMATCHED_ROUTE
+    names = {str(value): name for name, value in scope.get("path_params", {}).items()}
+    return "/".join(
+        f"{{{names[segment]}}}" if segment in names else segment
+        for segment in scope["path"].split("/")
+    )
+
+
 class RequestContextMiddleware:
     """Outermost middleware: request id, access log, latency metric, last-resort 500.
 
@@ -54,7 +70,7 @@ class RequestContextMiddleware:
                     await internal_error_response()(scope, receive, send_with_request_id)
             finally:
                 if scope["path"] not in _QUIET_PATHS:
-                    route_path = getattr(scope.get("route"), "path", _UNMATCHED_ROUTE)
+                    route_path = _route_template(scope)
                     duration = perf_counter() - started
                     observe_request(scope["method"], route_path, status_code, duration)
                     logger.info(

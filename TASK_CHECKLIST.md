@@ -41,6 +41,7 @@ Each one blocks the tasks listed next to it. The plan's default is in brackets; 
 - [ ] **D9.** Vietnamese search without diacritics in MVP [yes]. Blocks 1.5.
 - [ ] **D10. (gap)** What happens to an author's works when the account is deleted (`FR-AUTH-05`). The spec does not say. Blocks 3.8.
 - [ ] **D11. (gap)** `design/ai-architecture.md` is referenced by the plan but is not in the repo. Add it before Phase 4 starts.
+- [x] **D12. (gap)** How a Reader becomes an Author. The spec does not say. Decided: self-serve. Registration always creates a Reader; `POST /v1/me/roles/author` adds the Author role. Update the spec to match.
 
 ## Phase 0: Foundation
 
@@ -74,14 +75,14 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [x] Test: the API's DB role is not a superuser and not the table owner
 
 ### 0.5 Auth and RBAC (FR-AUTH-01, FR-AUTH-03, FR-AD-01, NFR-05)
-- [ ] `users`, `user_roles` models and migration (include `status` and `locale`)
-- [ ] `POST /v1/auth/register` with argon2 hashing
-- [ ] `POST /v1/auth/login` returning a short-lived JWT and a refresh token
-- [ ] `POST /v1/auth/refresh` with rotation; a reused refresh token is rejected
-- [ ] `require_role` dependency; one account can hold Reader and Author together
-- [ ] Redis rate limit by IP and by user on auth routes
-- [ ] `PATCH /v1/admin/users/{id}`: lock a user, change roles; a locked user cannot log in
-- [ ] Tests: register/login/refresh, rotation, role checks, lockout, rate limit
+- [x] `users`, `user_roles` models and migration (include `status` and `locale`)
+- [x] `POST /v1/auth/register` with argon2 hashing
+- [x] `POST /v1/auth/login` returning a short-lived JWT and a refresh token
+- [x] `POST /v1/auth/refresh` with rotation; a reused refresh token is rejected
+- [x] `require_role` dependency; one account can hold Reader and Author together
+- [x] Redis rate limit by IP and by user on auth routes
+- [x] `PATCH /v1/admin/users/{id}`: lock a user, change roles; a locked user cannot log in
+- [x] Tests: register/login/refresh, rotation, role checks, lockout, rate limit
 
 ### 0.6 Cross-cutting (NFR-10)
 - [x] structlog JSON logging

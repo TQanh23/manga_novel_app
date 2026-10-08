@@ -25,6 +25,15 @@ async def test_requests_are_measured_by_route_template(app: FastAPI, client: Asy
     assert request_count("GET", "/v1/metered/1", "200") == 0
 
 
+async def test_routes_on_nested_routers_keep_their_prefix(client: AsyncClient) -> None:
+    route = "/v1/admin/users/{user_id}"
+    before = request_count("PATCH", route, "401")
+
+    await client.patch("/v1/admin/users/0199e2a4-0000-7000-8000-000000000001", json={})
+
+    assert request_count("PATCH", route, "401") == before + 1
+
+
 async def test_unmatched_paths_share_one_label(client: AsyncClient) -> None:
     before = request_count("GET", "unmatched", "404")
 

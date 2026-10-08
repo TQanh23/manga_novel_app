@@ -22,8 +22,8 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# assert is the point of a test.
-"**/tests/**" = ["S101"]
+# assert is the point of a test, and tests are full of made-up passwords and tokens.
+"**/tests/**" = ["S101", "S105", "S106"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["api", "worker"]

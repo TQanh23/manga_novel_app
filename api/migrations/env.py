@@ -5,11 +5,11 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import create_async_engine
 
+# Every module's models are imported here so autogenerate sees their tables.
+import api.auth.models  # noqa: F401
 from api.core.config import get_settings
 from api.core.logging import configure_logging
 from api.core.models import Base
-
-# Import every module's models here so autogenerate sees their tables.
 
 config = context.config
 

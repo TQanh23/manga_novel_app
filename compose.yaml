@@ -88,6 +88,9 @@ services:
       DATABASE_URL: postgresql+asyncpg://app_rw:${APP_RW_PASSWORD:-app_rw}@postgres:5432/${POSTGRES_DB:-manga_novel}
       REDIS_URL: redis://redis:6379/0
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-local}
+      JWT_SECRET: ${JWT_SECRET:-local-development-jwt-secret-do-not-use-elsewhere}
+      CORS_ORIGINS: '${CORS_ORIGINS:-["http://localhost:8081"]}'
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
