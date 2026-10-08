@@ -112,13 +112,13 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [x] Coverage report for domain modules, with the 80% gate ready to switch on in Phase 3
 
 ### 0.10 Seed
-- [ ] Seed script: one admin, one author, two readers; runs on `docker compose up`
+- [x] Seed script: one admin, one author, two readers; runs on `docker compose up`
 
 ### Exit check
 - [ ] Fresh clone, `docker compose up`, register and log in from the web build
 - [ ] Same login works on Android
 - [ ] CI green
-- [ ] DB role test (0.4) green
+- [x] DB role test (0.4) green
 
 ## Phase 1: Catalogue and novel reader
 

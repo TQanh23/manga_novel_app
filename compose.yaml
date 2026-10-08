@@ -1,7 +1,7 @@
 # Local development stack (NFR-14). Every variable has a development default, so
 # a fresh clone needs no .env file:
 #
-#   docker compose up                       Postgres, Redis, MinIO, migrations, api
+#   docker compose up                       Postgres, Redis, MinIO, migrations, seed accounts, api, worker
 #   docker compose --profile local-ai up    the same plus Ollama
 #
 # The defaults are not secrets. Do not reuse them outside local development.
@@ -90,6 +90,16 @@ services:
       postgres:
         condition: service_healthy
 
+  # One-shot: creates the development accounts (see README). Leaves existing ones alone.
+  seed:
+    <<: *api-image
+    command: ["python", "-m", "api.scripts.seed"]
+    environment:
+      <<: *app-environment
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
   api:
     <<: *api-image
     environment:
@@ -98,7 +108,7 @@ services:
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
-      migrate:
+      seed:
         condition: service_completed_successfully
       redis:
         condition: service_healthy

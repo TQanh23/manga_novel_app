@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # `up -d` only starts the api once migrate and minio-init have exited 0.
+      # `up -d` only starts the api once migrate, seed and minio-init have exited 0.
       - name: Start the stack
         run: docker compose up -d --build
       - name: API answers
@@ -95,6 +95,20 @@ jobs:
             sleep 2
           done
           echo "worker health: $status" && exit 1
+      # The whole path a slow task takes: a seeded admin signs in, the API
+      # enqueues, the worker runs the job and logs it under the same request id.
+      - name: Seeded admin reaches the worker through the API
+        run: |
+          token=$(curl --fail --silent --show-error http://localhost:8000/v1/auth/login             -H 'Content-Type: application/json'             -d '{"email":"admin@example.com","password":"local-dev-password"}' | jq -r .access_token)
+          job_id=$(curl --fail --silent --show-error -X POST http://localhost:8000/v1/admin/jobs/ping             -H "Authorization: Bearer $token" -H 'X-Request-ID: ci-ping' | jq -r .job_id)
+          for attempt in $(seq 1 30); do
+            status=$(docker compose exec -T postgres psql -U postgres -d manga_novel -At               -c "SELECT status FROM core.jobs WHERE id = '$job_id'")
+            [ "$status" = "succeeded" ] && break
+            sleep 1
+          done
+          echo "job $job_id: $status"
+          [ "$status" = "succeeded" ]
+          docker compose logs --no-color worker | grep -q '"request_id": "ci-ping"'
       - name: Buckets exist
         run: docker compose run -T --rm --entrypoint mc minio-init stat local/raw local/tiles
       - name: API connects as app_rw
