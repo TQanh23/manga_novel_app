@@ -17,7 +17,7 @@ Working checklist for the whole project. It breaks [`IMPLEMENTATION_PLAN.md`](IM
 
 | Phase | Theme | Status |
 |---|---|---|
-| 0 | Foundation | Not started |
+| 0 | Foundation | In progress |
 | 1 | Catalogue and novel reader | Not started |
 | 2 | Manga upload and reader | Not started |
 | 3 | Billing | Not started |
@@ -31,7 +31,7 @@ Working checklist for the whole project. It breaks [`IMPLEMENTATION_PLAN.md`](IM
 Each one blocks the tasks listed next to it. The plan's default is in brackets; confirming the default is enough.
 
 - [ ] **D1.** AI providers for testing and the policy flag names (`allows_training` vs `trains_on_input` + `data_allowed`) [Cloudflare Workers AI for real works, Groq for `is_sample` only]. Blocks 4.1, 4.2. Then reconcile `CLAUDE.md`.
-- [ ] **D2.** Ollama in the default Compose stack or behind a `local-ai` profile [profile]. Blocks 0.2. Then reconcile `CLAUDE.md`.
+- [x] **D2.** Ollama in the default Compose stack or behind a `local-ai` profile [profile]. Blocks 0.2. Then reconcile `CLAUDE.md`. Decided: `local-ai` profile; `CLAUDE.md` updated.
 - [ ] **D3.** Editor role in MVP or P2 [P2]. Blocks nothing in MVP if P2.
 - [ ] **D4.** Coin price in VND and default episode price [1 coin = 100 VND, 3 coins per episode; config only].
 - [ ] **D5.** Can authors set episode prices in MVP [no, Admin default only]. Blocks 3.6.
@@ -54,24 +54,24 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [ ] Fix the plan's `../CLAUDE.md` link (move the plan into `docs/` or correct the path)
 
 ### 0.2 Docker Compose (NFR-14)
-- [ ] Postgres 16 + pgvector, Redis, MinIO services with healthchecks
-- [ ] MinIO buckets `raw/` and `tiles/` created on start
-- [ ] `api` and `worker` services, started after their dependencies are healthy
-- [ ] Ollama placed according to D2
+- [x] Postgres 16 + pgvector, Redis, MinIO services with healthchecks
+- [x] MinIO buckets `raw/` and `tiles/` created on start
+- [ ] `api` and `worker` services, started after their dependencies are healthy (`api` done; `worker` joins the stack with its first job)
+- [x] Ollama placed according to D2
 - [ ] `docker compose up` on a fresh clone works with no manual steps
 
 ### 0.3 Database baseline
-- [ ] Async SQLAlchemy 2 engine and session factory
-- [ ] Alembic wired to async, first migration creates schemas `core`, `billing`, `ai`, `analytics`
-- [ ] Extensions `vector`, `pg_trgm`, `unaccent`
-- [ ] UUID v7 primary-key helper
-- [ ] `created_at` / `updated_at` mixin used by every model
-- [ ] Test fixture running against real Postgres + pgvector (Testcontainers or the Compose service)
+- [x] Async SQLAlchemy 2 engine and session factory
+- [x] Alembic wired to async, first migration creates schemas `core`, `billing`, `ai`, `analytics`
+- [x] Extensions `vector`, `pg_trgm`, `unaccent`
+- [x] UUID v7 primary-key helper
+- [x] `created_at` / `updated_at` mixin used by every model
+- [x] Test fixture running against real Postgres + pgvector (Testcontainers or the Compose service)
 
 ### 0.4 App roles for RLS
-- [ ] Migration creates `app_rw` and `app_public` roles
-- [ ] API connects as `app_rw`; migrations run as the owner role
-- [ ] Test: the API's DB role is not a superuser and not the table owner
+- [x] Migration creates `app_rw` and `app_public` roles
+- [x] API connects as `app_rw`; migrations run as the owner role
+- [x] Test: the API's DB role is not a superuser and not the table owner
 
 ### 0.5 Auth and RBAC (FR-AUTH-01, FR-AUTH-03, FR-AD-01, NFR-05)
 - [ ] `users`, `user_roles` models and migration (include `status` and `locale`)

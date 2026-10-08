@@ -22,7 +22,7 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres"
+          --health-cmd "pg_isready -h 127.0.0.1 -U postgres"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
@@ -55,6 +55,8 @@ jobs:
         run: uv run mypy .
       - name: Tests (api)
         working-directory: api
+        env:
+          TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/manga_novel_test
         run: uv run pytest --cov --cov-report=term-missing --cov-report=xml
       # NFR-12: domain logic needs at least 80% coverage. Reported from the
       # start, enforced from Phase 3 (drop continue-on-error then).
@@ -62,6 +64,43 @@ jobs:
         working-directory: api
         continue-on-error: true
         run: uv run coverage report --include="api/auth/*,api/billing/*" --fail-under=80
+
+  # NFR-14: a fresh clone starts with `docker compose up` and no other step.
+  compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # `up -d` only starts the api once migrate and minio-init have exited 0.
+      - name: Start the stack
+        run: docker compose up -d --build
+      - name: API answers
+        run: >-
+          curl --fail --silent --show-error
+          --retry 30 --retry-delay 2 --retry-all-errors
+          http://localhost:8000/healthz
+      - name: Buckets exist
+        run: docker compose run -T --rm --entrypoint mc minio-init stat local/raw local/tiles
+      - name: API connects as app_rw
+        run: |
+          docker compose exec -T api python - <<'PY'
+          import asyncio
+
+          from sqlalchemy import text
+
+          from api.core.db import get_engine
+
+
+          async def main() -> None:
+              async with get_engine().connect() as connection:
+                  user = (await connection.execute(text("SELECT current_user"))).scalar_one()
+              assert user == "app_rw", user
+
+
+          asyncio.run(main())
+          PY
+      - name: Logs
+        if: always()
+        run: docker compose ps -a && docker compose logs --no-color
 
   app:
     runs-on: ubuntu-latest

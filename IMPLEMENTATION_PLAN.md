@@ -45,7 +45,7 @@ These are defaults picked so work can start. Change them here and in `CLAUDE.md`
 | pHash on match | Flag to Admin, never auto-block | Open question, P2 |
 | Vietnamese search without diacritics | Yes, via `unaccent` + `pg_trgm` in Phase 1, since it's cheap | Open question |
 
-`CLAUDE.md` still describes the provider policy flag as `allows_training` and lists Ollama in the default Compose stack. The AI design uses `trains_on_input` + `data_allowed` and makes Ollama optional. Reconcile `CLAUDE.md` once the provider choice is confirmed.
+`CLAUDE.md` still describes the provider policy flag as `allows_training`. The AI design uses `trains_on_input` + `data_allowed`. Reconcile `CLAUDE.md` once the provider choice is confirmed. (Ollama is already reconciled: it sits behind the `local-ai` Compose profile.)
 
 ## Phase 0: Foundation
 

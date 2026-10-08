@@ -1,0 +1,21 @@
+# The Python images only need the uv workspace: pyproject.toml, uv.lock, api/, worker/.
+.git
+.github
+.claude
+.cache
+.venv
+.env
+.env.*
+app
+docs
+eval
+infra
+*.md
+**/__pycache__
+**/*.py[cod]
+**/tests
+**/.mypy_cache
+**/.pytest_cache
+**/.ruff_cache
+**/.coverage
+**/coverage.xml
