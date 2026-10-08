@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appName": "Manga & Novel",
+    "loading": "Đang tải…",
+    "language": "Ngôn ngữ",
+    "languageName": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    }
+  },
+  "auth": {
+    "signInTitle": "Đăng nhập",
+    "registerTitle": "Tạo tài khoản",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "passwordHint": "Ít nhất 8 ký tự",
+    "displayName": "Tên hiển thị",
+    "signIn": "Đăng nhập",
+    "register": "Tạo tài khoản",
+    "signOut": "Đăng xuất",
+    "noAccount": "Chưa có tài khoản? Tạo tài khoản",
+    "haveAccount": "Đã có tài khoản? Đăng nhập"
+  },
+  "home": {
+    "greeting": "Xin chào, {{name}}",
+    "email": "Email",
+    "roles": "Vai trò của bạn",
+    "becomeAuthor": "Trở thành tác giả",
+    "becomeAuthorHint": "Tác giả có thể đăng tiểu thuyết và manga của riêng mình."
+  },
+  "roles": {
+    "reader": "Độc giả",
+    "author": "Tác giả",
+    "admin": "Quản trị viên"
+  },
+  "errors": {
+    "invalid_credentials": "Email hoặc mật khẩu không đúng.",
+    "email_taken": "Email này đã có tài khoản.",
+    "account_locked": "Tài khoản này đã bị khóa.",
+    "rate_limited": "Bạn thử quá nhiều lần. Hãy đợi một lát rồi thử lại.",
+    "validation_error": "Hãy kiểm tra lại các ô và thử lại.",
+    "network_error": "Không kết nối được máy chủ. Hãy kiểm tra mạng.",
+    "unknown": "Đã có lỗi xảy ra. Hãy thử lại."
+  }
+}

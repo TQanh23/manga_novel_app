@@ -38,7 +38,12 @@ cd api && uv run uvicorn api.main:app --reload
 cd app && npm install
 cd app && npx expo start          # press w for web, a for Android
 cd app && npm run typecheck && npm run lint
+cd app && npm run gen:api         # after any API change: regenerate the TS client and commit it
 ```
+
+The client talks to the API at `http://localhost:8000` on web and `http://10.0.2.2:8000` on the
+Android emulator (the emulator's name for the host machine). Set `EXPO_PUBLIC_API_URL` to point it
+elsewhere, for example at your machine's LAN address when testing on a phone.
 
 No `.env` file is needed. If a host port is already taken, copy [.env.example](.env.example) to
 `.env` and change it there. The API connects to Postgres as `app_rw`, a role that owns nothing;
@@ -49,6 +54,10 @@ fields (`text`, `content`, `prompt`, ...) are masked before a line is written. `
 that the process is up, `/readyz` that Postgres and Redis answer, and `/metrics` serves request
 latency for Prometheus. Errors share one shape: `{"error": {"code", "message", "request_id",
 "details"}}`.
+
+On web the refresh token is an httpOnly cookie and the access token stays in memory; on Android
+the refresh token is kept in SecureStore. Either way the app signs back in silently on start. UI
+copy lives in `app/src/i18n/locales/` (English and Vietnamese); ESLint rejects literal text in JSX.
 
 Slow work never runs in the API. An endpoint calls `enqueue(kind, target_id, content_hash)` and
 answers `202` with a job id; the worker (`python -m worker`) runs it. Asking again for the same

@@ -100,11 +100,11 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [x] Idempotency helper keyed on `(kind, target_id, content_hash)`, with a test that a repeat is a no-op
 
 ### 0.8 Client
-- [ ] `npm run gen:api` generates the TS client from the OpenAPI spec
-- [ ] i18n set up with EN and VI; no hard-coded copy
-- [ ] Login and register screens
-- [ ] Token storage: SecureStore on Android, web equivalent; silent refresh
-- [ ] Signed-in shell showing the user's roles
+- [x] `npm run gen:api` generates the TS client from the OpenAPI spec
+- [x] i18n set up with EN and VI; no hard-coded copy
+- [x] Login and register screens
+- [x] Token storage: SecureStore on Android, web equivalent; silent refresh
+- [x] Signed-in shell showing the user's roles
 
 ### 0.9 CI (NFR-12)
 - [x] GitHub Actions: backend `ruff`, `mypy`, `pytest` against a Postgres + pgvector service container

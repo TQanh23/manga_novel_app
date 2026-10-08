@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appName": "Manga & Novel",
+    "loading": "Loading…",
+    "language": "Language",
+    "languageName": {
+      "en": "English",
+      "vi": "Tiếng Việt"
+    }
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "registerTitle": "Create an account",
+    "email": "Email",
+    "password": "Password",
+    "passwordHint": "At least 8 characters",
+    "displayName": "Display name",
+    "signIn": "Sign in",
+    "register": "Create account",
+    "signOut": "Sign out",
+    "noAccount": "New here? Create an account",
+    "haveAccount": "Already have an account? Sign in"
+  },
+  "home": {
+    "greeting": "Hello, {{name}}",
+    "email": "Email",
+    "roles": "Your roles",
+    "becomeAuthor": "Become an author",
+    "becomeAuthorHint": "Authors can publish their own novels and manga."
+  },
+  "roles": {
+    "reader": "Reader",
+    "author": "Author",
+    "admin": "Admin"
+  },
+  "errors": {
+    "invalid_credentials": "Email or password is incorrect.",
+    "email_taken": "An account with this email already exists.",
+    "account_locked": "This account is locked.",
+    "rate_limited": "Too many attempts. Wait a moment and try again.",
+    "validation_error": "Check the fields and try again.",
+    "network_error": "Could not reach the server. Check your connection.",
+    "unknown": "Something went wrong. Try again."
+  }
+}
