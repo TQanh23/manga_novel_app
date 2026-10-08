@@ -13,26 +13,34 @@ and [TASK_CHECKLIST.md](TASK_CHECKLIST.md).
 api/      FastAPI monolith (Python 3.12, uv)
 worker/   arq worker for slow and scheduled work
 app/      Expo + Expo Router client (Android and web)
-infra/    Docker Compose support files, seed data, dashboards
+infra/    Docker Compose support files, seed data, dashboards (compose.yaml is at the root)
 eval/     Fixed AI eval set and runner
 docs/     Design notes
 ```
 
 ## Development
 
-Requires [uv](https://docs.astral.sh/uv/) and Node 22. uv installs Python 3.12.7 from
+Requires Docker, [uv](https://docs.astral.sh/uv/) and Node 22. uv installs Python 3.12.7 from
 `.python-version`.
 
 ```bash
+docker compose up                         # Postgres+pgvector, Redis, MinIO, migrations, api on :8000
+docker compose --profile local-ai up      # the same plus Ollama
+
 uv sync --all-packages
 
-cd api && uv run pytest
+cd api && uv run pytest                   # starts its own Postgres through Testcontainers
 cd api && uv run ruff check . && uv run mypy .
+cd api && uv run alembic upgrade head     # against the Compose Postgres
 cd api && uv run uvicorn api.main:app --reload
 
 cd app && npm install
 cd app && npx expo start          # press w for web, a for Android
 cd app && npm run typecheck && npm run lint
 ```
+
+No `.env` file is needed. If a host port is already taken, copy [.env.example](.env.example) to
+`.env` and change it there. The API connects to Postgres as `app_rw`, a role that owns nothing;
+migrations run as the owner role.
 
 Conventions and architecture rules are in [CLAUDE.md](CLAUDE.md).

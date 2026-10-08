@@ -1,0 +1,119 @@
+# Local development stack (NFR-14). Every variable has a development default, so
+# a fresh clone needs no .env file:
+#
+#   docker compose up                       Postgres, Redis, MinIO, migrations, api
+#   docker compose --profile local-ai up    the same plus Ollama
+#
+# The defaults are not secrets. Do not reuse them outside local development.
+
+name: manga-novel
+
+x-api-image: &api-image
+  image: manga-novel-api:dev
+  build:
+    context: .
+    dockerfile: api/Dockerfile
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-manga_novel}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # Over TCP: the socket also answers during first-run init, before the real server is up.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  minio:
+    # MinIO no longer publishes images; this is a community build of the last upstream release.
+    image: &minio-image ghcr.io/coollabsio/minio:RELEASE.2025-10-15T17-29-55Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "127.0.0.1:${MINIO_PORT:-9000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  # One-shot: creates the private buckets the upload and tiling pipeline use.
+  minio-init:
+    image: *minio-image
+    entrypoint: ["mc"]
+    command: ["mb", "--ignore-existing", "local/raw", "local/tiles"]
+    environment:
+      MC_HOST_local: http://${MINIO_ROOT_USER:-minioadmin}:${MINIO_ROOT_PASSWORD:-minioadmin}@minio:9000
+    depends_on:
+      minio:
+        condition: service_healthy
+
+  # One-shot: applies migrations as the owner role. The api never has these credentials.
+  migrate:
+    <<: *api-image
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-manga_novel}
+      APP_RW_PASSWORD: ${APP_RW_PASSWORD:-app_rw}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *api-image
+    environment:
+      DATABASE_URL: postgresql+asyncpg://app_rw:${APP_RW_PASSWORD:-app_rw}@postgres:5432/${POSTGRES_DB:-manga_novel}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2)"
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  ollama:
+    image: ollama/ollama:0.40.1
+    profiles: ["local-ai"]
+    ports:
+      - "127.0.0.1:${OLLAMA_PORT:-11434}:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+
+volumes:
+  postgres-data:
+  minio-data:
+  ollama-data:

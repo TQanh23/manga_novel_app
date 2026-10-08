@@ -12,7 +12,7 @@ Monorepo, one FastAPI monolith plus one worker. No microservices, no Kafka.
 api/        FastAPI app (Python), modules: auth, catalogue, reader, billing, author, ai, analytics, admin
 worker/     arq worker: image pipeline, OCR, indexing, AI checks, analytics rollup
 app/        Expo (React Native) + Expo Router, TypeScript; one codebase for Android and web
-infra/      Docker Compose, seed data, Grafana dashboards
+infra/      Compose support files, seed data, Grafana dashboards (`compose.yaml` itself is at the repo root)
 eval/       Fixed AI eval set (manuscripts with planted contradictions) and runner
 ```
 
@@ -23,11 +23,12 @@ If the layout in the repo differs from this, the repo wins; update this file.
 <!-- Fill in once the tooling exists. Keep these exact and runnable. -->
 
 ```bash
-docker compose up                 # Postgres+pgvector, Redis, MinIO, Ollama, api, worker, with seed data
+docker compose up                 # Postgres+pgvector, Redis, MinIO, api, worker, with migrations and seed data
+docker compose --profile local-ai up   # the same plus Ollama
 cd api && uv run pytest           # backend tests
 cd api && uv run ruff check . && uv run mypy .
 cd api && uv run alembic upgrade head
-cd api && uv run alembic revision --autogenerate -m "<msg>"
+cd api && uv run alembic revision --autogenerate --rev-id <next number> -m "<msg>"
 cd app && npx expo start          # client; press w for web, a for Android
 cd app && npm run typecheck && npm run lint
 cd app && npm run gen:api         # regenerate the TS client from the API's OpenAPI spec
