@@ -131,6 +131,17 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: app/package-lock.json
+      # gen:api exports the OpenAPI document from the FastAPI app, so it needs Python.
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12.7"
+          enable-cache: true
       - run: npm ci
+      # The client is generated from the API and committed. A stale one fails here.
+      - name: Generated API client is up to date
+        run: |
+          npm run gen:api
+          git status --porcelain -- openapi.json src/api/generated
+          test -z "$(git status --porcelain -- openapi.json src/api/generated)"
       - run: npm run typecheck
       - run: npm run lint
