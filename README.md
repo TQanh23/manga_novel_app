@@ -24,7 +24,7 @@ Requires Docker, [uv](https://docs.astral.sh/uv/) and Node 22. uv installs Pytho
 `.python-version`.
 
 ```bash
-docker compose up                         # Postgres+pgvector, Redis, MinIO, migrations, api on :8000, worker
+docker compose up                         # Postgres+pgvector, Redis, MinIO, migrations, seed accounts, api on :8000, worker
 docker compose --profile local-ai up      # the same plus Ollama
 
 uv sync --all-packages
@@ -40,6 +40,18 @@ cd app && npx expo start          # press w for web, a for Android
 cd app && npm run typecheck && npm run lint
 cd app && npm run gen:api         # after any API change: regenerate the TS client and commit it
 ```
+
+`docker compose up` creates four accounts for development, all with the password
+`local-dev-password`:
+
+| Email | Roles |
+|---|---|
+| `admin@example.com` | admin |
+| `author@example.com` | reader, author |
+| `reader1@example.com` | reader |
+| `reader2@example.com` | reader |
+
+The seed step leaves existing accounts untouched and refuses to run unless `ENVIRONMENT=local`.
 
 The client talks to the API at `http://localhost:8000` on web and `http://10.0.2.2:8000` on the
 Android emulator (the emulator's name for the host machine). Set `EXPO_PUBLIC_API_URL` to point it

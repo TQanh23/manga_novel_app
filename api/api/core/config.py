@@ -58,6 +58,10 @@ class Settings(BaseSettings):
     # environment this is a JSON list: CORS_ORIGINS='["https://app.example"]'.
     cors_origins: list[str] = ["http://localhost:8081"]
 
+    # Password of the accounts `python -m api.scripts.seed` creates. Local only:
+    # the seed script refuses to run in any other environment.
+    seed_password: SecretStr = SecretStr("local-dev-password")
+
     # Fixed-window rate limits on auth routes, per window.
     rate_limit_window_seconds: int = 60
     rate_limit_auth_per_ip: int = 30
