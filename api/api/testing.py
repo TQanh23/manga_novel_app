@@ -21,13 +21,19 @@ from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy import make_url, text
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from api.auth import service as auth_service
 from api.auth.models import Role, User
 from api.core.config import Settings, get_settings
 from api.core.db import get_engine, get_session, get_sessionmaker
 from api.core.logging import build_handler, configure_logging
+from api.core.queue import close_arq_pool
 from api.core.redis import get_redis
 from api.core.security import create_access_token
 
@@ -144,6 +150,7 @@ async def redis_client(settings: Settings) -> AsyncIterator[Redis]:
     get_redis.cache_clear()
     client = get_redis()
     yield client
+    await close_arq_pool()
     await client.aclose()
     get_redis.cache_clear()
 
@@ -196,22 +203,31 @@ async def _truncate_app_tables(owner_url: str) -> None:
 
 
 @pytest.fixture
-async def committing_client(
+async def committed_sessions(
     engine: AsyncEngine, redis: Redis, settings: Settings
-) -> AsyncIterator[AsyncClient]:
-    """A client whose requests each get their own session and really commit.
+) -> AsyncIterator[async_sessionmaker[AsyncSession]]:
+    """The app's own session factory: separate connections, real commits.
 
-    For tests that need concurrent transactions (token rotation, later double
-    spend). Slower than `client`: every app table is truncated afterwards.
+    For tests where several transactions must see each other's work (token
+    rotation, a worker reading what the API wrote, later double spend). Slower
+    than `db_session`: every app table is truncated afterwards.
     """
+    try:
+        yield get_sessionmaker()
+    finally:
+        await _truncate_app_tables(settings.migration_database_url)
+
+
+@pytest.fixture
+async def committing_client(
+    committed_sessions: async_sessionmaker[AsyncSession],
+) -> AsyncIterator[AsyncClient]:
+    """A client whose requests each get their own session and really commit."""
     from api.main import create_app
 
     transport = ASGITransport(app=create_app())
-    try:
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
-            yield client
-    finally:
-        await _truncate_app_tables(settings.migration_database_url)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        yield client
 
 
 @pytest.fixture

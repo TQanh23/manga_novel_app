@@ -92,13 +92,13 @@ def configure_logging(level: str = "INFO") -> None:
     root.addHandler(_handler)
     root.setLevel(level.upper())
 
-    # uvicorn installs its own handlers before it imports the app. Its loggers
-    # propagate to the root handler instead, and the request middleware writes
-    # the access line, so uvicorn's is switched off.
-    for name in ("uvicorn", "uvicorn.error"):
-        uvicorn_logger = logging.getLogger(name)
-        uvicorn_logger.handlers.clear()
-        uvicorn_logger.propagate = True
+    # uvicorn and arq install their own handlers before they import our code.
+    # Their loggers propagate to the root handler instead. The request
+    # middleware writes the access line, so uvicorn's is switched off.
+    for name in ("uvicorn", "uvicorn.error", "arq"):
+        foreign_logger = logging.getLogger(name)
+        foreign_logger.handlers.clear()
+        foreign_logger.propagate = True
     access_logger = logging.getLogger("uvicorn.access")
     access_logger.handlers.clear()
     access_logger.propagate = False

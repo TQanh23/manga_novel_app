@@ -27,6 +27,8 @@ docker compose up                 # Postgres+pgvector, Redis, MinIO, api, worker
 docker compose --profile local-ai up   # the same plus Ollama
 cd api && uv run pytest           # backend tests
 cd api && uv run ruff check . && uv run mypy .
+cd worker && uv run pytest        # worker tests
+cd worker && uv run python -m worker   # run the worker on the host
 cd api && uv run alembic upgrade head
 cd api && uv run alembic revision --autogenerate --rev-id <next number> -m "<msg>"
 cd app && npx expo start          # client; press w for web, a for Android

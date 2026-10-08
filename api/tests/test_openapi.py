@@ -12,6 +12,7 @@ EXPECTED_OPERATIONS = {
     ("get", "/v1/me"): "auth_get_me",
     ("post", "/v1/me/roles/author"): "auth_add_author_role",
     ("patch", "/v1/admin/users/{user_id}"): "admin_update_user",
+    ("post", "/v1/admin/jobs/ping"): "admin_enqueue_ping",
 }
 
 ERROR_REF = {"$ref": "#/components/schemas/ErrorResponse"}

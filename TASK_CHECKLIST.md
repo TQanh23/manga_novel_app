@@ -57,7 +57,7 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 ### 0.2 Docker Compose (NFR-14)
 - [x] Postgres 16 + pgvector, Redis, MinIO services with healthchecks
 - [x] MinIO buckets `raw/` and `tiles/` created on start
-- [ ] `api` and `worker` services, started after their dependencies are healthy (`api` done; `worker` joins the stack with its first job)
+- [x] `api` and `worker` services, started after their dependencies are healthy
 - [x] Ollama placed according to D2
 - [x] `docker compose up` on a fresh clone works with no manual steps
 
@@ -87,17 +87,17 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 ### 0.6 Cross-cutting (NFR-10)
 - [x] structlog JSON logging
 - [x] Request id middleware; the id is in every API log line
-- [ ] Request id passed into the arq job context and into every worker log line
+- [x] Request id passed into the arq job context and into every worker log line
 - [x] Content-field log filter (`text`, `content`, `messages`, `input`) with a unit test
 - [x] Shared error envelope for all routes
 - [x] `/healthz`
 - [x] `/metrics` (Prometheus) for request latency (cut first)
 
 ### 0.7 Worker skeleton
-- [ ] arq worker with a `ping` job, reachable from the API
-- [ ] Retry at most 3 times with backoff
-- [ ] Dead-letter list on final failure
-- [ ] Idempotency helper keyed on `(kind, target_id, content_hash)`, with a test that a repeat is a no-op
+- [x] arq worker with a `ping` job, reachable from the API
+- [x] Retry at most 3 times with backoff
+- [x] Dead-letter list on final failure
+- [x] Idempotency helper keyed on `(kind, target_id, content_hash)`, with a test that a repeat is a no-op
 
 ### 0.8 Client
 - [ ] `npm run gen:api` generates the TS client from the OpenAPI spec

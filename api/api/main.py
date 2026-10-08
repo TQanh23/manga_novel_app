@@ -12,6 +12,7 @@ from api.core.db import get_engine
 from api.core.errors import ERROR_RESPONSES, install_error_handlers
 from api.core.logging import configure_logging
 from api.core.middleware import RequestContextMiddleware
+from api.core.queue import close_arq_pool
 from api.core.redis import get_redis
 from api.core.request_id import REQUEST_ID_HEADER
 
@@ -19,6 +20,7 @@ from api.core.request_id import REQUEST_ID_HEADER
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
+    await close_arq_pool()
     await get_engine().dispose()
     await get_redis().aclose()
 

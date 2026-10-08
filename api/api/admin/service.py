@@ -8,8 +8,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.auth import repository as auth_repository
 from api.auth.models import Role, User, UserRole, UserStatus
 from api.core.errors import AppError
+from api.core.ids import uuid7
+from api.core.queue import enqueue
 
 logger = structlog.get_logger(__name__)
+
+
+async def enqueue_ping(session: AsyncSession, *, actor: User) -> UUID:
+    """Queue a job that does nothing, to prove the API can reach the worker."""
+    # A ping has no input to hash, so each one is its own job.
+    return await enqueue(session, kind="ping", target_id=actor.id, content_hash=uuid7().hex)
 
 
 async def update_user(

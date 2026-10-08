@@ -24,12 +24,13 @@ Requires Docker, [uv](https://docs.astral.sh/uv/) and Node 22. uv installs Pytho
 `.python-version`.
 
 ```bash
-docker compose up                         # Postgres+pgvector, Redis, MinIO, migrations, api on :8000
+docker compose up                         # Postgres+pgvector, Redis, MinIO, migrations, api on :8000, worker
 docker compose --profile local-ai up      # the same plus Ollama
 
 uv sync --all-packages
 
 cd api && uv run pytest                   # starts its own Postgres and Redis through Testcontainers
+cd worker && uv run pytest
 cd api && uv run ruff check . && uv run mypy .
 cd api && uv run alembic upgrade head     # against the Compose Postgres
 cd api && uv run uvicorn api.main:app --reload
@@ -48,6 +49,12 @@ fields (`text`, `content`, `prompt`, ...) are masked before a line is written. `
 that the process is up, `/readyz` that Postgres and Redis answer, and `/metrics` serves request
 latency for Prometheus. Errors share one shape: `{"error": {"code", "message", "request_id",
 "details"}}`.
+
+Slow work never runs in the API. An endpoint calls `enqueue(kind, target_id, content_hash)` and
+answers `202` with a job id; the worker (`python -m worker`) runs it. Asking again for the same
+work on the same input is the same job. A job that fails is retried three times with backoff, then
+recorded in the `dead-letter` list in Redis. Its log lines carry the request id of the API call
+that asked for it.
 
 To run the tests against services that are already up instead of Testcontainers, set
 `TEST_DATABASE_URL` and `TEST_REDIS_URL` (see [.env.example](.env.example)).
