@@ -1,0 +1,539 @@
+# Task Checklist
+
+Working checklist for the whole project. It breaks [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md) into tasks that can each be finished and verified on their own, and traces every requirement ID in the system spec to a phase.
+
+- System spec (source of truth): https://claude.ai/code/artifact/2c8fd711-f47d-4e4a-a852-8d698d0cbf57
+- Plan (order, sizes, "cut first" rules): [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md)
+- Architecture rules and conventions: [`CLAUDE.md`](CLAUDE.md)
+
+## How to use
+
+- Tick a box only when the task is merged and its test (where one is named) is green in CI.
+- Work top to bottom. Do not start a phase until the previous phase's exit check is fully ticked.
+- Refer to tasks by group number (`3.3`) and to requirements by ID (`FR-PAY-02`) in commits and PRs.
+- Phases 0 to 5 are the MVP. Phases 6 and 7 are P2/P3 and stay untouched until the MVP demo runs.
+- Tasks marked **(gap)** come from the spec or `CLAUDE.md` but are missing from the plan. Confirm them before building.
+- If a task turns out wrong or the plan changes, edit this file in the same PR.
+
+| Phase | Theme | Status |
+|---|---|---|
+| 0 | Foundation | Not started |
+| 1 | Catalogue and novel reader | Not started |
+| 2 | Manga upload and reader | Not started |
+| 3 | Billing | Not started |
+| 4 | AI core | Not started |
+| 5 | Analytics, hardening, demo | Not started |
+| 6 | P2 | Not started |
+| 7 | P3 | Not started |
+
+## Decisions to make
+
+Each one blocks the tasks listed next to it. The plan's default is in brackets; confirming the default is enough.
+
+- [ ] **D1.** AI providers for testing and the policy flag names (`allows_training` vs `trains_on_input` + `data_allowed`) [Cloudflare Workers AI for real works, Groq for `is_sample` only]. Blocks 4.1, 4.2. Then reconcile `CLAUDE.md`.
+- [ ] **D2.** Ollama in the default Compose stack or behind a `local-ai` profile [profile]. Blocks 0.2. Then reconcile `CLAUDE.md`.
+- [ ] **D3.** Editor role in MVP or P2 [P2]. Blocks nothing in MVP if P2.
+- [ ] **D4.** Coin price in VND and default episode price [1 coin = 100 VND, 3 coins per episode; config only].
+- [ ] **D5.** Can authors set episode prices in MVP [no, Admin default only]. Blocks 3.6.
+- [ ] **D6.** WUF preset list [3h, 12h, 1 day, 3 days]. Blocks seed data in 1.1.
+- [ ] **D7.** Demo host, and whether the demo uses a paid model only. Blocks 5.6.
+- [ ] **D8.** pHash match: flag to Admin or auto-block, and the Hamming threshold [flag only]. Blocks 6.3.
+- [ ] **D9.** Vietnamese search without diacritics in MVP [yes]. Blocks 1.5.
+- [ ] **D10. (gap)** What happens to an author's works when the account is deleted (`FR-AUTH-05`). The spec does not say. Blocks 3.8.
+- [ ] **D11. (gap)** `design/ai-architecture.md` is referenced by the plan but is not in the repo. Add it before Phase 4 starts.
+
+## Phase 0: Foundation
+
+Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API only), NFR-05, NFR-10, NFR-12, NFR-13 (UI i18n), NFR-14.
+
+### 0.1 Repo skeleton
+- [ ] Create `api/`, `worker/`, `app/`, `infra/`, `eval/`, `docs/`
+- [ ] `api/`: `uv` project, `ruff`, `mypy --strict`, `pytest` configured and passing on an empty app
+- [ ] `app/`: Expo + Expo Router, TypeScript strict, ESLint, `typecheck` and `lint` scripts
+- [ ] `.gitignore`, `.env.example` (no secrets committed), root `README.md` stub
+- [ ] Fix the plan's `../CLAUDE.md` link (move the plan into `docs/` or correct the path)
+
+### 0.2 Docker Compose (NFR-14)
+- [ ] Postgres 16 + pgvector, Redis, MinIO services with healthchecks
+- [ ] MinIO buckets `raw/` and `tiles/` created on start
+- [ ] `api` and `worker` services, started after their dependencies are healthy
+- [ ] Ollama placed according to D2
+- [ ] `docker compose up` on a fresh clone works with no manual steps
+
+### 0.3 Database baseline
+- [ ] Async SQLAlchemy 2 engine and session factory
+- [ ] Alembic wired to async, first migration creates schemas `core`, `billing`, `ai`, `analytics`
+- [ ] Extensions `vector`, `pg_trgm`, `unaccent`
+- [ ] UUID v7 primary-key helper
+- [ ] `created_at` / `updated_at` mixin used by every model
+- [ ] Test fixture running against real Postgres + pgvector (Testcontainers or the Compose service)
+
+### 0.4 App roles for RLS
+- [ ] Migration creates `app_rw` and `app_public` roles
+- [ ] API connects as `app_rw`; migrations run as the owner role
+- [ ] Test: the API's DB role is not a superuser and not the table owner
+
+### 0.5 Auth and RBAC (FR-AUTH-01, FR-AUTH-03, FR-AD-01, NFR-05)
+- [ ] `users`, `user_roles` models and migration (include `status` and `locale`)
+- [ ] `POST /v1/auth/register` with argon2 hashing
+- [ ] `POST /v1/auth/login` returning a short-lived JWT and a refresh token
+- [ ] `POST /v1/auth/refresh` with rotation; a reused refresh token is rejected
+- [ ] `require_role` dependency; one account can hold Reader and Author together
+- [ ] Redis rate limit by IP and by user on auth routes
+- [ ] `PATCH /v1/admin/users/{id}`: lock a user, change roles; a locked user cannot log in
+- [ ] Tests: register/login/refresh, rotation, role checks, lockout, rate limit
+
+### 0.6 Cross-cutting (NFR-10)
+- [ ] structlog JSON logging
+- [ ] Request id middleware; the id is in every API log line
+- [ ] Request id passed into the arq job context and into every worker log line
+- [ ] Content-field log filter (`text`, `content`, `messages`, `input`) with a unit test
+- [ ] Shared error envelope for all routes
+- [ ] `/healthz`
+- [ ] `/metrics` (Prometheus) for request latency (cut first)
+
+### 0.7 Worker skeleton
+- [ ] arq worker with a `ping` job, reachable from the API
+- [ ] Retry at most 3 times with backoff
+- [ ] Dead-letter list on final failure
+- [ ] Idempotency helper keyed on `(kind, target_id, content_hash)`, with a test that a repeat is a no-op
+
+### 0.8 Client
+- [ ] `npm run gen:api` generates the TS client from the OpenAPI spec
+- [ ] i18n set up with EN and VI; no hard-coded copy
+- [ ] Login and register screens
+- [ ] Token storage: SecureStore on Android, web equivalent; silent refresh
+- [ ] Signed-in shell showing the user's roles
+
+### 0.9 CI (NFR-12)
+- [ ] GitHub Actions: backend `ruff`, `mypy`, `pytest` against a Postgres + pgvector service container
+- [ ] GitHub Actions: app `typecheck` and `lint`
+- [ ] Coverage report for domain modules, with the 80% gate ready to switch on in Phase 3
+
+### 0.10 Seed
+- [ ] Seed script: one admin, one author, two readers; runs on `docker compose up`
+
+### Exit check
+- [ ] Fresh clone, `docker compose up`, register and log in from the web build
+- [ ] Same login works on Android
+- [ ] CI green
+- [ ] DB role test (0.4) green
+
+## Phase 1: Catalogue and novel reader
+
+Requirements: FR-RD-01, FR-RD-02 (no unlock states yet), FR-RD-03, FR-RD-05, FR-RD-06, FR-NV-01, FR-NV-02, FR-NV-03, FR-AD-04 (presets table only).
+
+### 1.1 Content model
+- [ ] `works` with `is_sample` and `ai_opt_in_training`, both default `false`
+- [ ] `episodes` with status `draft` / `scheduled` / `published` / `removed`, `publish_at`, `price_coins`, `wuf_eligible`
+- [ ] `episode_versions`
+- [ ] `tags`, `work_tags`
+- [ ] `glossary_entries` with `aliases[]`, `attributes jsonb`, `translations jsonb`
+- [ ] `config_presets` (`kind`, `value`, `active`); `works.wuf_preset_id` and `works.revenue_share_preset_id` reference it
+- [ ] `reading_progress`
+- [ ] Seed the WUF and revenue-split presets (per D6)
+
+### 1.2 Author API (FR-NV-01)
+- [ ] `POST /v1/author/works`, `PATCH /v1/author/works/{id}`
+- [ ] `POST /v1/author/works/{id}/episodes`
+- [ ] `PUT /v1/author/episodes/{id}/draft`: each save is a new `episode_versions` row
+- [ ] Version history: list and restore
+- [ ] `POST /v1/author/episodes/{id}/publish` (publish now)
+- [ ] Ownership checks: an author cannot touch another author's work (test)
+
+### 1.3 Scheduled publish (FR-NV-02)
+- [ ] Schedule publish with `publish_at`
+- [ ] arq cron every minute flips due `scheduled` episodes to `published`
+- [ ] Test: running the cron twice is idempotent
+
+### 1.4 Glossary (FR-NV-03)
+- [ ] `GET` / `POST` / `PATCH /v1/author/works/{id}/glossary`
+- [ ] Tests with KR, JP and VI names and aliases
+
+### 1.5 Catalogue API (FR-RD-01, FR-RD-02, FR-RD-06)
+- [ ] `GET /v1/works` for home, with filters: type, genre, completion status
+- [ ] Ranking with a placeholder ordering (cut first: keep only "newest")
+- [ ] `GET /v1/works/{id}` and `GET /v1/works/{id}/episodes`
+- [ ] `GET /v1/search?q=` over title, author and tag using Postgres full-text
+- [ ] `unaccent` + `pg_trgm` so Vietnamese matches without diacritics (per D9)
+- [ ] Test: drafts and scheduled episodes never appear in catalogue or search
+
+### 1.6 Reader API (FR-RD-03, FR-RD-05)
+- [ ] `GET /v1/episodes/{id}/content` for novels; guests can read free episodes
+- [ ] `PUT /v1/progress/{episode_id}` at paragraph granularity
+- [ ] `GET /v1/library`: reading and favourites
+- [ ] Favourite / unfavourite a work
+
+### 1.7 Client: reader
+- [ ] Home, browse with filters, search
+- [ ] Work page with episode list
+- [ ] Novel reader: font, size, light/dark theme
+- [ ] Restore reading position by paragraph
+- [ ] Library screen
+
+### 1.8 Client: author studio
+- [ ] Works list, create/edit work
+- [ ] Markdown editor with autosave
+- [ ] Version history view
+- [ ] Glossary editor
+- [ ] Publish now and schedule
+
+### 1.9 Seed
+- [ ] Sample novel with 5 episodes and a glossary, `is_sample = true`
+
+### Exit check
+- [ ] An episode scheduled one minute ahead becomes readable on its own
+- [ ] Progress set on Android shows on web after refresh
+- [ ] Search finds a title typed without diacritics
+- [ ] Draft-visibility test (1.5) green
+- [ ] Both targets (Android, web) run every screen in this phase
+
+## Phase 2: Manga upload and reader
+
+Requirements: FR-MG-01, FR-MG-02, FR-RD-04, NFR-02, NFR-03, NFR-05 (signed URL expiry), NFR-09 (`Storage`).
+
+### 2.1 Storage interface (NFR-09)
+- [ ] `Storage` protocol: presigned PUT, signed GET, delete by prefix
+- [ ] MinIO/S3 implementation selected by config; no vendor SDK import outside it
+- [ ] Signed GET URLs expire after 5 minutes (test)
+
+### 2.2 Upload flow (FR-MG-01)
+- [ ] `episode_pages`, `page_tiles` models and migration
+- [ ] `POST /v1/author/episodes/{id}/uploads` returns presigned URLs to `raw/`
+- [ ] `POST /v1/author/uploads/{id}/complete` creates `episode_pages`, enqueues `process_pages`, returns `202 + job_id`
+
+### 2.3 Job status (NFR-03)
+- [ ] `GET /v1/author/jobs/{id}`
+- [ ] `GET /v1/author/jobs/{id}/stream` (SSE), built to be reused by AI checks
+- [ ] Only the job's owner can read it (test)
+
+### 2.4 Tiling pipeline (FR-MG-02)
+- [ ] Validate format and size; reject with a clear job error
+- [ ] Slice long strips into tiles, preferring blank gutters between panels
+- [ ] Two resolutions in WebP, written to `tiles/` (AVIF only if free; cut first)
+- [ ] `page_tiles` rows with `y_offset` and `height`
+- [ ] Compute and store pHash per page (matching waits for 6.3)
+- [ ] Progress updates published for SSE
+- [ ] Test: re-running `process_pages` on the same content is a no-op
+
+### 2.5 Manga reader (FR-RD-04, NFR-02)
+- [ ] Content endpoint returns the tile list with signed URLs
+- [ ] Client: upload screen with progress over SSE
+- [ ] Client: vertical scroll reader with lazy tile loading
+- [ ] Client: page-flip mode (cut first)
+- [ ] Progress stored at tile granularity
+- [ ] Test: the API has no route that streams image content
+
+### Exit check
+- [ ] Upload a 10,000 px strip from the web client and watch progress over SSE
+- [ ] Read it on Android
+- [ ] No-image-through-API test green
+- [ ] Idempotent `process_pages` test green
+
+## Phase 3: Billing
+
+Requirements: FR-PAY-01, FR-PAY-02, FR-PAY-03, FR-PAY-04, FR-AD-04, FR-RD-02 (full states), FR-AUTH-05 (endpoint), NFR-04, NFR-09 (`PaymentProvider`), NFR-12.
+
+Nothing in the ledger or unlock path may be cut. Cut client wallet polish instead.
+
+### 3.1 Ledger (FR-PAY-03)
+- [ ] `wallets`, `ledger_entries`, `topups`, `unlocks`, `idempotency_keys` in the `billing` schema
+- [ ] Accounts for reader wallet, author payable and platform
+- [ ] Every transaction's entries sum to zero (enforced and tested)
+- [ ] `UPDATE` / `DELETE` on `ledger_entries` blocked by trigger or revoked privileges (test as `app_rw`)
+- [ ] `unlocks` unique on `(user_id, episode_id)`; stores price and the revenue-split preset in force
+
+### 3.2 Balance
+- [ ] `cached_balance` updated in the same transaction as the entries
+- [ ] `GET /v1/wallet`
+- [ ] `reconcile_wallets` job recomputes from the ledger and alerts on mismatch
+
+### 3.3 Unlock (FR-PAY-02, NFR-04)
+- [ ] `POST /v1/episodes/{id}/unlock` requires `Idempotency-Key`; missing header is rejected
+- [ ] One transaction: lock wallet row, check balance, write entries, insert `unlocks`
+- [ ] Same key returns the stored response
+- [ ] Insufficient balance and already-unlocked cases return clean errors with no entries written
+- [ ] Episode content endpoint enforces unlock state for paid episodes
+
+### 3.4 Wait-until-free (FR-PAY-04)
+- [ ] `wuf_timers` in Postgres as source of truth
+- [ ] Redis cache; when it disagrees, Postgres wins (test)
+- [ ] Author picks the work's WUF preset; a running timer finishes on the old period (test)
+- [ ] `GET /v1/works/{id}/wuf`
+- [ ] WUF unlock writes `unlocks` with `method = wuf` and no ledger entries
+
+### 3.5 Payments (FR-PAY-01, NFR-09)
+- [ ] `PaymentProvider` interface selected by config
+- [ ] VNPay sandbox: `POST /v1/wallet/topups` creates the payment URL
+- [ ] Return URL verifies `vnp_SecureHash` and only displays the result
+- [ ] IPN verifies `vnp_SecureHash` and credits coins once per `vnp_TxnRef`
+- [ ] VNPay secrets come from env vars only
+- [ ] `FakePaymentProvider` for tests and local demos
+- [ ] IPN replay script for local testing without a public URL
+
+### 3.6 Admin config (FR-AD-04)
+- [ ] `PUT /v1/admin/config`: default coin price, WUF preset list, revenue-split preset list
+- [ ] Assign a revenue-split preset to a work
+- [ ] Test: changing a preset does not change the split stored on past unlocks
+
+### 3.7 Client (FR-RD-02)
+- [ ] Wallet screen with balance and history
+- [ ] Top-up flow opening the VNPay sandbox page and showing the result
+- [ ] Episode states: free / WUF countdown / price / unlocked
+- [ ] Unlock confirm dialog
+- [ ] "Purchased" tab in library
+
+### 3.8 Account deletion (FR-AUTH-05) (gap)
+The plan covers the model only; the spec tags the requirement MVP. Needs D10.
+- [ ] `DELETE /v1/me` hard-deletes personal data
+- [ ] Ledger rows survive untouched and carry no personal data
+- [ ] Test: after deletion nothing identifies the user, and the ledger still sums to zero
+
+### Exit check (all in CI)
+- [ ] 50 concurrent unlocks on one wallet funded for 3 episodes: exactly 3 succeed, balance never negative, ledger sums to zero
+- [ ] Same idempotency key sent twice concurrently: one charge
+- [ ] Same IPN delivered twice: one credit
+- [ ] IPN with a bad signature: rejected, no credit
+- [ ] `cached_balance` equals the ledger sum for every wallet after the suite
+- [ ] Domain coverage for billing and WUF at 80% or higher; gate switched on in CI
+
+## Phase 4: AI core
+
+Requirements: FR-AI-01, FR-AI-02, FR-AI-03, FR-AI-06, FR-AI-07, NFR-06, NFR-07, NFR-08, NFR-09, NFR-11, NFR-13 (multilingual embeddings), and the policy table in spec section 9. Needs D1 and D11 first.
+
+### 4.1 Providers (FR-AI-06, NFR-09)
+- [ ] `LLMProvider` (`complete_json`) and `EmbeddingProvider` protocols
+- [ ] One OpenAI-compatible implementation covering the chosen hosted providers and Ollama
+- [ ] `FakeLLMProvider` with fixed responses for tests
+- [ ] Provider registry and allowlist from config, including the training-policy flag
+- [ ] No vendor SDK import outside the provider implementation (lint rule or test)
+- [ ] No image-generation endpoint, provider or dependency
+
+### 4.2 Policy gate (FR-AI-07)
+- [ ] `policy.resolve(task, work)` is the only way to obtain a provider
+- [ ] `PolicyViolation` when a real work would reach a sample-only provider
+- [ ] `ai_audit_log` row appended before every call; table is append-only
+- [ ] Test (write first): a real work never reaches a sample-only provider, even with a misconfigured route
+- [ ] Test: a dataset export skips works with `ai_opt_in_training = false`
+
+### 4.3 Chunks and isolation (NFR-06)
+- [ ] `ai.chunks` with `author_id`, `work_id`, `episode_id`, `episode_status`, `embed_model`, `vector(1024)`
+- [ ] HNSW index
+- [ ] RLS policy in a migration with `FORCE ROW LEVEL SECURITY`; `SET LOCAL app.author_id` per transaction
+- [ ] Repository layer requires `work_id` on every vector query
+- [ ] Test: author B running raw SQL as `app_rw` cannot see author A's chunks
+- [ ] Published-only read path for shared features, with a test that drafts are excluded
+- [ ] **(gap)** RLS on episode drafts as well as embeddings, as `NFR-06` states
+- [ ] **(gap)** Admins cannot read unpublished drafts; break-glass access writes to the author-visible audit log (test)
+
+### 4.4 Indexing pipeline (NFR-13)
+- [ ] Paragraph chunking at roughly 300 to 500 tokens, keeping original offsets
+- [ ] Chunking tests on KR, JP, EN and VI text (no ASCII or whitespace assumptions)
+- [ ] Batched embedding with bge-m3 (1024-dim)
+- [ ] Delete-and-insert in one transaction; old version's chunks are gone
+- [ ] Triggered on draft save with a 30 s debounce and on publish
+- [ ] Publishing updates `episode_status` on existing chunks
+
+### 4.5 Rate limits and quota (FR-AI-06, NFR-08)
+- [ ] Redis token buckets per provider
+- [ ] `arq.Retry` on an empty bucket or a 429
+- [ ] Separate `ai` queue with `max_jobs=2`
+- [ ] Per-author daily token quota and rate limit checked before enqueue (test)
+
+### 4.6 Lint (FR-AI-01)
+- [ ] `POST /v1/author/episodes/{id}/checks` returns `202 + job_id`
+- [ ] Episode split into windows of about 1,500 tokens
+- [ ] Fixed JSON schema; invalid output is discarded
+- [ ] Offsets mapped back to the episode; out-of-range spans dropped
+
+### 4.7 Consistency check (FR-AI-02)
+- [ ] Claim and entity extraction from the new episode
+- [ ] Deterministic glossary name check with `pg_trgm`, no LLM
+- [ ] Retrieve top-5 chunks from the same work, plus related glossary entries
+- [ ] Batched comparison returning contradictions with `evidence_chunk_ids`
+- [ ] Findings citing chunk ids that were not in that call's context are discarded (test)
+
+### 4.8 Findings and verdicts (FR-AI-03)
+- [ ] `ai_jobs` stores metadata only: provider, model, status, tokens, cost
+- [ ] `ai_findings` with spans and `evidence_chunk_ids`
+- [ ] Results pushed over the SSE stream from 2.3
+- [ ] `PATCH /v1/author/findings/{id}` records the author's verdict
+- [ ] Verdicts export to eval cases; nothing exports them to training
+
+### 4.9 Eval (NFR-11)
+- [ ] 3 to 5 self-written sample manuscripts
+- [ ] 20 to 30 planted contradictions with locations
+- [ ] Runner reports recall, precision, tokens and cost per provider
+- [ ] CI job on schedule, manual trigger, and PRs touching prompts, models, chunking or retrieval
+- [ ] First real numbers recorded in the README, even if below target
+
+### 4.10 Privacy mechanics (NFR-07)
+- [ ] Test: logs from a real lint job contain no manuscript text, prompt or raw output
+- [ ] `httpx` / provider client debug logging disabled; no content in exception messages
+- [ ] `DELETE /v1/author/works/{id}` removes episodes, versions, chunks, findings, pages, tiles and S3 objects
+- [ ] Anonymised ledger and audit log survive the delete
+- [ ] Test: after delete, no row or object references the `work_id`
+
+### 4.11 Client
+- [ ] "Run check" in the editor with live progress
+- [ ] Findings inline with highlighted spans and evidence passages
+- [ ] Right / wrong buttons on each finding
+- [ ] AI audit log page (`GET /v1/author/ai-audit-log`)
+- [ ] AI settings with the opt-in toggle (`PATCH /v1/author/works/{id}/ai-settings`)
+- [ ] Public "AI data policy" page in plain language, EN and VI
+
+### Exit check
+- [ ] Eval recall at least 80% and precision at least 70% on the sample route, or the real numbers recorded with a note
+- [ ] Policy tests green: no-training export, sample-only routing, RLS isolation, drafts out of shared features, no content in logs, hard delete
+- [ ] An author runs lint and a consistency check end to end from Android and web
+
+## Phase 5: Analytics, hardening and demo
+
+Requirements: FR-AN-01, FR-AN-02, NFR-01, NFR-08 (spend cap), NFR-10 (dashboards), NFR-12, NFR-14.
+
+### 5.1 Events (FR-AN-01)
+- [ ] `reading_events` partitioned by month
+- [ ] `POST /v1/events/batch` with bulk insert
+- [ ] Client batching for open, progress, complete, unlock
+
+### 5.2 Rollups
+- [ ] `episode_daily_stats`
+- [ ] arq cron every 15 minutes; idempotent on re-run (test)
+- [ ] Replace the Phase 1 ranking placeholder with real reads
+
+### 5.3 Author dashboard (FR-AN-02)
+- [ ] `GET /v1/author/works/{id}/stats?from&to` reading rollups only
+- [ ] `GET /v1/author/revenue` using the split snapshotted on each unlock
+- [ ] Client: reads and coin revenue per episode and per day
+
+### 5.4 Load test and observability (NFR-01, NFR-10)
+- [ ] k6 or Locust script against Compose
+- [ ] Catalogue and episode metadata p95 under 200 ms at 50 concurrent users
+- [ ] Prometheus metrics for queue depth and AI cost
+- [ ] Grafana dashboard in `infra/`: latency, queue depth, AI cost
+
+### 5.5 Demo seed and script
+- [ ] Seed: 5-chapter novel with a planted contradiction
+- [ ] Seed: 2-episode manga
+- [ ] Seed: two readers with coins
+- [ ] `docs/DEMO.md` matching the spec's MVP definition
+
+### 5.6 Demo host (needs D7)
+- [ ] Deploy to the chosen host with S3-compatible storage
+- [ ] Demo model configured, provider spend cap set
+- [ ] VNPay sandbox IPN reachable on the demo URL
+
+### 5.7 README
+- [ ] Architecture diagram and how to run
+- [ ] Eval results table
+- [ ] Load test results
+- [ ] Ledger and RLS design notes
+- [ ] Links to the policy tests and to the providers' current data terms
+
+### Exit check
+The demo script runs on Android and web with no manual DB edits.
+- [ ] Author publishes the 5-chapter novel and the 2-episode manga
+- [ ] Consistency check catches the planted contradiction
+- [ ] Reader on Android unlocks with coins and with WUF
+- [ ] Author sees the revenue on the dashboard
+
+## Phase 6: P2
+
+Do not start before the Phase 5 exit check. Each group is independent; take them in this order and stop anywhere.
+
+- [ ] **6.1** Admin refunds as reversing ledger entries (FR-PAY-05), with a concurrency test
+- [ ] **6.1** Monthly revenue-split settlement (FR-PAY-06)
+- [ ] **6.2** Speech-bubble OCR: manga-ocr for JP, PaddleOCR for KR/EN, `ocr_blocks`, author edits (FR-MG-03)
+- [ ] **6.2** Confirmed OCR text enters indexing, the consistency check and search (FR-MG-04); add `ocr_blocks` to the hard-delete path and its test
+- [ ] **6.3** pHash matching across authors and `phash_matches` (FR-MG-05, needs D8)
+- [ ] **6.3** Admin report queue (FR-AD-02) and takedown with reason and author notice (FR-AD-03)
+- [ ] **6.4** Drop-off by paragraph and by tile, with a heatmap (FR-AN-03)
+- [ ] **6.4** Conversion from free/WUF to paid, per episode (FR-AN-04)
+- [ ] **6.5** Semantic search and "more like this" on published chunks only, via `app_public` (FR-RD-07)
+- [ ] **6.6** Editor role per work and inline draft comments (FR-NV-04, FR-AUTH-03)
+- [ ] **6.6** Episode comments and comment reports (FR-RD-08)
+- [ ] **6.6** Google login (FR-AUTH-02)
+- [ ] **6.6** Push notifications for new episodes and WUF ready (FR-RD-10)
+- [ ] **6.6** Translation assist KR/JP to EN using glossary names (FR-AI-04)
+- [ ] **6.6** Tag and blurb suggestions, author approves (FR-AI-05)
+- [ ] **6.6** AI spend and queue dashboard for Admin (FR-AD-05)
+- [ ] **6.6** Device management, at most 3 offline devices (FR-AUTH-04)
+
+## Phase 7: P3
+
+- [ ] Offline downloads on Android with device-bound licences (FR-RD-09)
+- [ ] Auto alt-text, author approves before publish (FR-MG-06)
+- [ ] Content rating check before publish (FR-MG-07)
+- [ ] Promotions: episode discounts and time-limited rental tickets (FR-PAY-07)
+- [ ] CSV export (FR-AN-05)
+
+## Requirement coverage
+
+Every ID in the spec and where it lands. Update this when a task moves.
+
+| Requirement | Stage | Tasks |
+|---|---|---|
+| FR-AUTH-01 | MVP | 0.5, 0.8 |
+| FR-AUTH-02 | P2 | 6.6 |
+| FR-AUTH-03 | MVP | 0.5 (Editor per work: 6.6) |
+| FR-AUTH-04 | P2 | 6.6 |
+| FR-AUTH-05 | MVP | 0.5 (model), 3.8 |
+| FR-RD-01 | MVP | 1.5, 1.7, 5.2 |
+| FR-RD-02 | MVP | 1.5, 1.7, 3.7 |
+| FR-RD-03 | MVP | 1.6, 1.7 |
+| FR-RD-04 | MVP | 2.5 |
+| FR-RD-05 | MVP | 1.6, 1.7, 3.7 |
+| FR-RD-06 | MVP | 1.5, 1.7 |
+| FR-RD-07 | P2 | 6.5 |
+| FR-RD-08 | P2 | 6.6 |
+| FR-RD-09 | P3 | 7 |
+| FR-RD-10 | P2 | 6.6 |
+| FR-PAY-01 | MVP | 3.5, 3.7 |
+| FR-PAY-02 | MVP | 3.3 |
+| FR-PAY-03 | MVP | 3.1, 3.2 |
+| FR-PAY-04 | MVP | 3.4 |
+| FR-PAY-05 | P2 | 6.1 |
+| FR-PAY-06 | P2 | 6.1 (snapshot per unlock: 3.1) |
+| FR-PAY-07 | P3 | 7 |
+| FR-NV-01 | MVP | 1.2, 1.8 |
+| FR-NV-02 | MVP | 1.3, 1.8 |
+| FR-NV-03 | MVP | 1.4, 1.8 |
+| FR-NV-04 | P2 | 6.6 |
+| FR-MG-01 | MVP | 2.2 |
+| FR-MG-02 | MVP | 2.3, 2.4 |
+| FR-MG-03 | P2 | 6.2 |
+| FR-MG-04 | P2 | 6.2 |
+| FR-MG-05 | P2 | 6.3 (hash stored: 2.4) |
+| FR-MG-06 | P3 | 7 |
+| FR-MG-07 | P3 | 7 |
+| FR-AI-01 | MVP | 4.6, 4.11 |
+| FR-AI-02 | MVP | 4.7, 4.11 |
+| FR-AI-03 | MVP | 4.8, 4.11 |
+| FR-AI-04 | P2 | 6.6 |
+| FR-AI-05 | P2 | 6.6 |
+| FR-AI-06 | MVP | 4.1, 4.5 |
+| FR-AI-07 | MVP | 4.2, 4.11 |
+| FR-AN-01 | MVP | 5.1 |
+| FR-AN-02 | MVP | 5.3 |
+| FR-AN-03 | P2 | 6.4 |
+| FR-AN-04 | P2 | 6.4 |
+| FR-AN-05 | P3 | 7 |
+| FR-AD-01 | MVP | 0.5 (API only, no admin screen) |
+| FR-AD-02 | P2 | 6.3 |
+| FR-AD-03 | P2 | 6.3 |
+| FR-AD-04 | MVP | 1.1, 3.6 (API only, no admin screen) |
+| FR-AD-05 | P2 | 6.6 |
+| NFR-01 | | 5.4 |
+| NFR-02 | | 2.5 |
+| NFR-03 | | 2.2, 2.3, 4.6 |
+| NFR-04 | | 3.3, Phase 3 exit check |
+| NFR-05 | | 0.5, 2.1 |
+| NFR-06 | | 4.3 |
+| NFR-07 | | 0.6, 4.10 |
+| NFR-08 | | 4.5, 5.6 |
+| NFR-09 | | 2.1, 3.5, 4.1 |
+| NFR-10 | | 0.6, 5.4 |
+| NFR-11 | | 4.9 |
+| NFR-12 | | 0.9, Phase 3 exit check |
+| NFR-13 | | 0.8, 1.4, 4.4 |
+| NFR-14 | | 0.2, 0.10, 5.5 |
