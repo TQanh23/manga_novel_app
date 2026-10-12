@@ -49,12 +49,20 @@ async def enforce_rate_limit(scope: str, identity: str, *, limit: int) -> None:
         )
 
 
-def limit_by_ip(scope: str) -> Callable[[Request], Awaitable[None]]:
-    """Route dependency: limit by client address."""
+def limit_by_ip(
+    scope: str, *, limit: Callable[[], int] | None = None
+) -> Callable[[Request], Awaitable[None]]:
+    """Route dependency: limit by client address.
+
+    `limit` is read on each request, so it can come from settings. Without it
+    the auth limit applies.
+    """
 
     async def dependency(request: Request) -> None:
         await enforce_rate_limit(
-            f"{scope}:ip", client_ip(request), limit=get_settings().rate_limit_auth_per_ip
+            f"{scope}:ip",
+            client_ip(request),
+            limit=limit() if limit else get_settings().rate_limit_auth_per_ip,
         )
 
     return dependency

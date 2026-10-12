@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorScheduleEpisodeData, AuthorScheduleEpisodeErrors, AuthorScheduleEpisodeResponses, AuthorUnscheduleEpisodeData, AuthorUnscheduleEpisodeErrors, AuthorUnscheduleEpisodeResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses } from './types.gen';
+import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorScheduleEpisodeData, AuthorScheduleEpisodeErrors, AuthorScheduleEpisodeResponses, AuthorUnscheduleEpisodeData, AuthorUnscheduleEpisodeErrors, AuthorUnscheduleEpisodeResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses, CatalogueGetWorkData, CatalogueGetWorkErrors, CatalogueGetWorkResponses, CatalogueListEpisodesData, CatalogueListEpisodesErrors, CatalogueListEpisodesResponses, CatalogueListGenresData, CatalogueListGenresErrors, CatalogueListGenresResponses, CatalogueListWorksData, CatalogueListWorksErrors, CatalogueListWorksResponses, CatalogueSearchWorksData, CatalogueSearchWorksErrors, CatalogueSearchWorksResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -253,6 +253,11 @@ export const authorListWufPresets = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
+ * List Genres
+ */
+export const catalogueListGenres = <ThrowOnError extends boolean = false>(options?: Options<CatalogueListGenresData, ThrowOnError>) => (options?.client ?? client).get<CatalogueListGenresResponses, CatalogueListGenresErrors, ThrowOnError>({ url: '/v1/genres', ...options });
+
+/**
  * Get Me
  */
 export const authGetMe = <ThrowOnError extends boolean = false>(options?: Options<AuthGetMeData, ThrowOnError>) => (options?.client ?? client).get<AuthGetMeResponses, AuthGetMeErrors, ThrowOnError>({
@@ -269,3 +274,23 @@ export const authAddAuthorRole = <ThrowOnError extends boolean = false>(options?
     url: '/v1/me/roles/author',
     ...options
 });
+
+/**
+ * Search Works
+ */
+export const catalogueSearchWorks = <ThrowOnError extends boolean = false>(options: Options<CatalogueSearchWorksData, ThrowOnError>) => (options.client ?? client).get<CatalogueSearchWorksResponses, CatalogueSearchWorksErrors, ThrowOnError>({ url: '/v1/search', ...options });
+
+/**
+ * List Works
+ */
+export const catalogueListWorks = <ThrowOnError extends boolean = false>(options?: Options<CatalogueListWorksData, ThrowOnError>) => (options?.client ?? client).get<CatalogueListWorksResponses, CatalogueListWorksErrors, ThrowOnError>({ url: '/v1/works', ...options });
+
+/**
+ * Get Work
+ */
+export const catalogueGetWork = <ThrowOnError extends boolean = false>(options: Options<CatalogueGetWorkData, ThrowOnError>) => (options.client ?? client).get<CatalogueGetWorkResponses, CatalogueGetWorkErrors, ThrowOnError>({ url: '/v1/works/{work_id}', ...options });
+
+/**
+ * List Episodes
+ */
+export const catalogueListEpisodes = <ThrowOnError extends boolean = false>(options: Options<CatalogueListEpisodesData, ThrowOnError>) => (options.client ?? client).get<CatalogueListEpisodesResponses, CatalogueListEpisodesErrors, ThrowOnError>({ url: '/v1/works/{work_id}/episodes', ...options });

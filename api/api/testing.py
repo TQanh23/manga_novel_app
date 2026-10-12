@@ -9,7 +9,8 @@ import itertools
 import json
 import logging
 import os
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator, Sequence
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -31,6 +32,8 @@ from sqlalchemy.ext.asyncio import (
 
 from api.auth import service as auth_service
 from api.auth.models import Role, User
+from api.author import repository as author_repository
+from api.catalogue.labels import tag_name, tag_slug
 from api.catalogue.models import ContentLanguage, Episode, Work, WorkType
 from api.core.config import Settings, get_settings
 from api.core.db import get_engine, get_session, get_sessionmaker
@@ -44,12 +47,15 @@ POSTGRES_IMAGE = "pgvector/pgvector:pg16"
 REDIS_IMAGE = "redis:7-alpine"
 APP_SCHEMAS = ("core", "billing", "ai", "analytics")
 # Filled by migrations, not by tests, so cleaning up after a test leaves them alone.
-REFERENCE_TABLES = ("core.config_presets",)
+REFERENCE_TABLES = ("core.config_presets", "core.tags")
+# core.tags holds the fixed genres next to the tags tests create.
+_DELETE_TEST_TAGS = "DELETE FROM core.tags WHERE kind <> 'genre'"
 TEST_PASSWORD = "correct horse battery"  # noqa: S105
 
 MakeUser = Callable[..., Awaitable[User]]
 MakeWork = Callable[..., Awaitable[Work]]
 MakeEpisode = Callable[..., Awaitable[Episode]]
+MakePublishedWork = Callable[..., Awaitable[Work]]
 AuthHeaders = Callable[[User], dict[str, str]]
 
 
@@ -222,6 +228,7 @@ async def _truncate_app_tables(owner_url: str) -> None:
             ).scalars()
             if names := ", ".join(tables):
                 await connection.execute(text(f"TRUNCATE {names} CASCADE"))
+            await connection.execute(text(_DELETE_TEST_TAGS))
     finally:
         await owner.dispose()
 
@@ -304,6 +311,51 @@ def make_episode(db_session: AsyncSession) -> MakeEpisode:
         db_session.add(episode)
         await db_session.flush()
         return episode
+
+    return make
+
+
+@pytest.fixture
+def make_published_work(
+    db_session: AsyncSession, make_user: MakeUser, make_work: MakeWork
+) -> MakePublishedWork:
+    """Creates a work readers can see: published episodes, and labels if asked for.
+
+    The newest episode went live at `last_published_at` (now, unless given),
+    each earlier one a minute before the next.
+    """
+
+    async def make(
+        author: User | None = None,
+        *,
+        episodes: int = 1,
+        genres: Sequence[str] = (),
+        tags: Sequence[str] = (),
+        last_published_at: datetime | None = None,
+        **fields: Any,
+    ) -> Work:
+        work = await make_work(author or await make_user(Role.AUTHOR), **fields)
+        newest = last_published_at or datetime.now(UTC)
+        db_session.add_all(
+            Episode(
+                work_id=work.id,
+                author_id=work.author_id,
+                number=number,
+                title=f"Episode {number}",
+                status="published",
+                publish_at=newest - timedelta(minutes=episodes - number),
+            )
+            for number in range(1, episodes + 1)
+        )
+        await db_session.flush()
+        labels = [*await author_repository.get_genres(db_session, set(genres))]
+        labels += await author_repository.ensure_tags(
+            db_session, {tag_slug(tag): tag_name(tag) for tag in tags}
+        )
+        if len(labels) != len(set(genres)) + len(tags):
+            raise ValueError("unknown genre, or a repeated tag")
+        await author_repository.replace_work_tags(db_session, work.id, {tag.id for tag in labels})
+        return work
 
     return make
 

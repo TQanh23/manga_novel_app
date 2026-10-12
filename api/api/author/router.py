@@ -45,7 +45,7 @@ async def list_wuf_presets(author: Author, session: Session) -> list[WufPresetRe
     dependencies=[_limit_writes],
 )
 async def create_work(payload: WorkCreate, author: Author, session: Session) -> WorkResponse:
-    work = await service.create_work(
+    state = await service.create_work(
         session,
         author=author,
         type=payload.type,
@@ -53,29 +53,32 @@ async def create_work(payload: WorkCreate, author: Author, session: Session) -> 
         synopsis=payload.synopsis,
         language=payload.language,
         wuf_preset_id=payload.wuf_preset_id,
+        genres=payload.genres,
+        tags=payload.tags,
     )
-    return WorkResponse.from_work(work)
+    return WorkResponse.from_work(state.work, state.labels)
 
 
 @router.get("/works", operation_id="author_list_works")
 async def list_works(author: Author, session: Session) -> list[WorkResponse]:
-    works = await service.list_works(session, author=author)
-    return [WorkResponse.from_work(work) for work in works]
+    states = await service.list_works(session, author=author)
+    return [WorkResponse.from_work(state.work, state.labels) for state in states]
 
 
 @router.get("/works/{work_id}", operation_id="author_get_work")
 async def get_work(work_id: UUID, author: Author, session: Session) -> WorkResponse:
-    return WorkResponse.from_work(await service.get_work(session, author=author, work_id=work_id))
+    state = await service.get_work(session, author=author, work_id=work_id)
+    return WorkResponse.from_work(state.work, state.labels)
 
 
 @router.patch("/works/{work_id}", operation_id="author_update_work", dependencies=[_limit_writes])
 async def update_work(
     work_id: UUID, payload: WorkUpdate, author: Author, session: Session
 ) -> WorkResponse:
-    work = await service.update_work(
+    state = await service.update_work(
         session, author=author, work_id=work_id, changes=payload.model_dump(exclude_unset=True)
     )
-    return WorkResponse.from_work(work)
+    return WorkResponse.from_work(state.work, state.labels)
 
 
 @router.post(

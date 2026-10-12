@@ -18,6 +18,20 @@ export type AdminUserUpdate = {
 };
 
 /**
+ * AuthorSummary
+ */
+export type AuthorSummary = {
+    /**
+     * Display Name
+     */
+    display_name: string;
+    /**
+     * Id
+     */
+    id: string;
+};
+
+/**
  * ContentLanguage
  */
 export type ContentLanguage = 'ko' | 'ja' | 'en' | 'vi';
@@ -133,6 +147,38 @@ export type EpisodeSchedule = {
 export type EpisodeStatus = 'draft' | 'scheduled' | 'published' | 'removed';
 
 /**
+ * EpisodeSummary
+ *
+ * A published episode in a work's list. Its text is not part of the catalogue.
+ */
+export type EpisodeSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Price Coins
+     */
+    price_coins: number;
+    /**
+     * Publish At
+     */
+    publish_at: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Wuf Eligible
+     */
+    wuf_eligible: boolean;
+};
+
+/**
  * EpisodeVersionDetail
  */
 export type EpisodeVersionDetail = {
@@ -221,6 +267,20 @@ export type ErrorDetail = {
  */
 export type ErrorResponse = {
     error: ErrorBody;
+};
+
+/**
+ * GenreResponse
+ */
+export type GenreResponse = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Slug
+     */
+    slug: string;
 };
 
 /**
@@ -337,14 +397,58 @@ export type UserResponse = {
 export type UserStatus = 'active' | 'locked';
 
 /**
+ * WorkCard
+ *
+ * A work as the catalogue lists it.
+ */
+export type WorkCard = {
+    author: AuthorSummary;
+    /**
+     * Episode Count
+     */
+    episode_count: number;
+    /**
+     * Genres
+     */
+    genres: Array<string>;
+    /**
+     * Id
+     */
+    id: string;
+    language: ContentLanguage;
+    /**
+     * Last Published At
+     */
+    last_published_at: string;
+    status: WorkStatus;
+    /**
+     * Synopsis
+     */
+    synopsis: string;
+    /**
+     * Title
+     */
+    title: string;
+    type: WorkType;
+};
+
+/**
  * WorkCreate
  */
 export type WorkCreate = {
+    /**
+     * Genres
+     */
+    genres?: Array<string>;
     language: ContentLanguage;
     /**
      * Synopsis
      */
     synopsis?: string;
+    /**
+     * Tags
+     */
+    tags?: Array<string>;
     /**
      * Title
      */
@@ -354,6 +458,58 @@ export type WorkCreate = {
      * Wuf Preset Id
      */
     wuf_preset_id?: string | null;
+};
+
+/**
+ * WorkDetail
+ */
+export type WorkDetail = {
+    author: AuthorSummary;
+    /**
+     * Episode Count
+     */
+    episode_count: number;
+    /**
+     * Genres
+     */
+    genres: Array<string>;
+    /**
+     * Id
+     */
+    id: string;
+    language: ContentLanguage;
+    /**
+     * Last Published At
+     */
+    last_published_at: string;
+    status: WorkStatus;
+    /**
+     * Synopsis
+     */
+    synopsis: string;
+    /**
+     * Tags
+     */
+    tags: Array<string>;
+    /**
+     * Title
+     */
+    title: string;
+    type: WorkType;
+};
+
+/**
+ * WorkPage
+ */
+export type WorkPage = {
+    /**
+     * Has More
+     */
+    has_more: boolean;
+    /**
+     * Items
+     */
+    items: Array<WorkCard>;
 };
 
 /**
@@ -368,6 +524,10 @@ export type WorkResponse = {
      * Created At
      */
     created_at: string;
+    /**
+     * Genres
+     */
+    genres: Array<string>;
     /**
      * Id
      */
@@ -387,6 +547,10 @@ export type WorkResponse = {
      */
     synopsis: string;
     /**
+     * Tags
+     */
+    tags: Array<string>;
+    /**
      * Title
      */
     title: string;
@@ -400,6 +564,11 @@ export type WorkResponse = {
      */
     wuf_preset_id: string | null;
 };
+
+/**
+ * WorkSort
+ */
+export type WorkSort = 'newest' | 'popular';
 
 /**
  * WorkStatus
@@ -417,12 +586,20 @@ export type WorkType = 'novel' | 'manga';
  * Fields left out stay as they are. The type of a work cannot change.
  */
 export type WorkUpdate = {
+    /**
+     * Genres
+     */
+    genres?: Array<string> | null;
     language?: ContentLanguage | null;
     status?: WorkStatus | null;
     /**
      * Synopsis
      */
     synopsis?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
     /**
      * Title
      */
@@ -1223,6 +1400,37 @@ export type AuthorListWufPresetsResponses = {
 
 export type AuthorListWufPresetsResponse = AuthorListWufPresetsResponses[keyof AuthorListWufPresetsResponses];
 
+export type CatalogueListGenresData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/genres';
+};
+
+export type CatalogueListGenresErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type CatalogueListGenresError = CatalogueListGenresErrors[keyof CatalogueListGenresErrors];
+
+export type CatalogueListGenresResponses = {
+    /**
+     * Response Catalogue List Genres
+     *
+     * Successful Response
+     */
+    200: Array<GenreResponse>;
+};
+
+export type CatalogueListGenresResponse = CatalogueListGenresResponses[keyof CatalogueListGenresResponses];
+
 export type AuthGetMeData = {
     body?: never;
     path?: never;
@@ -1280,3 +1488,166 @@ export type AuthAddAuthorRoleResponses = {
 };
 
 export type AuthAddAuthorRoleResponse = AuthAddAuthorRoleResponses[keyof AuthAddAuthorRoleResponses];
+
+export type CatalogueSearchWorksData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Q
+         */
+        q: string;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/search';
+};
+
+export type CatalogueSearchWorksErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type CatalogueSearchWorksError = CatalogueSearchWorksErrors[keyof CatalogueSearchWorksErrors];
+
+export type CatalogueSearchWorksResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkPage;
+};
+
+export type CatalogueSearchWorksResponse = CatalogueSearchWorksResponses[keyof CatalogueSearchWorksResponses];
+
+export type CatalogueListWorksData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Type
+         */
+        type?: WorkType | null;
+        /**
+         * Genre
+         */
+        genre?: string | null;
+        /**
+         * Status
+         */
+        status?: WorkStatus | null;
+        sort?: WorkSort;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Offset
+         */
+        offset?: number;
+    };
+    url: '/v1/works';
+};
+
+export type CatalogueListWorksErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type CatalogueListWorksError = CatalogueListWorksErrors[keyof CatalogueListWorksErrors];
+
+export type CatalogueListWorksResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkPage;
+};
+
+export type CatalogueListWorksResponse = CatalogueListWorksResponses[keyof CatalogueListWorksResponses];
+
+export type CatalogueGetWorkData = {
+    body?: never;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/works/{work_id}';
+};
+
+export type CatalogueGetWorkErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type CatalogueGetWorkError = CatalogueGetWorkErrors[keyof CatalogueGetWorkErrors];
+
+export type CatalogueGetWorkResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkDetail;
+};
+
+export type CatalogueGetWorkResponse = CatalogueGetWorkResponses[keyof CatalogueGetWorkResponses];
+
+export type CatalogueListEpisodesData = {
+    body?: never;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/works/{work_id}/episodes';
+};
+
+export type CatalogueListEpisodesErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type CatalogueListEpisodesError = CatalogueListEpisodesErrors[keyof CatalogueListEpisodesErrors];
+
+export type CatalogueListEpisodesResponses = {
+    /**
+     * Response Catalogue List Episodes
+     *
+     * Successful Response
+     */
+    200: Array<EpisodeSummary>;
+};
+
+export type CatalogueListEpisodesResponse = CatalogueListEpisodesResponses[keyof CatalogueListEpisodesResponses];

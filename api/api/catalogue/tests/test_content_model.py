@@ -212,14 +212,14 @@ async def test_a_glossary_entry_refuses_an_unknown_kind(
 @pytest.mark.parametrize(
     ("fields", "constraint"),
     [
-        ({"slug": "romance", "kind": "category"}, "ck_tags_kind"),
-        ({"slug": "Romance"}, "ck_tags_slug_lowercase"),
+        ({"slug": "isekai", "kind": "category"}, "ck_tags_kind"),
+        ({"slug": "Isekai"}, "ck_tags_slug_lowercase"),
     ],
 )
 async def test_a_tag_refuses_an_unknown_kind_and_a_slug_that_is_not_lowercase(
     db_session: AsyncSession, fields: dict[str, str], constraint: str
 ) -> None:
-    db_session.add(Tag(name="Romance", **fields))
+    db_session.add(Tag(name="Isekai", **fields))
 
     with pytest.raises(IntegrityError, match=constraint):
         await db_session.flush()
@@ -229,7 +229,7 @@ async def test_a_work_carries_a_genre_and_a_free_tag_once_each(
     db_session: AsyncSession, make_user: MakeUser, make_work: MakeWork
 ) -> None:
     work = await make_work(await make_user(Role.AUTHOR))
-    genre = Tag(slug="romance", name="Romance", kind="genre")
+    genre = Tag(slug="isekai", name="Isekai", kind="genre")
     free = Tag(slug="회귀", name="회귀")
     db_session.add_all([genre, free])
     await db_session.flush()
@@ -251,7 +251,7 @@ async def test_a_work_tag_refuses_an_unknown_source(
     db_session: AsyncSession, make_user: MakeUser, make_work: MakeWork
 ) -> None:
     work = await make_work(await make_user(Role.AUTHOR))
-    tag = Tag(slug="drama", name="Drama", kind="genre")
+    tag = Tag(slug="western", name="Western", kind="genre")
     db_session.add(tag)
     await db_session.flush()
     db_session.add(WorkTag(work_id=work.id, tag_id=tag.id, source="ai"))

@@ -32,6 +32,11 @@ EXPECTED_OPERATIONS = {
     ("post", "/v1/author/episodes/{episode_id}/publish"): "author_publish_episode",
     ("post", "/v1/author/episodes/{episode_id}/schedule"): "author_schedule_episode",
     ("delete", "/v1/author/episodes/{episode_id}/schedule"): "author_unschedule_episode",
+    ("get", "/v1/works"): "catalogue_list_works",
+    ("get", "/v1/works/{work_id}"): "catalogue_get_work",
+    ("get", "/v1/works/{work_id}/episodes"): "catalogue_list_episodes",
+    ("get", "/v1/search"): "catalogue_search_works",
+    ("get", "/v1/genres"): "catalogue_list_genres",
 }
 
 ERROR_REF = {"$ref": "#/components/schemas/ErrorResponse"}

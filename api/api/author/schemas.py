@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, StringConstraints
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints
 
+from api.catalogue.labels import WorkLabels
 from api.catalogue.models import (
     ContentLanguage,
     Episode,
@@ -19,6 +20,15 @@ from api.core.presets import ConfigPreset
 # gets the same room as ASCII.
 Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Synopsis = Annotated[str, StringConstraints(strip_whitespace=True, max_length=5_000)]
+# A genre is named by its slug; a tag is whatever the author types.
+Genres = Annotated[
+    list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=40)]],
+    Field(max_length=3),
+]
+Tags = Annotated[
+    list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=30)]],
+    Field(max_length=10),
+]
 # Far above a long chapter; the bound keeps one request from holding megabytes.
 BodyMd = Annotated[str, StringConstraints(max_length=200_000)]
 
@@ -40,6 +50,8 @@ class WorkCreate(AuthorRequest):
     synopsis: Synopsis = ""
     language: ContentLanguage
     wuf_preset_id: UUID | None = None
+    genres: Genres = []
+    tags: Tags = []
 
 
 class WorkUpdate(AuthorRequest):
@@ -51,6 +63,9 @@ class WorkUpdate(AuthorRequest):
     status: WorkStatus | None = None
     # null turns wait-until-free off for the work.
     wuf_preset_id: UUID | None = None
+    # A list replaces what the work had; an empty one clears it.
+    genres: Genres | None = None
+    tags: Tags | None = None
 
 
 class EpisodeCreate(AuthorRequest):
@@ -77,11 +92,14 @@ class WorkResponse(BaseModel):
     revenue_share_preset_id: UUID | None
     is_sample: bool
     ai_opt_in_training: bool
+    # Genres by slug, tags as they were typed.
+    genres: list[str]
+    tags: list[str]
     created_at: datetime
     updated_at: datetime
 
     @classmethod
-    def from_work(cls, work: Work) -> "WorkResponse":
+    def from_work(cls, work: Work, labels: WorkLabels) -> "WorkResponse":
         return cls(
             id=work.id,
             type=WorkType(work.type),
@@ -93,6 +111,8 @@ class WorkResponse(BaseModel):
             revenue_share_preset_id=work.revenue_share_preset_id,
             is_sample=work.is_sample,
             ai_opt_in_training=work.ai_opt_in_training,
+            genres=list(labels.genres),
+            tags=list(labels.tags),
             created_at=work.created_at,
             updated_at=work.updated_at,
         )
