@@ -1,6 +1,8 @@
 from collections.abc import AsyncIterator
 from functools import lru_cache
+from uuid import UUID
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -23,6 +25,19 @@ def get_engine() -> AsyncEngine:
 @lru_cache
 def get_sessionmaker() -> async_sessionmaker[AsyncSession]:
     return async_sessionmaker(get_engine(), expire_on_commit=False)
+
+
+async def set_author_context(session: AsyncSession, author_id: UUID) -> None:
+    """Scope the current transaction to one author's drafts.
+
+    Row-level security on author-private tables compares each row's author_id
+    with this setting. It lasts until the transaction ends, so every
+    transaction that reads or writes drafts sets it again.
+    """
+    await session.execute(
+        text("SELECT set_config('app.author_id', :author_id, true)"),
+        {"author_id": str(author_id)},
+    )
 
 
 async def get_session() -> AsyncIterator[AsyncSession]:

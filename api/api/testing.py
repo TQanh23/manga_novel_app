@@ -22,6 +22,7 @@ from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
 from sqlalchemy import make_url, text
 from sqlalchemy.ext.asyncio import (
+    AsyncConnection,
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
@@ -30,6 +31,7 @@ from sqlalchemy.ext.asyncio import (
 
 from api.auth import service as auth_service
 from api.auth.models import Role, User
+from api.catalogue.models import ContentLanguage, Work, WorkType
 from api.core.config import Settings, get_settings
 from api.core.db import get_engine, get_session, get_sessionmaker
 from api.core.logging import build_handler, configure_logging
@@ -41,9 +43,12 @@ API_DIR = Path(__file__).resolve().parents[1]
 POSTGRES_IMAGE = "pgvector/pgvector:pg16"
 REDIS_IMAGE = "redis:7-alpine"
 APP_SCHEMAS = ("core", "billing", "ai", "analytics")
+# Filled by migrations, not by tests, so cleaning up after a test leaves them alone.
+REFERENCE_TABLES = ("core.config_presets",)
 TEST_PASSWORD = "correct horse battery"  # noqa: S105
 
 MakeUser = Callable[..., Awaitable[User]]
+MakeWork = Callable[..., Awaitable[Work]]
 AuthHeaders = Callable[[User], dict[str, str]]
 
 
@@ -145,6 +150,23 @@ async def db_session(engine: AsyncEngine) -> AsyncIterator[AsyncSession]:
         await transaction.rollback()
 
 
+@pytest.fixture
+async def owner_connection(migrated: None, settings: Settings) -> AsyncIterator[AsyncConnection]:
+    """A connection as the role that owns the tables, rolled back after the test.
+
+    For what the API role may not do: deleting a work, writing presets. The
+    owner is a superuser, so row-level security does not apply to it.
+    """
+    owner = create_async_engine(settings.migration_database_url)
+    try:
+        async with owner.connect() as connection:
+            transaction = await connection.begin()
+            yield connection
+            await transaction.rollback()
+    finally:
+        await owner.dispose()
+
+
 @pytest.fixture(scope="session")
 async def redis_client(settings: Settings) -> AsyncIterator[Redis]:
     get_redis.cache_clear()
@@ -192,8 +214,9 @@ async def _truncate_app_tables(owner_url: str) -> None:
                     text(
                         "SELECT format('%I.%I', schemaname, tablename) FROM pg_tables"
                         " WHERE schemaname = ANY(:schemas)"
+                        " AND format('%I.%I', schemaname, tablename) <> ALL(:keep)"
                     ),
-                    {"schemas": list(APP_SCHEMAS)},
+                    {"schemas": list(APP_SCHEMAS), "keep": list(REFERENCE_TABLES)},
                 )
             ).scalars()
             if names := ", ".join(tables):
@@ -248,6 +271,20 @@ def make_user(db_session: AsyncSession) -> MakeUser:
             display_name=display_name,
             roles=roles or (Role.READER,),
         )
+
+    return make
+
+
+@pytest.fixture
+def make_work(db_session: AsyncSession) -> MakeWork:
+    """Creates a work for an author: an English novel unless told otherwise."""
+
+    async def make(author: User, **fields: Any) -> Work:
+        defaults = {"type": WorkType.NOVEL, "title": "Test Work", "language": ContentLanguage.EN}
+        work = Work(author_id=author.id, **{**defaults, **fields})
+        db_session.add(work)
+        await db_session.flush()
+        return work
 
     return make
 

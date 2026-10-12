@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy import CheckConstraint, Integer, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from api.core.models import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from api.core.models import Base, TimestampMixin, UUIDPrimaryKeyMixin, one_of
 
 
 class JobStatus(StrEnum):
@@ -25,9 +25,7 @@ class Job(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "jobs"
     __table_args__ = (
         UniqueConstraint("kind", "target_id", "content_hash"),
-        CheckConstraint(
-            f"status IN ({', '.join(repr(str(status)) for status in JobStatus)})", name="status"
-        ),
+        CheckConstraint(one_of("status", JobStatus), name="status"),
         {"schema": "core"},
     )
 

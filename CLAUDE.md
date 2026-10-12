@@ -107,7 +107,7 @@ Each commitment below has a mechanism and a test. Do not weaken the mechanism, a
 - Domain logic (coins, WUF, permissions) needs at least 80% coverage (`NFR-12`).
 - Tests that hit the database use a real Postgres with pgvector (Testcontainers or the Compose service), not SQLite, because RLS and vector queries are part of what is tested.
 - AI tests use a fake `LLMProvider` with fixed responses. Only the eval job calls a real model.
-- A module's tests live in `api/api/<module>/tests/`; cross-cutting ones in `api/tests/`. Shared fixtures (`client`, `db_session`, `make_user`, `auth_headers`, `committing_client` for tests that need concurrent transactions) come from the `api.testing` plugin.
+- A module's tests live in `api/api/<module>/tests/`; cross-cutting ones in `api/tests/`. Shared fixtures (`client`, `db_session`, `make_user`, `make_work`, `auth_headers`, `committing_client` for tests that need concurrent transactions, `owner_connection` for what the API's database role may not do) come from the `api.testing` plugin.
 - Every policy commitment above keeps its test green.
 
 ## Scope

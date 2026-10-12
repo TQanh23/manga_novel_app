@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 # Every module's models are imported here so autogenerate sees their tables.
 import api.auth.models
-import api.core.jobs  # noqa: F401
+import api.catalogue.models
+import api.core.jobs
+import api.core.presets
+import api.reader.models  # noqa: F401
 from api.core.config import get_settings
 from api.core.logging import configure_logging
 from api.core.models import Base
