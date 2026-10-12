@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses } from './types.gen';
+import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorScheduleEpisodeData, AuthorScheduleEpisodeErrors, AuthorScheduleEpisodeResponses, AuthorUnscheduleEpisodeData, AuthorUnscheduleEpisodeErrors, AuthorUnscheduleEpisodeResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -126,6 +126,28 @@ export const authorPublishEpisode = <ThrowOnError extends boolean = false>(optio
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/author/episodes/{episode_id}/publish',
     ...options
+});
+
+/**
+ * Unschedule Episode
+ */
+export const authorUnscheduleEpisode = <ThrowOnError extends boolean = false>(options: Options<AuthorUnscheduleEpisodeData, ThrowOnError>) => (options.client ?? client).delete<AuthorUnscheduleEpisodeResponses, AuthorUnscheduleEpisodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}/schedule',
+    ...options
+});
+
+/**
+ * Schedule Episode
+ */
+export const authorScheduleEpisode = <ThrowOnError extends boolean = false>(options: Options<AuthorScheduleEpisodeData, ThrowOnError>) => (options.client ?? client).post<AuthorScheduleEpisodeResponses, AuthorScheduleEpisodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}/schedule',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

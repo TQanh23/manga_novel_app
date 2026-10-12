@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Annotated
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, StringConstraints
+from pydantic import AwareDatetime, BaseModel, ConfigDict, StringConstraints
 
 from api.catalogue.models import (
     ContentLanguage,
@@ -61,6 +61,11 @@ class DraftSave(AuthorRequest):
     body_md: BodyMd
 
 
+class EpisodeSchedule(AuthorRequest):
+    # With an offset: "8 pm" means nothing without knowing where.
+    publish_at: AwareDatetime
+
+
 class WorkResponse(BaseModel):
     id: UUID
     type: WorkType
@@ -102,8 +107,9 @@ class EpisodeResponse(BaseModel):
     publish_at: datetime | None
     price_coins: int
     wuf_eligible: bool
-    # What readers see, and the newest save. They differ while the author has
-    # saved changes that are not published yet.
+    # What readers see (or will see, while the episode is scheduled), and the
+    # newest save. They differ while the author has saved changes that are not
+    # published yet.
     published_version_id: UUID | None
     latest_version_id: UUID | None
     has_unpublished_changes: bool

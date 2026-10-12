@@ -118,6 +118,16 @@ export type EpisodeResponse = {
 };
 
 /**
+ * EpisodeSchedule
+ */
+export type EpisodeSchedule = {
+    /**
+     * Publish At
+     */
+    publish_at: string;
+};
+
+/**
  * EpisodeStatus
  */
 export type EpisodeStatus = 'draft' | 'scheduled' | 'published' | 'removed';
@@ -794,6 +804,74 @@ export type AuthorPublishEpisodeResponses = {
 };
 
 export type AuthorPublishEpisodeResponse = AuthorPublishEpisodeResponses[keyof AuthorPublishEpisodeResponses];
+
+export type AuthorUnscheduleEpisodeData = {
+    body?: never;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}/schedule';
+};
+
+export type AuthorUnscheduleEpisodeErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorUnscheduleEpisodeError = AuthorUnscheduleEpisodeErrors[keyof AuthorUnscheduleEpisodeErrors];
+
+export type AuthorUnscheduleEpisodeResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeResponse;
+};
+
+export type AuthorUnscheduleEpisodeResponse = AuthorUnscheduleEpisodeResponses[keyof AuthorUnscheduleEpisodeResponses];
+
+export type AuthorScheduleEpisodeData = {
+    body: EpisodeSchedule;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}/schedule';
+};
+
+export type AuthorScheduleEpisodeErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorScheduleEpisodeError = AuthorScheduleEpisodeErrors[keyof AuthorScheduleEpisodeErrors];
+
+export type AuthorScheduleEpisodeResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeResponse;
+};
+
+export type AuthorScheduleEpisodeResponse = AuthorScheduleEpisodeResponses[keyof AuthorScheduleEpisodeResponses];
 
 export type AuthorListVersionsData = {
     body?: never;

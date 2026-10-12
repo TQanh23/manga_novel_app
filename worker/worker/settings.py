@@ -4,13 +4,14 @@ from typing import Any, ClassVar
 
 import structlog
 from arq.connections import RedisSettings
+from arq.cron import CronJob
 from arq.worker import Function
 
 import worker.jobs  # noqa: F401 - registers the jobs
 from api.core.config import get_settings
 from api.core.db import get_engine
 from api.core.queue import queue_name
-from worker.runtime import MAX_TRIES, registered_functions
+from worker.runtime import MAX_TRIES, registered_crons, registered_functions
 
 logger = structlog.get_logger(__name__)
 
@@ -20,6 +21,7 @@ async def startup(ctx: dict[str, Any]) -> None:
         "worker_started",
         queue=queue_name(),
         jobs=sorted(function.name for function in registered_functions()),
+        crons=sorted(cron.name for cron in registered_crons()),
     )
 
 
@@ -31,6 +33,7 @@ class WorkerSettings:
     """The default queue. AI work gets its own queue and worker in Phase 4."""
 
     functions: ClassVar[list[Function]] = registered_functions()
+    cron_jobs: ClassVar[list[CronJob]] = registered_crons()
     redis_settings = RedisSettings.from_dsn(get_settings().redis_url)
     queue_name = queue_name()
     max_tries = MAX_TRIES

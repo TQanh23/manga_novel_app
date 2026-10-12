@@ -30,6 +30,8 @@ EXPECTED_OPERATIONS = {
         "/v1/author/episodes/{episode_id}/versions/{version_id}/restore",
     ): "author_restore_version",
     ("post", "/v1/author/episodes/{episode_id}/publish"): "author_publish_episode",
+    ("post", "/v1/author/episodes/{episode_id}/schedule"): "author_schedule_episode",
+    ("delete", "/v1/author/episodes/{episode_id}/schedule"): "author_unschedule_episode",
 }
 
 ERROR_REF = {"$ref": "#/components/schemas/ErrorResponse"}

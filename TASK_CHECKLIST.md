@@ -154,9 +154,10 @@ Where the schema differs from the spec's data model:
 - [ ] **(gap)** `PATCH /v1/author/episodes/{id}` to rename an episode: the spec says create and edit, no task had the edit
 
 ### 1.3 Scheduled publish (FR-NV-02)
-- [ ] Schedule publish with `publish_at`
-- [ ] arq cron every minute flips due `scheduled` episodes to `published`
-- [ ] Test: running the cron twice is idempotent
+- [x] Schedule publish with `publish_at`: `POST /v1/author/episodes/{id}/schedule`. Scheduling fixes the newest save as the one that goes live; saves made afterwards wait until the episode is scheduled again or published by hand.
+- [x] `DELETE /v1/author/episodes/{id}/schedule` calls a schedule off (not in the original list; without it the only way out of `scheduled` was to publish)
+- [x] arq cron every minute flips due `scheduled` episodes to `published`. Crons are registered with `@cron` in `worker/runtime.py`; they have no `core.jobs` row and no retries, the next run is the retry.
+- [x] Test: running the cron twice is idempotent (also: two runs at once, and a run after a missed one)
 
 ### 1.4 Glossary (FR-NV-03)
 - [ ] `GET` / `POST` / `PATCH /v1/author/works/{id}/glossary`
