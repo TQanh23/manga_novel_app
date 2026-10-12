@@ -69,6 +69,8 @@ class Settings(BaseSettings):
     # Author write routes, per account. Well above the auth limit: an editor
     # that autosaves calls the draft route every few seconds.
     rate_limit_author_writes_per_user: int = 120
+    # Catalogue and search, per address. Browsing makes several calls a screen.
+    rate_limit_catalogue_per_ip: int = 300
 
     @property
     def cookie_secure(self) -> bool:

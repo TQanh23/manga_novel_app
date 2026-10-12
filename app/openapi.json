@@ -33,6 +33,25 @@
         "title": "AdminUserUpdate",
         "type": "object"
       },
+      "AuthorSummary": {
+        "properties": {
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "display_name"
+        ],
+        "title": "AuthorSummary",
+        "type": "object"
+      },
       "ContentLanguage": {
         "enum": [
           "ko",
@@ -239,6 +258,47 @@
         "title": "EpisodeStatus",
         "type": "string"
       },
+      "EpisodeSummary": {
+        "description": "A published episode in a work's list. Its text is not part of the catalogue.",
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "price_coins": {
+            "title": "Price Coins",
+            "type": "integer"
+          },
+          "publish_at": {
+            "format": "date-time",
+            "title": "Publish At",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "wuf_eligible": {
+            "title": "Wuf Eligible",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "title",
+          "publish_at",
+          "price_coins",
+          "wuf_eligible"
+        ],
+        "title": "EpisodeSummary",
+        "type": "object"
+      },
       "EpisodeVersionDetail": {
         "properties": {
           "body_md": {
@@ -383,6 +443,24 @@
           "error"
         ],
         "title": "ErrorResponse",
+        "type": "object"
+      },
+      "GenreResponse": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "name"
+        ],
+        "title": "GenreResponse",
         "type": "object"
       },
       "JobAccepted": {
@@ -588,6 +666,66 @@
         "title": "UserStatus",
         "type": "string"
       },
+      "WorkCard": {
+        "description": "A work as the catalogue lists it.",
+        "properties": {
+          "author": {
+            "$ref": "#/components/schemas/AuthorSummary"
+          },
+          "episode_count": {
+            "title": "Episode Count",
+            "type": "integer"
+          },
+          "genres": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Genres",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "language": {
+            "$ref": "#/components/schemas/ContentLanguage"
+          },
+          "last_published_at": {
+            "format": "date-time",
+            "title": "Last Published At",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WorkStatus"
+          },
+          "synopsis": {
+            "title": "Synopsis",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/WorkType"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "synopsis",
+          "language",
+          "status",
+          "author",
+          "genres",
+          "episode_count",
+          "last_published_at"
+        ],
+        "title": "WorkCard",
+        "type": "object"
+      },
       "WorkCreate": {
         "additionalProperties": false,
         "properties": {
@@ -650,6 +788,94 @@
           "language"
         ],
         "title": "WorkCreate",
+        "type": "object"
+      },
+      "WorkDetail": {
+        "properties": {
+          "author": {
+            "$ref": "#/components/schemas/AuthorSummary"
+          },
+          "episode_count": {
+            "title": "Episode Count",
+            "type": "integer"
+          },
+          "genres": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Genres",
+            "type": "array"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "language": {
+            "$ref": "#/components/schemas/ContentLanguage"
+          },
+          "last_published_at": {
+            "format": "date-time",
+            "title": "Last Published At",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WorkStatus"
+          },
+          "synopsis": {
+            "title": "Synopsis",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/WorkType"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "synopsis",
+          "language",
+          "status",
+          "author",
+          "genres",
+          "episode_count",
+          "last_published_at",
+          "tags"
+        ],
+        "title": "WorkDetail",
+        "type": "object"
+      },
+      "WorkPage": {
+        "properties": {
+          "has_more": {
+            "title": "Has More",
+            "type": "boolean"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/WorkCard"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items",
+          "has_more"
+        ],
+        "title": "WorkPage",
         "type": "object"
       },
       "WorkResponse": {
@@ -751,6 +977,14 @@
         ],
         "title": "WorkResponse",
         "type": "object"
+      },
+      "WorkSort": {
+        "enum": [
+          "newest",
+          "popular"
+        ],
+        "title": "WorkSort",
+        "type": "string"
       },
       "WorkStatus": {
         "enum": [
@@ -2222,6 +2456,51 @@
         ]
       }
     },
+    "/v1/genres": {
+      "get": {
+        "operationId": "catalogue_list_genres",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GenreResponse"
+                  },
+                  "title": "Response Catalogue List Genres",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List Genres",
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
     "/v1/me": {
       "get": {
         "operationId": "auth_get_me",
@@ -2311,6 +2590,318 @@
         "summary": "Add Author Role",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/v1/search": {
+      "get": {
+        "operationId": "catalogue_search_works",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "maxLength": 100,
+              "minLength": 1,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 10000,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Search Works",
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/works": {
+      "get": {
+        "operationId": "catalogue_list_works",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/WorkType"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Type"
+            }
+          },
+          {
+            "in": "query",
+            "name": "genre",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Genre"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/WorkStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/WorkSort",
+              "default": "newest"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 50,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 10000,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List Works",
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/works/{work_id}": {
+      "get": {
+        "operationId": "catalogue_get_work",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Work Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Get Work",
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/works/{work_id}/episodes": {
+      "get": {
+        "operationId": "catalogue_list_episodes",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Work Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EpisodeSummary"
+                  },
+                  "title": "Response Catalogue List Episodes",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List Episodes",
+        "tags": [
+          "catalogue"
         ]
       }
     }

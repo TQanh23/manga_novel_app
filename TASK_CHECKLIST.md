@@ -38,7 +38,7 @@ Each one blocks the tasks listed next to it. The plan's default is in brackets; 
 - [x] **D6.** WUF preset list [3h, 12h, 1 day, 3 days]. Blocks seed data in 1.1. Decided: 3h, 12h, 1 day, 3 days, stored in seconds.
 - [ ] **D7.** Demo host, and whether the demo uses a paid model only. Blocks 5.6.
 - [ ] **D8.** pHash match: flag to Admin or auto-block, and the Hamming threshold [flag only]. Blocks 6.3.
-- [ ] **D9.** Vietnamese search without diacritics in MVP [yes]. Blocks 1.5.
+- [x] **D9.** Vietnamese search without diacritics in MVP [yes]. Blocks 1.5. Decided: yes, a search matches with or without diacritics.
 - [ ] **D10. (gap)** What happens to an author's works when the account is deleted (`FR-AUTH-05`). The spec does not say. Blocks 3.8.
 - [ ] **D11. (gap)** `design/ai-architecture.md` is referenced by the plan but is not in the repo. Add it before Phase 4 starts.
 - [x] **D12. (gap)** How a Reader becomes an Author. The spec does not say. Decided: self-serve. Registration always creates a Reader; `POST /v1/me/roles/author` adds the Author role. Update the spec to match.
@@ -164,13 +164,13 @@ Where the schema differs from the spec's data model:
 - [ ] Tests with KR, JP and VI names and aliases
 
 ### 1.5 Catalogue API (FR-RD-01, FR-RD-02, FR-RD-06)
-- [ ] `GET /v1/works` for home, with filters: type, genre, completion status
-- [ ] **(gap)** Authors assign genres and tags to a work, and the fixed genre list exists (inserted by a migration). The genre filter has no data without it, and no task had it.
-- [ ] Ranking with a placeholder ordering (cut first: keep only "newest")
-- [ ] `GET /v1/works/{id}` and `GET /v1/works/{id}/episodes`
-- [ ] `GET /v1/search?q=` over title, author and tag using Postgres full-text
-- [ ] `unaccent` + `pg_trgm` so Vietnamese matches without diacritics (per D9)
-- [ ] Test: drafts and scheduled episodes never appear in catalogue or search
+- [x] `GET /v1/works` for home, with filters: type, genre, completion status. A work is in the catalogue while it has at least one published episode; that rule is written once, in `_visible_works` in `api/catalogue/repository.py`.
+- [x] **(gap)** Authors assign genres and tags to a work, and the fixed genre list exists (inserted by a migration). The genre filter has no data without it, and no task had it. Twelve genres, listed by `GET /v1/genres`; `genres` and `tags` on the author's work routes.
+- [x] Ranking with a placeholder ordering (cut first: keep only "newest"). `sort=newest` and `sort=popular`; popular orders by published episodes until Phase 5 has reads.
+- [x] `GET /v1/works/{id}` and `GET /v1/works/{id}/episodes`
+- [x] `GET /v1/search?q=` over title, author and tag using Postgres full-text. Differs from the spec: it matches substrings on trigrams, not a `tsvector`, because full-text splits on whitespace and finds no words in Japanese.
+- [x] `unaccent` + `pg_trgm` so Vietnamese matches without diacritics (per D9)
+- [x] Test: drafts and scheduled episodes never appear in catalogue or search
 
 ### 1.6 Reader API (FR-RD-03, FR-RD-05)
 - [ ] `GET /v1/episodes/{id}/content` for novels; guests can read free episodes
@@ -199,8 +199,8 @@ Where the schema differs from the spec's data model:
 ### Exit check
 - [ ] An episode scheduled one minute ahead becomes readable on its own
 - [ ] Progress set on Android shows on web after refresh
-- [ ] Search finds a title typed without diacritics
-- [ ] Draft-visibility test (1.5) green
+- [x] Search finds a title typed without diacritics
+- [x] Draft-visibility test (1.5) green
 - [ ] Both targets (Android, web) run every screen in this phase
 
 ## Phase 2: Manga upload and reader
