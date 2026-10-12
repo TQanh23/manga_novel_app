@@ -44,10 +44,16 @@ def require_role(*roles: Role) -> Callable[[User], Awaitable[User]]:
     return dependency
 
 
-def limit_by_user(scope: str) -> Callable[[User], Awaitable[None]]:
-    """Route dependency: rate limit by the signed-in account."""
+def limit_by_user(
+    scope: str, *, limit: Callable[[], int] | None = None
+) -> Callable[[User], Awaitable[None]]:
+    """Route dependency: rate limit by the signed-in account.
+
+    `limit` is read on each request, so it can come from settings. Without it
+    the auth limit applies.
+    """
 
     async def dependency(user: CurrentUser) -> None:
-        await limit_by_identity(scope, str(user.id))
+        await limit_by_identity(scope, str(user.id), limit=limit() if limit else None)
 
     return dependency

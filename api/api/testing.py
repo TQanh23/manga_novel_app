@@ -31,7 +31,7 @@ from sqlalchemy.ext.asyncio import (
 
 from api.auth import service as auth_service
 from api.auth.models import Role, User
-from api.catalogue.models import ContentLanguage, Work, WorkType
+from api.catalogue.models import ContentLanguage, Episode, Work, WorkType
 from api.core.config import Settings, get_settings
 from api.core.db import get_engine, get_session, get_sessionmaker
 from api.core.logging import build_handler, configure_logging
@@ -49,6 +49,7 @@ TEST_PASSWORD = "correct horse battery"  # noqa: S105
 
 MakeUser = Callable[..., Awaitable[User]]
 MakeWork = Callable[..., Awaitable[Work]]
+MakeEpisode = Callable[..., Awaitable[Episode]]
 AuthHeaders = Callable[[User], dict[str, str]]
 
 
@@ -285,6 +286,24 @@ def make_work(db_session: AsyncSession) -> MakeWork:
         db_session.add(work)
         await db_session.flush()
         return work
+
+    return make
+
+
+@pytest.fixture
+def make_episode(db_session: AsyncSession) -> MakeEpisode:
+    """Creates the next episode of a work: a draft with no saved text."""
+
+    async def make(work: Work, **fields: Any) -> Episode:
+        taken = await db_session.execute(
+            text("SELECT coalesce(max(number), 0) FROM core.episodes WHERE work_id = :work_id"),
+            {"work_id": work.id},
+        )
+        defaults = {"number": taken.scalar_one() + 1, "title": "Test Episode"}
+        episode = Episode(work_id=work.id, author_id=work.author_id, **{**defaults, **fields})
+        db_session.add(episode)
+        await db_session.flush()
+        return episode
 
     return make
 
