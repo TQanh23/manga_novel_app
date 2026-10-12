@@ -4,8 +4,8 @@ A Ridibooks/KakaoPage-style reading platform for Android and web. The reader sid
 the author side carries the AI and data work (consistency checks over an author's own manuscript,
 with a data policy enforced in code).
 
-Status: Phase 0 (foundation) in progress. What works today: register, sign in, roles, and a
-`ping` job that travels from the API to the worker. See
+Status: Phase 0 (foundation) done, Phase 1 (catalogue and novel reader) next. What works today:
+register, sign in, roles, and a `ping` job that travels from the API to the worker. See
 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [TASK_CHECKLIST.md](TASK_CHECKLIST.md).
 
 ## Layout

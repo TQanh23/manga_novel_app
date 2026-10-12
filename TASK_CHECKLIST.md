@@ -17,7 +17,7 @@ Working checklist for the whole project. It breaks [`IMPLEMENTATION_PLAN.md`](IM
 
 | Phase | Theme | Status |
 |---|---|---|
-| 0 | Foundation | In progress |
+| 0 | Foundation | Done |
 | 1 | Catalogue and novel reader | Not started |
 | 2 | Manga upload and reader | Not started |
 | 3 | Billing | Not started |
@@ -115,9 +115,9 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 - [x] Seed script: one admin, one author, two readers; runs on `docker compose up`
 
 ### Exit check
-- [ ] Fresh clone, `docker compose up`, register and log in from the web build
-- [ ] Same login works on Android
-- [ ] CI green
+- [x] Fresh clone, `docker compose up`, register and log in from the web build
+- [x] Same login works on Android
+- [x] CI green
 - [x] DB role test (0.4) green
 
 ## Phase 1: Catalogue and novel reader
