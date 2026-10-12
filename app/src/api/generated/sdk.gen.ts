@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses } from './types.gen';
+import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -86,6 +86,148 @@ export const authRegisterUser = <ThrowOnError extends boolean = false>(options: 
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Get Episode
+ */
+export const authorGetEpisode = <ThrowOnError extends boolean = false>(options: Options<AuthorGetEpisodeData, ThrowOnError>) => (options.client ?? client).get<AuthorGetEpisodeResponses, AuthorGetEpisodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}',
+    ...options
+});
+
+/**
+ * Get Draft
+ */
+export const authorGetDraft = <ThrowOnError extends boolean = false>(options: Options<AuthorGetDraftData, ThrowOnError>) => (options.client ?? client).get<AuthorGetDraftResponses, AuthorGetDraftErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}/draft',
+    ...options
+});
+
+/**
+ * Save Draft
+ */
+export const authorSaveDraft = <ThrowOnError extends boolean = false>(options: Options<AuthorSaveDraftData, ThrowOnError>) => (options.client ?? client).put<AuthorSaveDraftResponses, AuthorSaveDraftErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}/draft',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Publish Episode
+ */
+export const authorPublishEpisode = <ThrowOnError extends boolean = false>(options: Options<AuthorPublishEpisodeData, ThrowOnError>) => (options.client ?? client).post<AuthorPublishEpisodeResponses, AuthorPublishEpisodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}/publish',
+    ...options
+});
+
+/**
+ * List Versions
+ */
+export const authorListVersions = <ThrowOnError extends boolean = false>(options: Options<AuthorListVersionsData, ThrowOnError>) => (options.client ?? client).get<AuthorListVersionsResponses, AuthorListVersionsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}/versions',
+    ...options
+});
+
+/**
+ * Get Version
+ */
+export const authorGetVersion = <ThrowOnError extends boolean = false>(options: Options<AuthorGetVersionData, ThrowOnError>) => (options.client ?? client).get<AuthorGetVersionResponses, AuthorGetVersionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}/versions/{version_id}',
+    ...options
+});
+
+/**
+ * Restore Version
+ */
+export const authorRestoreVersion = <ThrowOnError extends boolean = false>(options: Options<AuthorRestoreVersionData, ThrowOnError>) => (options.client ?? client).post<AuthorRestoreVersionResponses, AuthorRestoreVersionErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}/versions/{version_id}/restore',
+    ...options
+});
+
+/**
+ * List Works
+ */
+export const authorListWorks = <ThrowOnError extends boolean = false>(options?: Options<AuthorListWorksData, ThrowOnError>) => (options?.client ?? client).get<AuthorListWorksResponses, AuthorListWorksErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works',
+    ...options
+});
+
+/**
+ * Create Work
+ */
+export const authorCreateWork = <ThrowOnError extends boolean = false>(options: Options<AuthorCreateWorkData, ThrowOnError>) => (options.client ?? client).post<AuthorCreateWorkResponses, AuthorCreateWorkErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Work
+ */
+export const authorGetWork = <ThrowOnError extends boolean = false>(options: Options<AuthorGetWorkData, ThrowOnError>) => (options.client ?? client).get<AuthorGetWorkResponses, AuthorGetWorkErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works/{work_id}',
+    ...options
+});
+
+/**
+ * Update Work
+ */
+export const authorUpdateWork = <ThrowOnError extends boolean = false>(options: Options<AuthorUpdateWorkData, ThrowOnError>) => (options.client ?? client).patch<AuthorUpdateWorkResponses, AuthorUpdateWorkErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works/{work_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Episodes
+ */
+export const authorListEpisodes = <ThrowOnError extends boolean = false>(options: Options<AuthorListEpisodesData, ThrowOnError>) => (options.client ?? client).get<AuthorListEpisodesResponses, AuthorListEpisodesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works/{work_id}/episodes',
+    ...options
+});
+
+/**
+ * Create Episode
+ */
+export const authorCreateEpisode = <ThrowOnError extends boolean = false>(options: Options<AuthorCreateEpisodeData, ThrowOnError>) => (options.client ?? client).post<AuthorCreateEpisodeResponses, AuthorCreateEpisodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works/{work_id}/episodes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Wuf Presets
+ */
+export const authorListWufPresets = <ThrowOnError extends boolean = false>(options?: Options<AuthorListWufPresetsData, ThrowOnError>) => (options?.client ?? client).get<AuthorListWufPresetsResponses, AuthorListWufPresetsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/wuf-presets',
+    ...options
 });
 
 /**

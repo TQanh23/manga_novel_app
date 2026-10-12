@@ -142,14 +142,16 @@ Where the schema differs from the spec's data model:
 - `episodes` and `episode_versions` repeat the work's `author_id`, held equal by composite foreign keys, so the RLS policy can trust it.
 
 ### 1.2 Author API (FR-NV-01)
-- [ ] `POST /v1/author/works`, `PATCH /v1/author/works/{id}`
-- [ ] `POST /v1/author/works/{id}/episodes`
-- [ ] `PUT /v1/author/episodes/{id}/draft`: each save is a new `episode_versions` row
-- [ ] Version history: list and restore
-- [ ] `POST /v1/author/episodes/{id}/publish` (publish now)
-- [ ] Every transaction that reads or writes drafts calls `set_author_context` first
-- [ ] The service checks what the schema cannot: `wuf_preset_id` names a `wuf_period` preset, `published_version_id` names a version of the same episode
-- [ ] Ownership checks: an author cannot touch another author's work (test)
+- [x] `POST /v1/author/works`, `PATCH /v1/author/works/{id}`
+- [x] `POST /v1/author/works/{id}/episodes`
+- [x] `PUT /v1/author/episodes/{id}/draft`: each save is a new `episode_versions` row. Saving the text that is already the newest version adds nothing.
+- [x] Version history: list and restore. Restoring adds a new version with the old text.
+- [x] `POST /v1/author/episodes/{id}/publish` (publish now)
+- [x] Every transaction that reads or writes drafts calls `set_author_context` first (the draft functions of `api/author/repository.py` do it themselves)
+- [x] The service checks what the schema cannot: `wuf_preset_id` names a `wuf_period` preset, `published_version_id` names a version of the same episode
+- [x] Ownership checks: an author cannot touch another author's work (test). Another author's work answers 404, like one that does not exist.
+- [x] Read endpoints the author studio (1.8) needs: list and get works, list and get episodes, the current draft, one old version, the offered WUF periods
+- [ ] **(gap)** `PATCH /v1/author/episodes/{id}` to rename an episode: the spec says create and edit, no task had the edit
 
 ### 1.3 Scheduled publish (FR-NV-02)
 - [ ] Schedule publish with `publish_at`
@@ -162,6 +164,7 @@ Where the schema differs from the spec's data model:
 
 ### 1.5 Catalogue API (FR-RD-01, FR-RD-02, FR-RD-06)
 - [ ] `GET /v1/works` for home, with filters: type, genre, completion status
+- [ ] **(gap)** Authors assign genres and tags to a work, and the fixed genre list exists (inserted by a migration). The genre filter has no data without it, and no task had it.
 - [ ] Ranking with a placeholder ordering (cut first: keep only "newest")
 - [ ] `GET /v1/works/{id}` and `GET /v1/works/{id}/episodes`
 - [ ] `GET /v1/search?q=` over title, author and tag using Postgres full-text
@@ -285,6 +288,7 @@ Nothing in the ledger or unlock path may be cut. Cut client wallet polish instea
 ### 3.6 Admin config (FR-AD-04)
 - [ ] `PUT /v1/admin/config`: default coin price, WUF preset list, revenue-split preset list
 - [ ] Assign a revenue-split preset to a work
+- [ ] **(gap)** A new work has no revenue split (`revenue_share_preset_id` is null). Decide the default before the first unlock, which snapshots it.
 - [ ] Test: changing a preset does not change the split stored on past unlocks
 
 ### 3.7 Client (FR-RD-02)

@@ -60,10 +60,13 @@ def limit_by_ip(scope: str) -> Callable[[Request], Awaitable[None]]:
     return dependency
 
 
-async def limit_by_identity(scope: str, identity: str) -> None:
-    """Limit by the account being acted on (an email, a user id), whatever the address."""
+async def limit_by_identity(scope: str, identity: str, *, limit: int | None = None) -> None:
+    """Limit by the account being acted on (an email, a user id), whatever the address.
+
+    Without `limit` this is the auth limit, which is deliberately tight.
+    """
     await enforce_rate_limit(
         f"{scope}:id",
         hash_identity(identity),
-        limit=get_settings().rate_limit_auth_per_identity,
+        limit=get_settings().rate_limit_auth_per_identity if limit is None else limit,
     )

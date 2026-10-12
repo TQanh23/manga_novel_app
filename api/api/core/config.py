@@ -66,6 +66,9 @@ class Settings(BaseSettings):
     rate_limit_window_seconds: int = 60
     rate_limit_auth_per_ip: int = 30
     rate_limit_auth_per_identity: int = 5
+    # Author write routes, per account. Well above the auth limit: an editor
+    # that autosaves calls the draft route every few seconds.
+    rate_limit_author_writes_per_user: int = 120
 
     @property
     def cookie_secure(self) -> bool:

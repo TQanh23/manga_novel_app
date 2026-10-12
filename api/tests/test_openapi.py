@@ -13,6 +13,23 @@ EXPECTED_OPERATIONS = {
     ("post", "/v1/me/roles/author"): "auth_add_author_role",
     ("patch", "/v1/admin/users/{user_id}"): "admin_update_user",
     ("post", "/v1/admin/jobs/ping"): "admin_enqueue_ping",
+    ("get", "/v1/author/wuf-presets"): "author_list_wuf_presets",
+    ("post", "/v1/author/works"): "author_create_work",
+    ("get", "/v1/author/works"): "author_list_works",
+    ("get", "/v1/author/works/{work_id}"): "author_get_work",
+    ("patch", "/v1/author/works/{work_id}"): "author_update_work",
+    ("post", "/v1/author/works/{work_id}/episodes"): "author_create_episode",
+    ("get", "/v1/author/works/{work_id}/episodes"): "author_list_episodes",
+    ("get", "/v1/author/episodes/{episode_id}"): "author_get_episode",
+    ("put", "/v1/author/episodes/{episode_id}/draft"): "author_save_draft",
+    ("get", "/v1/author/episodes/{episode_id}/draft"): "author_get_draft",
+    ("get", "/v1/author/episodes/{episode_id}/versions"): "author_list_versions",
+    ("get", "/v1/author/episodes/{episode_id}/versions/{version_id}"): "author_get_version",
+    (
+        "post",
+        "/v1/author/episodes/{episode_id}/versions/{version_id}/restore",
+    ): "author_restore_version",
+    ("post", "/v1/author/episodes/{episode_id}/publish"): "author_publish_episode",
 }
 
 ERROR_REF = {"$ref": "#/components/schemas/ErrorResponse"}

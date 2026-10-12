@@ -18,6 +18,153 @@ export type AdminUserUpdate = {
 };
 
 /**
+ * ContentLanguage
+ */
+export type ContentLanguage = 'ko' | 'ja' | 'en' | 'vi';
+
+/**
+ * DraftSave
+ */
+export type DraftSave = {
+    /**
+     * Body Md
+     */
+    body_md: string;
+};
+
+/**
+ * EpisodeCreate
+ */
+export type EpisodeCreate = {
+    /**
+     * Title
+     */
+    title: string;
+};
+
+/**
+ * EpisodeDraft
+ *
+ * The newest save of an episode. All empty when nothing was saved yet.
+ */
+export type EpisodeDraft = {
+    /**
+     * Body Md
+     */
+    body_md: string;
+    /**
+     * Saved At
+     */
+    saved_at: string | null;
+    /**
+     * Version Id
+     */
+    version_id: string | null;
+};
+
+/**
+ * EpisodeResponse
+ */
+export type EpisodeResponse = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Has Unpublished Changes
+     */
+    has_unpublished_changes: boolean;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Latest Version Id
+     */
+    latest_version_id: string | null;
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Price Coins
+     */
+    price_coins: number;
+    /**
+     * Publish At
+     */
+    publish_at: string | null;
+    /**
+     * Published Version Id
+     */
+    published_version_id: string | null;
+    status: EpisodeStatus;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Work Id
+     */
+    work_id: string;
+    /**
+     * Wuf Eligible
+     */
+    wuf_eligible: boolean;
+};
+
+/**
+ * EpisodeStatus
+ */
+export type EpisodeStatus = 'draft' | 'scheduled' | 'published' | 'removed';
+
+/**
+ * EpisodeVersionDetail
+ */
+export type EpisodeVersionDetail = {
+    /**
+     * Body Md
+     */
+    body_md: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Is Published
+     */
+    is_published: boolean;
+};
+
+/**
+ * EpisodeVersionSummary
+ *
+ * One entry of the version history, without the text.
+ */
+export type EpisodeVersionSummary = {
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Is Published
+     */
+    is_published: boolean;
+};
+
+/**
  * ErrorBody
  */
 export type ErrorBody = {
@@ -178,6 +325,117 @@ export type UserResponse = {
  * UserStatus
  */
 export type UserStatus = 'active' | 'locked';
+
+/**
+ * WorkCreate
+ */
+export type WorkCreate = {
+    language: ContentLanguage;
+    /**
+     * Synopsis
+     */
+    synopsis?: string;
+    /**
+     * Title
+     */
+    title: string;
+    type: WorkType;
+    /**
+     * Wuf Preset Id
+     */
+    wuf_preset_id?: string | null;
+};
+
+/**
+ * WorkResponse
+ */
+export type WorkResponse = {
+    /**
+     * Ai Opt In Training
+     */
+    ai_opt_in_training: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Is Sample
+     */
+    is_sample: boolean;
+    language: ContentLanguage;
+    /**
+     * Revenue Share Preset Id
+     */
+    revenue_share_preset_id: string | null;
+    status: WorkStatus;
+    /**
+     * Synopsis
+     */
+    synopsis: string;
+    /**
+     * Title
+     */
+    title: string;
+    type: WorkType;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Wuf Preset Id
+     */
+    wuf_preset_id: string | null;
+};
+
+/**
+ * WorkStatus
+ */
+export type WorkStatus = 'ongoing' | 'completed';
+
+/**
+ * WorkType
+ */
+export type WorkType = 'novel' | 'manga';
+
+/**
+ * WorkUpdate
+ *
+ * Fields left out stay as they are. The type of a work cannot change.
+ */
+export type WorkUpdate = {
+    language?: ContentLanguage | null;
+    status?: WorkStatus | null;
+    /**
+     * Synopsis
+     */
+    synopsis?: string | null;
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Wuf Preset Id
+     */
+    wuf_preset_id?: string | null;
+};
+
+/**
+ * WufPresetResponse
+ */
+export type WufPresetResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Seconds
+     */
+    seconds: number;
+};
 
 /**
  * LoginRequest
@@ -400,6 +658,492 @@ export type AuthRegisterUserResponses = {
 };
 
 export type AuthRegisterUserResponse = AuthRegisterUserResponses[keyof AuthRegisterUserResponses];
+
+export type AuthorGetEpisodeData = {
+    body?: never;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}';
+};
+
+export type AuthorGetEpisodeErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorGetEpisodeError = AuthorGetEpisodeErrors[keyof AuthorGetEpisodeErrors];
+
+export type AuthorGetEpisodeResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeResponse;
+};
+
+export type AuthorGetEpisodeResponse = AuthorGetEpisodeResponses[keyof AuthorGetEpisodeResponses];
+
+export type AuthorGetDraftData = {
+    body?: never;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}/draft';
+};
+
+export type AuthorGetDraftErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorGetDraftError = AuthorGetDraftErrors[keyof AuthorGetDraftErrors];
+
+export type AuthorGetDraftResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeDraft;
+};
+
+export type AuthorGetDraftResponse = AuthorGetDraftResponses[keyof AuthorGetDraftResponses];
+
+export type AuthorSaveDraftData = {
+    body: DraftSave;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}/draft';
+};
+
+export type AuthorSaveDraftErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorSaveDraftError = AuthorSaveDraftErrors[keyof AuthorSaveDraftErrors];
+
+export type AuthorSaveDraftResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeVersionSummary;
+};
+
+export type AuthorSaveDraftResponse = AuthorSaveDraftResponses[keyof AuthorSaveDraftResponses];
+
+export type AuthorPublishEpisodeData = {
+    body?: never;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}/publish';
+};
+
+export type AuthorPublishEpisodeErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorPublishEpisodeError = AuthorPublishEpisodeErrors[keyof AuthorPublishEpisodeErrors];
+
+export type AuthorPublishEpisodeResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeResponse;
+};
+
+export type AuthorPublishEpisodeResponse = AuthorPublishEpisodeResponses[keyof AuthorPublishEpisodeResponses];
+
+export type AuthorListVersionsData = {
+    body?: never;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: {
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Before
+         */
+        before?: string | null;
+    };
+    url: '/v1/author/episodes/{episode_id}/versions';
+};
+
+export type AuthorListVersionsErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorListVersionsError = AuthorListVersionsErrors[keyof AuthorListVersionsErrors];
+
+export type AuthorListVersionsResponses = {
+    /**
+     * Response Author List Versions
+     *
+     * Successful Response
+     */
+    200: Array<EpisodeVersionSummary>;
+};
+
+export type AuthorListVersionsResponse = AuthorListVersionsResponses[keyof AuthorListVersionsResponses];
+
+export type AuthorGetVersionData = {
+    body?: never;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+        /**
+         * Version Id
+         */
+        version_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}/versions/{version_id}';
+};
+
+export type AuthorGetVersionErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorGetVersionError = AuthorGetVersionErrors[keyof AuthorGetVersionErrors];
+
+export type AuthorGetVersionResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeVersionDetail;
+};
+
+export type AuthorGetVersionResponse = AuthorGetVersionResponses[keyof AuthorGetVersionResponses];
+
+export type AuthorRestoreVersionData = {
+    body?: never;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+        /**
+         * Version Id
+         */
+        version_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}/versions/{version_id}/restore';
+};
+
+export type AuthorRestoreVersionErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorRestoreVersionError = AuthorRestoreVersionErrors[keyof AuthorRestoreVersionErrors];
+
+export type AuthorRestoreVersionResponses = {
+    /**
+     * Successful Response
+     */
+    201: EpisodeVersionSummary;
+};
+
+export type AuthorRestoreVersionResponse = AuthorRestoreVersionResponses[keyof AuthorRestoreVersionResponses];
+
+export type AuthorListWorksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/author/works';
+};
+
+export type AuthorListWorksErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorListWorksError = AuthorListWorksErrors[keyof AuthorListWorksErrors];
+
+export type AuthorListWorksResponses = {
+    /**
+     * Response Author List Works
+     *
+     * Successful Response
+     */
+    200: Array<WorkResponse>;
+};
+
+export type AuthorListWorksResponse = AuthorListWorksResponses[keyof AuthorListWorksResponses];
+
+export type AuthorCreateWorkData = {
+    body: WorkCreate;
+    path?: never;
+    query?: never;
+    url: '/v1/author/works';
+};
+
+export type AuthorCreateWorkErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorCreateWorkError = AuthorCreateWorkErrors[keyof AuthorCreateWorkErrors];
+
+export type AuthorCreateWorkResponses = {
+    /**
+     * Successful Response
+     */
+    201: WorkResponse;
+};
+
+export type AuthorCreateWorkResponse = AuthorCreateWorkResponses[keyof AuthorCreateWorkResponses];
+
+export type AuthorGetWorkData = {
+    body?: never;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/author/works/{work_id}';
+};
+
+export type AuthorGetWorkErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorGetWorkError = AuthorGetWorkErrors[keyof AuthorGetWorkErrors];
+
+export type AuthorGetWorkResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkResponse;
+};
+
+export type AuthorGetWorkResponse = AuthorGetWorkResponses[keyof AuthorGetWorkResponses];
+
+export type AuthorUpdateWorkData = {
+    body: WorkUpdate;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/author/works/{work_id}';
+};
+
+export type AuthorUpdateWorkErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorUpdateWorkError = AuthorUpdateWorkErrors[keyof AuthorUpdateWorkErrors];
+
+export type AuthorUpdateWorkResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkResponse;
+};
+
+export type AuthorUpdateWorkResponse = AuthorUpdateWorkResponses[keyof AuthorUpdateWorkResponses];
+
+export type AuthorListEpisodesData = {
+    body?: never;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/author/works/{work_id}/episodes';
+};
+
+export type AuthorListEpisodesErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorListEpisodesError = AuthorListEpisodesErrors[keyof AuthorListEpisodesErrors];
+
+export type AuthorListEpisodesResponses = {
+    /**
+     * Response Author List Episodes
+     *
+     * Successful Response
+     */
+    200: Array<EpisodeResponse>;
+};
+
+export type AuthorListEpisodesResponse = AuthorListEpisodesResponses[keyof AuthorListEpisodesResponses];
+
+export type AuthorCreateEpisodeData = {
+    body: EpisodeCreate;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/author/works/{work_id}/episodes';
+};
+
+export type AuthorCreateEpisodeErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorCreateEpisodeError = AuthorCreateEpisodeErrors[keyof AuthorCreateEpisodeErrors];
+
+export type AuthorCreateEpisodeResponses = {
+    /**
+     * Successful Response
+     */
+    201: EpisodeResponse;
+};
+
+export type AuthorCreateEpisodeResponse = AuthorCreateEpisodeResponses[keyof AuthorCreateEpisodeResponses];
+
+export type AuthorListWufPresetsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/author/wuf-presets';
+};
+
+export type AuthorListWufPresetsErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorListWufPresetsError = AuthorListWufPresetsErrors[keyof AuthorListWufPresetsErrors];
+
+export type AuthorListWufPresetsResponses = {
+    /**
+     * Response Author List Wuf Presets
+     *
+     * Successful Response
+     */
+    200: Array<WufPresetResponse>;
+};
+
+export type AuthorListWufPresetsResponse = AuthorListWufPresetsResponses[keyof AuthorListWufPresetsResponses];
 
 export type AuthGetMeData = {
     body?: never;
