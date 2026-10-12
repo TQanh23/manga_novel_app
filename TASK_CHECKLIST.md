@@ -18,7 +18,7 @@ Working checklist for the whole project. It breaks [`IMPLEMENTATION_PLAN.md`](IM
 | Phase | Theme | Status |
 |---|---|---|
 | 0 | Foundation | Done |
-| 1 | Catalogue and novel reader | Not started |
+| 1 | Catalogue and novel reader | In progress |
 | 2 | Manga upload and reader | Not started |
 | 3 | Billing | Not started |
 | 4 | AI core | Not started |
@@ -35,7 +35,7 @@ Each one blocks the tasks listed next to it. The plan's default is in brackets; 
 - [ ] **D3.** Editor role in MVP or P2 [P2]. Blocks nothing in MVP if P2.
 - [ ] **D4.** Coin price in VND and default episode price [1 coin = 100 VND, 3 coins per episode; config only].
 - [ ] **D5.** Can authors set episode prices in MVP [no, Admin default only]. Blocks 3.6.
-- [ ] **D6.** WUF preset list [3h, 12h, 1 day, 3 days]. Blocks seed data in 1.1.
+- [x] **D6.** WUF preset list [3h, 12h, 1 day, 3 days]. Blocks seed data in 1.1. Decided: 3h, 12h, 1 day, 3 days, stored in seconds.
 - [ ] **D7.** Demo host, and whether the demo uses a paid model only. Blocks 5.6.
 - [ ] **D8.** pHash match: flag to Admin or auto-block, and the Hamming threshold [flag only]. Blocks 6.3.
 - [ ] **D9.** Vietnamese search without diacritics in MVP [yes]. Blocks 1.5.
@@ -125,14 +125,21 @@ Requirements: FR-AUTH-01, FR-AUTH-03, FR-AUTH-05 (model only), FR-AD-01 (API onl
 Requirements: FR-RD-01, FR-RD-02 (no unlock states yet), FR-RD-03, FR-RD-05, FR-RD-06, FR-NV-01, FR-NV-02, FR-NV-03, FR-AD-04 (presets table only).
 
 ### 1.1 Content model
-- [ ] `works` with `is_sample` and `ai_opt_in_training`, both default `false`
-- [ ] `episodes` with status `draft` / `scheduled` / `published` / `removed`, `publish_at`, `price_coins`, `wuf_eligible`
-- [ ] `episode_versions`
-- [ ] `tags`, `work_tags`
-- [ ] `glossary_entries` with `aliases[]`, `attributes jsonb`, `translations jsonb`
-- [ ] `config_presets` (`kind`, `value`, `active`); `works.wuf_preset_id` and `works.revenue_share_preset_id` reference it
-- [ ] `reading_progress`
-- [ ] Seed the WUF and revenue-split presets (per D6)
+- [x] `works` with `is_sample` and `ai_opt_in_training`, both default `false`
+- [x] `episodes` with status `draft` / `scheduled` / `published` / `removed`, `publish_at`, `price_coins`, `wuf_eligible`
+- [x] `episode_versions`
+- [x] `tags`, `work_tags`
+- [x] `glossary_entries` with `aliases[]`, `attributes jsonb`, `translations jsonb`
+- [x] `config_presets` (`kind`, `value`, `active`); `works.wuf_preset_id` and `works.revenue_share_preset_id` reference it
+- [x] `reading_progress`
+- [x] Seed the WUF and revenue-split presets (per D6). They are inserted by the migration, not by the seed script: every environment needs them.
+- [x] RLS on `episode_versions` (`NFR-06`), moved here from 4.3: drafts are visible to their author only, the published version to everyone. `set_author_context` in `api/core/db.py` sets `app.author_id` for a transaction.
+
+Where the schema differs from the spec's data model:
+- `works.rating` is left out until content rating (`FR-MG-07`, P3) defines its values.
+- A genre is a tag with `tags.kind = 'genre'`; there is no separate genre table.
+- `episodes.published_version_id` names the version readers see.
+- `episodes` and `episode_versions` repeat the work's `author_id`, held equal by composite foreign keys, so the RLS policy can trust it.
 
 ### 1.2 Author API (FR-NV-01)
 - [ ] `POST /v1/author/works`, `PATCH /v1/author/works/{id}`
@@ -140,6 +147,8 @@ Requirements: FR-RD-01, FR-RD-02 (no unlock states yet), FR-RD-03, FR-RD-05, FR-
 - [ ] `PUT /v1/author/episodes/{id}/draft`: each save is a new `episode_versions` row
 - [ ] Version history: list and restore
 - [ ] `POST /v1/author/episodes/{id}/publish` (publish now)
+- [ ] Every transaction that reads or writes drafts calls `set_author_context` first
+- [ ] The service checks what the schema cannot: `wuf_preset_id` names a `wuf_period` preset, `published_version_id` names a version of the same episode
 - [ ] Ownership checks: an author cannot touch another author's work (test)
 
 ### 1.3 Scheduled publish (FR-NV-02)
@@ -164,6 +173,7 @@ Requirements: FR-RD-01, FR-RD-02 (no unlock states yet), FR-RD-03, FR-RD-05, FR-
 - [ ] `PUT /v1/progress/{episode_id}` at paragraph granularity
 - [ ] `GET /v1/library`: reading and favourites
 - [ ] Favourite / unfavourite a work
+- [ ] **(gap)** `favourites (user_id, work_id)` table: neither the spec's data model nor 1.1 has one
 
 ### 1.7 Client: reader
 - [ ] Home, browse with filters, search
@@ -324,7 +334,7 @@ Requirements: FR-AI-01, FR-AI-02, FR-AI-03, FR-AI-06, FR-AI-07, NFR-06, NFR-07, 
 - [ ] Repository layer requires `work_id` on every vector query
 - [ ] Test: author B running raw SQL as `app_rw` cannot see author A's chunks
 - [ ] Published-only read path for shared features, with a test that drafts are excluded
-- [ ] **(gap)** RLS on episode drafts as well as embeddings, as `NFR-06` states
+- [x] **(gap)** RLS on episode drafts as well as embeddings, as `NFR-06` states. Done in 1.1.
 - [ ] **(gap)** Admins cannot read unpublished drafts; break-glass access writes to the author-visible audit log (test)
 
 ### 4.4 Indexing pipeline (NFR-13)

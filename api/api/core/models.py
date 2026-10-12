@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import StrEnum
 from uuid import UUID
 
 from sqlalchemy import DateTime, MetaData, func
@@ -18,6 +19,15 @@ NAMING_CONVENTION = {
 
 class Base(DeclarativeBase):
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
+
+
+def one_of(column: str, values: type[StrEnum]) -> str:
+    """SQL for a CHECK that limits a text column to an enum's values.
+
+    Text plus a check, not a Postgres enum: adding a value later is a one-line
+    constraint change instead of ALTER TYPE.
+    """
+    return f"{column} IN ({', '.join(repr(str(value)) for value in values)})"
 
 
 class UUIDPrimaryKeyMixin:

@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from api.core.models import Base, TimestampMixin, UUIDPrimaryKeyMixin
+from api.core.models import Base, TimestampMixin, UUIDPrimaryKeyMixin, one_of
 
 
 class Role(StrEnum):
@@ -24,10 +24,6 @@ class Locale(StrEnum):
     VI = "vi"
 
 
-def _one_of(column: str, values: type[StrEnum]) -> str:
-    return f"{column} IN ({', '.join(repr(str(value)) for value in values)})"
-
-
 class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     """An account. All personal data lives in this table (FR-AUTH-05)."""
 
@@ -37,8 +33,8 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         # The service lowercases emails; this stops any other writer from
         # creating a second account that differs only by case.
         CheckConstraint("email = lower(email)", name="email_lowercase"),
-        CheckConstraint(_one_of("locale", Locale), name="locale"),
-        CheckConstraint(_one_of("status", UserStatus), name="status"),
+        CheckConstraint(one_of("locale", Locale), name="locale"),
+        CheckConstraint(one_of("status", UserStatus), name="status"),
         {"schema": "core"},
     )
 
@@ -70,7 +66,7 @@ class UserRole(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         UniqueConstraint("user_id", "role"),
         # Text plus a check, not a Postgres enum: adding a role later is a
         # one-line constraint change instead of ALTER TYPE.
-        CheckConstraint(_one_of("role", Role), name="role"),
+        CheckConstraint(one_of("role", Role), name="role"),
         {"schema": "core"},
     )
 
