@@ -275,13 +275,10 @@ async def restore_version(
     return version, episode
 
 
-async def publish_episode(session: AsyncSession, *, author: User, episode_id: UUID) -> EpisodeState:
-    """Show readers the newest save, now (FR-NV-01).
-
-    Publishing again after more saves moves readers to the newest one and
-    keeps the time the episode first went live.
-    """
-    episode = await _own_novel_episode(session, author, episode_id, for_update=True)
+async def _version_to_publish(
+    session: AsyncSession, author: User, episode: Episode
+) -> EpisodeVersion:
+    """The newest save of an episode that may go live, or the reason it may not."""
     if episode.status == EpisodeStatus.REMOVED:
         raise AppError("episode_removed", "This episode has been removed", status_code=409)
 
@@ -290,6 +287,17 @@ async def publish_episode(session: AsyncSession, *, author: User, episode_id: UU
     latest = await repository.latest_version(session, episode.id, author_id=author.id)
     if latest is None or not latest.body_md.strip():
         raise AppError("nothing_to_publish", "Save some text before publishing", status_code=409)
+    return latest
+
+
+async def publish_episode(session: AsyncSession, *, author: User, episode_id: UUID) -> EpisodeState:
+    """Show readers the newest save, now (FR-NV-01).
+
+    Publishing again after more saves moves readers to the newest one and
+    keeps the time the episode first went live.
+    """
+    episode = await _own_novel_episode(session, author, episode_id, for_update=True)
+    latest = await _version_to_publish(session, author, episode)
 
     if episode.status != EpisodeStatus.PUBLISHED:
         episode.publish_at = datetime.now(UTC)
@@ -305,3 +313,72 @@ async def publish_episode(session: AsyncSession, *, author: User, episode_id: UU
         version_id=str(latest.id),
     )
     return EpisodeState(episode, latest.id)
+
+
+async def schedule_episode(
+    session: AsyncSession, *, author: User, episode_id: UUID, publish_at: datetime
+) -> EpisodeState:
+    """Have the episode go live on its own at `publish_at` (FR-NV-02).
+
+    The newest save is fixed as the one that will go live. Saves made after
+    this stay private; scheduling again picks up the newest one.
+    """
+    episode = await _own_novel_episode(session, author, episode_id, for_update=True)
+    if episode.status == EpisodeStatus.PUBLISHED:
+        raise AppError("already_published", "This episode is already published", status_code=409)
+    latest = await _version_to_publish(session, author, episode)
+    if publish_at <= datetime.now(UTC):
+        raise AppError("publish_at_in_past", "Choose a time in the future", status_code=422)
+
+    episode.status = EpisodeStatus.SCHEDULED
+    episode.publish_at = publish_at
+    # Readers cannot see it yet: a version is public only once its episode is.
+    episode.published_version_id = latest.id
+    await session.flush()
+    await session.refresh(episode)
+    await session.commit()
+    logger.info(
+        "episode_scheduled",
+        author_id=str(author.id),
+        episode_id=str(episode.id),
+        version_id=str(latest.id),
+    )
+    return EpisodeState(episode, latest.id)
+
+
+async def unschedule_episode(
+    session: AsyncSession, *, author: User, episode_id: UUID
+) -> EpisodeState:
+    """Call off a scheduled publication; the episode is a draft again."""
+    episode = await _own_novel_episode(session, author, episode_id, for_update=True)
+    if episode.status != EpisodeStatus.SCHEDULED:
+        raise AppError("not_scheduled", "This episode is not scheduled", status_code=409)
+
+    episode.status = EpisodeStatus.DRAFT
+    episode.publish_at = None
+    episode.published_version_id = None
+    await session.flush()
+    await session.refresh(episode)
+    latest = await repository.latest_version_ids(session, [episode.id], author_id=author.id)
+    await session.commit()
+    logger.info("episode_unscheduled", author_id=str(author.id), episode_id=str(episode.id))
+    return EpisodeState(episode, latest.get(episode.id))
+
+
+async def publish_due_episodes(
+    session: AsyncSession, *, now: datetime | None = None
+) -> Sequence[UUID]:
+    """Publish the scheduled episodes whose time has come. Run by the worker every minute.
+
+    Safe to run twice, and after a missed run: whatever is overdue goes live
+    the next time this runs. `now` is for tests.
+    """
+    published = await repository.publish_due_episodes(session, now or datetime.now(UTC))
+    await session.commit()
+    if published:
+        logger.info(
+            "scheduled_episodes_published",
+            count=len(published),
+            episode_ids=[str(episode_id) for episode_id in published],
+        )
+    return published

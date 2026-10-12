@@ -7,14 +7,15 @@ table is under row-level security and shows nothing otherwise.
 """
 
 from collections.abc import Sequence
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.dialects.postgresql import distinct_on
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import load_only
 
-from api.catalogue.models import Episode, EpisodeVersion, Work
+from api.catalogue.models import Episode, EpisodeStatus, EpisodeVersion, Work
 from api.core.db import set_author_context
 from api.core.presets import ConfigPreset, PresetKind
 
@@ -63,6 +64,24 @@ async def next_episode_number(session: AsyncSession, work_id: UUID) -> int:
     """The number after the work's last episode. The caller holds a lock on the work."""
     statement = select(func.coalesce(func.max(Episode.number), 0)).where(Episode.work_id == work_id)
     return int((await session.execute(statement)).scalar_one()) + 1
+
+
+async def publish_due_episodes(session: AsyncSession, now: datetime) -> Sequence[UUID]:
+    """Publish every scheduled episode whose time has come; returns their ids.
+
+    One statement, so it is safe to run twice or from two workers at once: an
+    episode matches while it is still scheduled, and only one update gets it.
+    It reads no draft. The version to show was fixed when the episode was
+    scheduled.
+    """
+    statement = (
+        update(Episode)
+        .where(Episode.status == EpisodeStatus.SCHEDULED, Episode.publish_at <= now)
+        .values(status=EpisodeStatus.PUBLISHED)
+        .returning(Episode.id)
+        .execution_options(synchronize_session=False)
+    )
+    return (await session.execute(statement)).scalars().all()
 
 
 async def get_active_preset(

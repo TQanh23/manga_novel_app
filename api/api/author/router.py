@@ -11,6 +11,7 @@ from api.author.schemas import (
     EpisodeCreate,
     EpisodeDraft,
     EpisodeResponse,
+    EpisodeSchedule,
     EpisodeVersionDetail,
     EpisodeVersionSummary,
     WorkCreate,
@@ -171,4 +172,28 @@ async def restore_version(
 )
 async def publish_episode(episode_id: UUID, author: Author, session: Session) -> EpisodeResponse:
     state = await service.publish_episode(session, author=author, episode_id=episode_id)
+    return EpisodeResponse.from_episode(state.episode, state.latest_version_id)
+
+
+@router.post(
+    "/episodes/{episode_id}/schedule",
+    operation_id="author_schedule_episode",
+    dependencies=[_limit_writes],
+)
+async def schedule_episode(
+    episode_id: UUID, payload: EpisodeSchedule, author: Author, session: Session
+) -> EpisodeResponse:
+    state = await service.schedule_episode(
+        session, author=author, episode_id=episode_id, publish_at=payload.publish_at
+    )
+    return EpisodeResponse.from_episode(state.episode, state.latest_version_id)
+
+
+@router.delete(
+    "/episodes/{episode_id}/schedule",
+    operation_id="author_unschedule_episode",
+    dependencies=[_limit_writes],
+)
+async def unschedule_episode(episode_id: UUID, author: Author, session: Session) -> EpisodeResponse:
+    state = await service.unschedule_episode(session, author=author, episode_id=episode_id)
     return EpisodeResponse.from_episode(state.episode, state.latest_version_id)

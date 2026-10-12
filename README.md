@@ -6,7 +6,8 @@ with a data policy enforced in code).
 
 Status: Phase 0 (foundation) done, Phase 1 (catalogue and novel reader) in progress. What works
 today: register, sign in, roles, a `ping` job that travels from the API to the worker, and the
-author API (works, episodes, drafts with version history, publish; no screens yet). See
+author API (works, episodes, drafts with version history, publish now or on a schedule; no screens
+yet). See
 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [TASK_CHECKLIST.md](TASK_CHECKLIST.md).
 
 ## Layout

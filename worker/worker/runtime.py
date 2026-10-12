@@ -2,6 +2,8 @@
 
 Write a job as a plain coroutine and register it with @job. Do not call arq or
 touch core.jobs from a job directly.
+
+Work that runs on the clock instead of on request is registered with @cron.
 """
 
 import json
@@ -14,12 +16,15 @@ from uuid import UUID
 
 import structlog
 from arq import Retry
+from arq import cron as arq_cron
+from arq.cron import CronJob
 from arq.worker import Function, func
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from api.core.db import get_sessionmaker
 from api.core.jobs import Job, JobStatus
 from api.core.queue import dead_letter_key
+from api.core.request_id import resolve_request_id
 
 logger = structlog.get_logger(__name__)
 
@@ -44,12 +49,19 @@ class JobContext:
 
 
 JobHandler = Callable[[JobContext], Awaitable[None]]
+# A cron is handed the session factory and nothing else: it finds its own work.
+CronHandler = Callable[[async_sessionmaker[AsyncSession]], Awaitable[None]]
 
 _registry: dict[str, Function] = {}
+_crons: dict[str, CronJob] = {}
 
 
 def registered_functions() -> list[Function]:
     return list(_registry.values())
+
+
+def registered_crons() -> list[CronJob]:
+    return list(_crons.values())
 
 
 def backoff_seconds(attempt: int) -> int:
@@ -163,3 +175,35 @@ async def _run(handler: JobHandler, kind: str, ctx: dict[str, Any], job_id: UUID
             row.error_code = None
             await session.commit()
             logger.info("job_succeeded", attempt=attempt)
+
+
+def cron(
+    name: str, *, minute: set[int] | int | None = None, second: int = 0
+) -> Callable[[CronHandler], CronHandler]:
+    """Register a coroutine to run on the clock. The default is every minute.
+
+    A cron has no core.jobs row and no retries. It must be safe to run twice
+    in the same minute and after a missed run, and the next run is its retry.
+    """
+
+    def decorator(handler: CronHandler) -> CronHandler:
+        async def run(ctx: dict[str, Any]) -> None:
+            await _run_cron(handler, name)
+
+        # arq runs a cron once per slot however many workers are up.
+        _crons[name] = arq_cron(run, name=f"cron:{name}", minute=minute, second=second)
+        return handler
+
+    return decorator
+
+
+async def _run_cron(handler: CronHandler, name: str) -> None:
+    # No API request stands behind a cron run, so each run gets an id of its
+    # own to tie its log lines together.
+    with structlog.contextvars.bound_contextvars(
+        request_id=resolve_request_id(None), job_kind=name
+    ):
+        try:
+            await handler(get_sessionmaker())
+        except Exception as exc:
+            logger.error("cron_failed", error_type=type(exc).__name__, error_where=_where(exc))
