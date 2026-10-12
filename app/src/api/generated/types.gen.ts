@@ -340,11 +340,19 @@ export type UserStatus = 'active' | 'locked';
  * WorkCreate
  */
 export type WorkCreate = {
+    /**
+     * Genres
+     */
+    genres?: Array<string>;
     language: ContentLanguage;
     /**
      * Synopsis
      */
     synopsis?: string;
+    /**
+     * Tags
+     */
+    tags?: Array<string>;
     /**
      * Title
      */
@@ -369,6 +377,10 @@ export type WorkResponse = {
      */
     created_at: string;
     /**
+     * Genres
+     */
+    genres: Array<string>;
+    /**
      * Id
      */
     id: string;
@@ -386,6 +398,10 @@ export type WorkResponse = {
      * Synopsis
      */
     synopsis: string;
+    /**
+     * Tags
+     */
+    tags: Array<string>;
     /**
      * Title
      */
@@ -417,12 +433,20 @@ export type WorkType = 'novel' | 'manga';
  * Fields left out stay as they are. The type of a work cannot change.
  */
 export type WorkUpdate = {
+    /**
+     * Genres
+     */
+    genres?: Array<string> | null;
     language?: ContentLanguage | null;
     status?: WorkStatus | null;
     /**
      * Synopsis
      */
     synopsis?: string | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
     /**
      * Title
      */

@@ -29,6 +29,9 @@ def include_name(name: str | None, type_: str, parent_names: object) -> bool:
     # Autogenerate only manages the app schemas; public holds extensions and alembic_version.
     if type_ == "schema":
         return name in APP_SCHEMAS
+    # The trigram search indexes are on an expression and live in migrations only.
+    if type_ == "index":
+        return name is None or not name.endswith("_trgm")
     return True
 
 

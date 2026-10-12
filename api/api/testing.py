@@ -44,7 +44,9 @@ POSTGRES_IMAGE = "pgvector/pgvector:pg16"
 REDIS_IMAGE = "redis:7-alpine"
 APP_SCHEMAS = ("core", "billing", "ai", "analytics")
 # Filled by migrations, not by tests, so cleaning up after a test leaves them alone.
-REFERENCE_TABLES = ("core.config_presets",)
+REFERENCE_TABLES = ("core.config_presets", "core.tags")
+# core.tags holds the fixed genres next to the tags tests create.
+_DELETE_TEST_TAGS = "DELETE FROM core.tags WHERE kind <> 'genre'"
 TEST_PASSWORD = "correct horse battery"  # noqa: S105
 
 MakeUser = Callable[..., Awaitable[User]]
@@ -222,6 +224,7 @@ async def _truncate_app_tables(owner_url: str) -> None:
             ).scalars()
             if names := ", ".join(tables):
                 await connection.execute(text(f"TRUNCATE {names} CASCADE"))
+            await connection.execute(text(_DELETE_TEST_TAGS))
     finally:
         await owner.dispose()
 

@@ -9,11 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth.models import User
 from api.author import repository
+from api.catalogue.labels import WorkLabels, labels_for_works, tag_name, tag_slug
 from api.catalogue.models import (
     ContentLanguage,
     Episode,
     EpisodeStatus,
     EpisodeVersion,
+    TagKind,
     Work,
     WorkType,
 )
@@ -21,6 +23,17 @@ from api.core.errors import AppError
 from api.core.presets import ConfigPreset, PresetKind
 
 logger = structlog.get_logger(__name__)
+
+
+MAX_GENRES = 3
+
+
+@dataclass(frozen=True)
+class WorkState:
+    """A work with its genres and tags, which live in their own tables."""
+
+    work: Work
+    labels: WorkLabels
 
 
 @dataclass(frozen=True)
@@ -91,6 +104,54 @@ async def _require_wuf_preset(session: AsyncSession, preset_id: UUID) -> None:
         )
 
 
+async def _resolve_labels(
+    session: AsyncSession,
+    work_id: UUID | None,
+    *,
+    genres: Sequence[str] | None,
+    tags: Sequence[str] | None,
+) -> set[UUID] | None:
+    """The tags a work should carry after this request, or None to leave them.
+
+    `genres` and `tags` each replace their own set; None keeps that set as it
+    is. Everything is checked before a tag is created, so a refused request
+    writes nothing.
+    """
+    if genres is None and tags is None:
+        return None
+    current = await repository.tags_of_work(session, work_id) if work_id is not None else []
+    genre_ids = {tag.id for tag in current if tag.kind == TagKind.GENRE}
+    tag_ids = {tag.id for tag in current if tag.kind != TagKind.GENRE}
+
+    if genres is not None:
+        wanted = set(genres)
+        found = await repository.get_genres(session, wanted)
+        if len(found) != len(wanted):
+            raise AppError("unknown_genre", "Choose from the offered genres", status_code=422)
+        genre_ids = {genre.id for genre in found}
+
+    names: dict[str, str] = {}
+    if tags is not None:
+        # The first spelling of a tag in the request is the one that counts.
+        for raw in tags:
+            if slug := tag_slug(raw):
+                names.setdefault(slug, tag_name(raw))
+        # Typing the name of a genre as a tag gives the work that genre.
+        genre_ids |= {genre.id for genre in await repository.get_genres(session, set(names))}
+
+    if len(genre_ids) > MAX_GENRES:
+        raise AppError("too_many_genres", "A work has at most three genres", status_code=422)
+    if tags is not None:
+        resolved = await repository.ensure_tags(session, names)
+        tag_ids = {tag.id for tag in resolved if tag.kind != TagKind.GENRE}
+    return genre_ids | tag_ids
+
+
+async def _state(session: AsyncSession, work: Work) -> WorkState:
+    labels = await labels_for_works(session, [work.id])
+    return WorkState(work, labels.get(work.id, WorkLabels()))
+
+
 async def list_wuf_presets(session: AsyncSession) -> Sequence[ConfigPreset]:
     return await repository.list_active_presets(session, PresetKind.WUF_PERIOD)
 
@@ -104,10 +165,13 @@ async def create_work(
     synopsis: str,
     language: ContentLanguage,
     wuf_preset_id: UUID | None,
-) -> Work:
+    genres: Sequence[str] = (),
+    tags: Sequence[str] = (),
+) -> WorkState:
     """Start a work (FR-NV-01). It is not a sample and not opted in to training."""
     if wuf_preset_id is not None:
         await _require_wuf_preset(session, wuf_preset_id)
+    label_ids = await _resolve_labels(session, None, genres=genres, tags=tags)
 
     work = Work(
         author_id=author.id,
@@ -119,40 +183,52 @@ async def create_work(
     )
     session.add(work)
     await session.flush()
+    if label_ids:
+        await repository.replace_work_tags(session, work.id, label_ids)
     await session.refresh(work)
+    state = await _state(session, work)
     await session.commit()
     logger.info("work_created", author_id=str(author.id), work_id=str(work.id))
-    return work
+    return state
 
 
-async def list_works(session: AsyncSession, *, author: User) -> Sequence[Work]:
-    return await repository.list_works(session, author.id)
+async def list_works(session: AsyncSession, *, author: User) -> Sequence[WorkState]:
+    works = await repository.list_works(session, author.id)
+    labels = await labels_for_works(session, [work.id for work in works])
+    return [WorkState(work, labels.get(work.id, WorkLabels())) for work in works]
 
 
-async def get_work(session: AsyncSession, *, author: User, work_id: UUID) -> Work:
-    return await _own_work(session, author, work_id)
+async def get_work(session: AsyncSession, *, author: User, work_id: UUID) -> WorkState:
+    return await _state(session, await _own_work(session, author, work_id))
 
 
 async def update_work(
     session: AsyncSession, *, author: User, work_id: UUID, changes: Mapping[str, Any]
-) -> Work:
+) -> WorkState:
     """Apply the fields the author sent. `changes` holds only those."""
     work = await _own_work(session, author, work_id, for_update=True)
+    # Everything that can be refused is checked before anything is changed.
+    if changes.get("wuf_preset_id") is not None:
+        await _require_wuf_preset(session, changes["wuf_preset_id"])
+    label_ids = await _resolve_labels(
+        session, work.id, genres=changes.get("genres"), tags=changes.get("tags")
+    )
 
     for field in ("title", "synopsis", "language", "status"):
         if changes.get(field) is not None:
             setattr(work, field, changes[field])
     # The one field where null means something: no wait-until-free.
     if "wuf_preset_id" in changes:
-        if changes["wuf_preset_id"] is not None:
-            await _require_wuf_preset(session, changes["wuf_preset_id"])
         work.wuf_preset_id = changes["wuf_preset_id"]
+    if label_ids is not None:
+        await repository.replace_work_tags(session, work.id, label_ids)
 
     await session.flush()
     await session.refresh(work)
+    state = await _state(session, work)
     await session.commit()
     logger.info("work_updated", author_id=str(author.id), work_id=str(work.id))
-    return work
+    return state
 
 
 async def create_episode(

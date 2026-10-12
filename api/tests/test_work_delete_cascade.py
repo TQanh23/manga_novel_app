@@ -52,7 +52,7 @@ async def test_deleting_a_work_removes_everything_that_belonged_to_it(
     async with AsyncSession(bind=owner_connection, expire_on_commit=False) as session:
         author = User(email="author@example.com", password_hash="x", display_name="Author")
         reader = User(email="reader@example.com", password_hash="x", display_name="Reader")
-        tag = Tag(slug="fantasy", name="Fantasy", kind="genre")
+        tag = Tag(slug="noir", name="Noir", kind="genre")
         session.add_all([author, reader, tag])
         await session.flush()
         work = Work(author_id=author.id, type="novel", title="Doomed", language="en")
@@ -93,7 +93,10 @@ async def test_deleting_a_work_removes_everything_that_belonged_to_it(
 
         for table in WORK_OWNED_TABLES:
             assert await count(owner_connection, table) == 0, table
-        # What was never the work's stays.
-        assert await count(owner_connection, "core.tags") == 1
+        # What was never the work's stays: its tag, next to the fixed genres.
+        tags_left = await owner_connection.execute(
+            text("SELECT count(*) FROM core.tags WHERE slug = 'noir'")
+        )
+        assert tags_left.scalar_one() == 1
         remaining = (await owner_connection.execute(select(User.email))).scalars()
         assert sorted(remaining) == ["author@example.com", "reader@example.com"]

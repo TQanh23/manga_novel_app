@@ -591,6 +591,17 @@
       "WorkCreate": {
         "additionalProperties": false,
         "properties": {
+          "genres": {
+            "default": [],
+            "items": {
+              "maxLength": 40,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 3,
+            "title": "Genres",
+            "type": "array"
+          },
           "language": {
             "$ref": "#/components/schemas/ContentLanguage"
           },
@@ -599,6 +610,17 @@
             "maxLength": 5000,
             "title": "Synopsis",
             "type": "string"
+          },
+          "tags": {
+            "default": [],
+            "items": {
+              "maxLength": 30,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Tags",
+            "type": "array"
           },
           "title": {
             "maxLength": 200,
@@ -641,6 +663,13 @@
             "title": "Created At",
             "type": "string"
           },
+          "genres": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Genres",
+            "type": "array"
+          },
           "id": {
             "format": "uuid",
             "title": "Id",
@@ -671,6 +700,13 @@
           "synopsis": {
             "title": "Synopsis",
             "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
           },
           "title": {
             "title": "Title",
@@ -708,6 +744,8 @@
           "revenue_share_preset_id",
           "is_sample",
           "ai_opt_in_training",
+          "genres",
+          "tags",
           "created_at",
           "updated_at"
         ],
@@ -734,6 +772,23 @@
         "additionalProperties": false,
         "description": "Fields left out stay as they are. The type of a work cannot change.",
         "properties": {
+          "genres": {
+            "anyOf": [
+              {
+                "items": {
+                  "maxLength": 40,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 3,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Genres"
+          },
           "language": {
             "anyOf": [
               {
@@ -765,6 +820,23 @@
               }
             ],
             "title": "Synopsis"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "maxLength": 30,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "maxItems": 10,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
           },
           "title": {
             "anyOf": [

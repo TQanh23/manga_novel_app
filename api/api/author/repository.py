@@ -10,13 +10,22 @@ from collections.abc import Sequence
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import func, select, update
-from sqlalchemy.dialects.postgresql import distinct_on
+from sqlalchemy import delete, func, select, update
+from sqlalchemy.dialects.postgresql import distinct_on, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import load_only
 
-from api.catalogue.models import Episode, EpisodeStatus, EpisodeVersion, Work
+from api.catalogue.models import (
+    Episode,
+    EpisodeStatus,
+    EpisodeVersion,
+    Tag,
+    TagKind,
+    Work,
+    WorkTag,
+)
 from api.core.db import set_author_context
+from api.core.ids import uuid7
 from api.core.presets import ConfigPreset, PresetKind
 
 
@@ -64,6 +73,54 @@ async def next_episode_number(session: AsyncSession, work_id: UUID) -> int:
     """The number after the work's last episode. The caller holds a lock on the work."""
     statement = select(func.coalesce(func.max(Episode.number), 0)).where(Episode.work_id == work_id)
     return int((await session.execute(statement)).scalar_one()) + 1
+
+
+async def get_genres(session: AsyncSession, slugs: set[str]) -> Sequence[Tag]:
+    statement = select(Tag).where(Tag.kind == TagKind.GENRE, Tag.slug.in_(slugs))
+    return (await session.execute(statement)).scalars().all()
+
+
+async def ensure_tags(session: AsyncSession, names_by_slug: dict[str, str]) -> Sequence[Tag]:
+    """The tag for each slug, created with the given name where there was none.
+
+    A slug that already exists keeps the name of whoever used it first, and
+    may be a genre.
+    """
+    if not names_by_slug:
+        return []
+    # ON CONFLICT: two authors may type the same new tag at the same moment.
+    await session.execute(
+        insert(Tag)
+        .values(
+            [
+                {"id": uuid7(), "slug": slug, "name": name, "kind": TagKind.TAG}
+                for slug, name in names_by_slug.items()
+            ]
+        )
+        .on_conflict_do_nothing(index_elements=["slug"])
+    )
+    statement = select(Tag).where(Tag.slug.in_(names_by_slug))
+    return (await session.execute(statement)).scalars().all()
+
+
+async def tags_of_work(session: AsyncSession, work_id: UUID) -> Sequence[Tag]:
+    statement = (
+        select(Tag).join(WorkTag, WorkTag.tag_id == Tag.id).where(WorkTag.work_id == work_id)
+    )
+    return (await session.execute(statement)).scalars().all()
+
+
+async def replace_work_tags(session: AsyncSession, work_id: UUID, tag_ids: set[UUID]) -> None:
+    """Make the work carry exactly these tags, touching only the links that change."""
+    current = set(
+        (await session.execute(select(WorkTag.tag_id).where(WorkTag.work_id == work_id))).scalars()
+    )
+    if removed := current - tag_ids:
+        await session.execute(
+            delete(WorkTag).where(WorkTag.work_id == work_id, WorkTag.tag_id.in_(removed))
+        )
+    session.add_all(WorkTag(work_id=work_id, tag_id=tag_id) for tag_id in tag_ids - current)
+    await session.flush()
 
 
 async def publish_due_episodes(session: AsyncSession, now: datetime) -> Sequence[UUID]:
