@@ -12,6 +12,8 @@ module.exports = defineConfig([
   {
     // UI copy goes through i18n (EN and VI): no literal text in JSX.
     files: ["src/**/*.tsx"],
+    // Tests render fixtures of their own and assert on the copy as written.
+    ignores: ["src/__tests__/**", "src/testing/**"],
     plugins: { i18next },
     rules: {
       "i18next/no-literal-string": ["error", { mode: "jsx-text-only" }],
