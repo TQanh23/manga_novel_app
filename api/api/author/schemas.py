@@ -99,6 +99,12 @@ class EpisodeCreate(AuthorRequest):
     title: Title
 
 
+class EpisodeUpdate(AuthorRequest):
+    """Fields left out stay as they are. The text is saved through the draft route."""
+
+    title: Title | None = None
+
+
 class DraftSave(AuthorRequest):
     body_md: BodyMd
 

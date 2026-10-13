@@ -223,6 +223,18 @@ export type EpisodeSummary = {
 };
 
 /**
+ * EpisodeUpdate
+ *
+ * Fields left out stay as they are. The text is saved through the draft route.
+ */
+export type EpisodeUpdate = {
+    /**
+     * Title
+     */
+    title?: string | null;
+};
+
+/**
  * EpisodeVersionDetail
  */
 export type EpisodeVersionDetail = {
@@ -1100,6 +1112,40 @@ export type AuthorGetEpisodeResponses = {
 };
 
 export type AuthorGetEpisodeResponse = AuthorGetEpisodeResponses[keyof AuthorGetEpisodeResponses];
+
+export type AuthorUpdateEpisodeData = {
+    body: EpisodeUpdate;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}';
+};
+
+export type AuthorUpdateEpisodeErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorUpdateEpisodeError = AuthorUpdateEpisodeErrors[keyof AuthorUpdateEpisodeErrors];
+
+export type AuthorUpdateEpisodeResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeResponse;
+};
+
+export type AuthorUpdateEpisodeResponse = AuthorUpdateEpisodeResponses[keyof AuthorUpdateEpisodeResponses];
 
 export type AuthorGetDraftData = {
     body?: never;

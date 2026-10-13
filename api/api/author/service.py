@@ -276,6 +276,24 @@ async def get_episode(session: AsyncSession, *, author: User, episode_id: UUID) 
     return EpisodeState(episode, latest.get(episode.id))
 
 
+async def update_episode(
+    session: AsyncSession, *, author: User, episode_id: UUID, title: str | None
+) -> EpisodeState:
+    """Rename an episode. Readers of a published episode see the new title at once."""
+    episode = await _own_episode(session, author, episode_id, for_update=True)
+    if episode.status == EpisodeStatus.REMOVED:
+        raise AppError("episode_removed", "This episode has been removed", status_code=409)
+
+    if title is not None:
+        episode.title = title
+    await session.flush()
+    await session.refresh(episode)
+    latest = await repository.latest_version_ids(session, [episode.id], author_id=author.id)
+    await session.commit()
+    logger.info("episode_updated", author_id=str(author.id), episode_id=str(episode.id))
+    return EpisodeState(episode, latest.get(episode.id))
+
+
 async def save_draft(
     session: AsyncSession, *, author: User, episode_id: UUID, body_md: str
 ) -> tuple[EpisodeVersion, Episode]:

@@ -12,6 +12,7 @@ from api.author.schemas import (
     EpisodeDraft,
     EpisodeResponse,
     EpisodeSchedule,
+    EpisodeUpdate,
     EpisodeVersionDetail,
     EpisodeVersionSummary,
     GlossaryEntryCreate,
@@ -110,6 +111,18 @@ async def list_episodes(work_id: UUID, author: Author, session: Session) -> list
 @router.get("/episodes/{episode_id}", operation_id="author_get_episode")
 async def get_episode(episode_id: UUID, author: Author, session: Session) -> EpisodeResponse:
     state = await service.get_episode(session, author=author, episode_id=episode_id)
+    return EpisodeResponse.from_episode(state.episode, state.latest_version_id)
+
+
+@router.patch(
+    "/episodes/{episode_id}", operation_id="author_update_episode", dependencies=[_limit_writes]
+)
+async def update_episode(
+    episode_id: UUID, payload: EpisodeUpdate, author: Author, session: Session
+) -> EpisodeResponse:
+    state = await service.update_episode(
+        session, author=author, episode_id=episode_id, title=payload.title
+    )
     return EpisodeResponse.from_episode(state.episode, state.latest_version_id)
 
 

@@ -21,6 +21,7 @@ EXPECTED_OPERATIONS = {
     ("post", "/v1/author/works/{work_id}/episodes"): "author_create_episode",
     ("get", "/v1/author/works/{work_id}/episodes"): "author_list_episodes",
     ("get", "/v1/author/episodes/{episode_id}"): "author_get_episode",
+    ("patch", "/v1/author/episodes/{episode_id}"): "author_update_episode",
     ("put", "/v1/author/episodes/{episode_id}/draft"): "author_save_draft",
     ("get", "/v1/author/episodes/{episode_id}/draft"): "author_get_draft",
     ("get", "/v1/author/episodes/{episode_id}/versions"): "author_list_versions",
