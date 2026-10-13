@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorScheduleEpisodeData, AuthorScheduleEpisodeErrors, AuthorScheduleEpisodeResponses, AuthorUnscheduleEpisodeData, AuthorUnscheduleEpisodeErrors, AuthorUnscheduleEpisodeResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses, CatalogueGetWorkData, CatalogueGetWorkErrors, CatalogueGetWorkResponses, CatalogueListEpisodesData, CatalogueListEpisodesErrors, CatalogueListEpisodesResponses, CatalogueListGenresData, CatalogueListGenresErrors, CatalogueListGenresResponses, CatalogueListWorksData, CatalogueListWorksErrors, CatalogueListWorksResponses, CatalogueSearchWorksData, CatalogueSearchWorksErrors, CatalogueSearchWorksResponses } from './types.gen';
+import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorScheduleEpisodeData, AuthorScheduleEpisodeErrors, AuthorScheduleEpisodeResponses, AuthorUnscheduleEpisodeData, AuthorUnscheduleEpisodeErrors, AuthorUnscheduleEpisodeResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses, CatalogueGetWorkData, CatalogueGetWorkErrors, CatalogueGetWorkResponses, CatalogueListEpisodesData, CatalogueListEpisodesErrors, CatalogueListEpisodesResponses, CatalogueListGenresData, CatalogueListGenresErrors, CatalogueListGenresResponses, CatalogueListWorksData, CatalogueListWorksErrors, CatalogueListWorksResponses, CatalogueSearchWorksData, CatalogueSearchWorksErrors, CatalogueSearchWorksResponses, ReaderAddFavouriteData, ReaderAddFavouriteErrors, ReaderAddFavouriteResponses, ReaderGetEpisodeContentData, ReaderGetEpisodeContentErrors, ReaderGetEpisodeContentResponses, ReaderGetLibraryData, ReaderGetLibraryErrors, ReaderGetLibraryResponses, ReaderRemoveFavouriteData, ReaderRemoveFavouriteErrors, ReaderRemoveFavouriteResponses, ReaderSaveProgressData, ReaderSaveProgressErrors, ReaderSaveProgressResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -253,9 +253,45 @@ export const authorListWufPresets = <ThrowOnError extends boolean = false>(optio
 });
 
 /**
+ * Get Episode Content
+ */
+export const readerGetEpisodeContent = <ThrowOnError extends boolean = false>(options: Options<ReaderGetEpisodeContentData, ThrowOnError>) => (options.client ?? client).get<ReaderGetEpisodeContentResponses, ReaderGetEpisodeContentErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/episodes/{episode_id}/content',
+    ...options
+});
+
+/**
+ * Remove Favourite
+ */
+export const readerRemoveFavourite = <ThrowOnError extends boolean = false>(options: Options<ReaderRemoveFavouriteData, ThrowOnError>) => (options.client ?? client).delete<ReaderRemoveFavouriteResponses, ReaderRemoveFavouriteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/favourites/{work_id}',
+    ...options
+});
+
+/**
+ * Add Favourite
+ */
+export const readerAddFavourite = <ThrowOnError extends boolean = false>(options: Options<ReaderAddFavouriteData, ThrowOnError>) => (options.client ?? client).put<ReaderAddFavouriteResponses, ReaderAddFavouriteErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/favourites/{work_id}',
+    ...options
+});
+
+/**
  * List Genres
  */
 export const catalogueListGenres = <ThrowOnError extends boolean = false>(options?: Options<CatalogueListGenresData, ThrowOnError>) => (options?.client ?? client).get<CatalogueListGenresResponses, CatalogueListGenresErrors, ThrowOnError>({ url: '/v1/genres', ...options });
+
+/**
+ * Get Library
+ */
+export const readerGetLibrary = <ThrowOnError extends boolean = false>(options?: Options<ReaderGetLibraryData, ThrowOnError>) => (options?.client ?? client).get<ReaderGetLibraryResponses, ReaderGetLibraryErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/library',
+    ...options
+});
 
 /**
  * Get Me
@@ -273,6 +309,19 @@ export const authAddAuthorRole = <ThrowOnError extends boolean = false>(options?
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/me/roles/author',
     ...options
+});
+
+/**
+ * Save Progress
+ */
+export const readerSaveProgress = <ThrowOnError extends boolean = false>(options: Options<ReaderSaveProgressData, ThrowOnError>) => (options.client ?? client).put<ReaderSaveProgressResponses, ReaderSaveProgressErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/progress/{episode_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

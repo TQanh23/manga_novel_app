@@ -34,7 +34,7 @@ from api.auth import service as auth_service
 from api.auth.models import Role, User
 from api.author import repository as author_repository
 from api.catalogue.labels import tag_name, tag_slug
-from api.catalogue.models import ContentLanguage, Episode, Work, WorkType
+from api.catalogue.models import ContentLanguage, Episode, EpisodeVersion, Work, WorkType
 from api.core.config import Settings, get_settings
 from api.core.db import get_engine, get_session, get_sessionmaker
 from api.core.logging import build_handler, configure_logging
@@ -56,6 +56,7 @@ MakeUser = Callable[..., Awaitable[User]]
 MakeWork = Callable[..., Awaitable[Work]]
 MakeEpisode = Callable[..., Awaitable[Episode]]
 MakePublishedWork = Callable[..., Awaitable[Work]]
+PublishText = Callable[[Episode, str], Awaitable[EpisodeVersion]]
 AuthHeaders = Callable[[User], dict[str, str]]
 
 
@@ -313,6 +314,23 @@ def make_episode(db_session: AsyncSession) -> MakeEpisode:
         return episode
 
     return make
+
+
+@pytest.fixture
+def publish_text(db_session: AsyncSession) -> PublishText:
+    """Saves text as a new version of an episode and publishes it, as its author would."""
+
+    async def publish(episode: Episode, body_md: str) -> EpisodeVersion:
+        version = await author_repository.add_version(
+            db_session, episode.id, body_md, author_id=episode.author_id
+        )
+        episode.status = "published"
+        episode.publish_at = episode.publish_at or datetime.now(UTC)
+        episode.published_version_id = version.id
+        await db_session.flush()
+        return version
+
+    return publish
 
 
 @pytest.fixture

@@ -173,11 +173,11 @@ Where the schema differs from the spec's data model:
 - [x] Test: drafts and scheduled episodes never appear in catalogue or search
 
 ### 1.6 Reader API (FR-RD-03, FR-RD-05)
-- [ ] `GET /v1/episodes/{id}/content` for novels; guests can read free episodes
-- [ ] `PUT /v1/progress/{episode_id}` at paragraph granularity
-- [ ] `GET /v1/library`: reading and favourites
-- [ ] Favourite / unfavourite a work
-- [ ] **(gap)** `favourites (user_id, work_id)` table: neither the spec's data model nor 1.1 has one
+- [x] `GET /v1/episodes/{id}/content` for novels; guests can read free episodes. The text comes back as `paragraphs`, split by `split_paragraphs` in `api/catalogue/text.py`; a signed-in reader also gets their saved `position`.
+- [x] `PUT /v1/progress/{episode_id}` at paragraph granularity. The position is an index into `paragraphs`.
+- [x] `GET /v1/library`: reading and favourites
+- [x] Favourite / unfavourite a work: `PUT` and `DELETE /v1/favourites/{work_id}`
+- [x] **(gap)** `favourites (user_id, work_id)` table: neither the spec's data model nor 1.1 has one. Added by migration `0006`.
 
 ### 1.7 Client: reader
 - [ ] Home, browse with filters, search
@@ -197,7 +197,7 @@ Where the schema differs from the spec's data model:
 - [ ] Sample novel with 5 episodes and a glossary, `is_sample = true`
 
 ### Exit check
-- [ ] An episode scheduled one minute ahead becomes readable on its own
+- [x] An episode scheduled one minute ahead becomes readable on its own
 - [ ] Progress set on Android shows on web after refresh
 - [x] Search finds a title typed without diacritics
 - [x] Draft-visibility test (1.5) green
@@ -268,7 +268,8 @@ Nothing in the ledger or unlock path may be cut. Cut client wallet polish instea
 - [ ] One transaction: lock wallet row, check balance, write entries, insert `unlocks`
 - [ ] Same key returns the stored response
 - [ ] Insufficient balance and already-unlocked cases return clean errors with no entries written
-- [ ] Episode content endpoint enforces unlock state for paid episodes
+- [ ] Episode content endpoint enforces unlock state for paid episodes. Until then `GET /v1/episodes/{id}/content` and `PUT /v1/progress/{episode_id}` answer 402 `episode_locked` to everyone for an episode with a price.
+- [ ] **(gap)** `GET /v1/library` gains "purchased" (FR-RD-05); it has reading and favourites only
 
 ### 3.4 Wait-until-free (FR-PAY-04)
 - [ ] `wuf_timers` in Postgres as source of truth

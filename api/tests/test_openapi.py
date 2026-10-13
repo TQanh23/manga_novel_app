@@ -37,6 +37,11 @@ EXPECTED_OPERATIONS = {
     ("get", "/v1/works/{work_id}/episodes"): "catalogue_list_episodes",
     ("get", "/v1/search"): "catalogue_search_works",
     ("get", "/v1/genres"): "catalogue_list_genres",
+    ("get", "/v1/episodes/{episode_id}/content"): "reader_get_episode_content",
+    ("put", "/v1/progress/{episode_id}"): "reader_save_progress",
+    ("get", "/v1/library"): "reader_get_library",
+    ("put", "/v1/favourites/{work_id}"): "reader_add_favourite",
+    ("delete", "/v1/favourites/{work_id}"): "reader_remove_favourite",
 }
 
 ERROR_REF = {"$ref": "#/components/schemas/ErrorResponse"}

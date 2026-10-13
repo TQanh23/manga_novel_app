@@ -59,6 +59,14 @@ async def get_work(session: AsyncSession, work_id: UUID) -> CatalogueWork:
     return (await _with_labels(session, [listed]))[0]
 
 
+async def get_visible_works(
+    session: AsyncSession, work_ids: Sequence[UUID]
+) -> dict[UUID, CatalogueWork]:
+    """The given works as the catalogue shows them. One a reader may not see is left out."""
+    works = await _with_labels(session, await repository.get_works(session, work_ids))
+    return {work.listed.work.id: work for work in works}
+
+
 async def list_episodes(session: AsyncSession, work_id: UUID) -> Sequence[Episode]:
     if await repository.get_work(session, work_id) is None:
         raise _work_not_found()
