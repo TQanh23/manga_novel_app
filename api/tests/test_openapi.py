@@ -32,6 +32,12 @@ EXPECTED_OPERATIONS = {
     ("post", "/v1/author/episodes/{episode_id}/publish"): "author_publish_episode",
     ("post", "/v1/author/episodes/{episode_id}/schedule"): "author_schedule_episode",
     ("delete", "/v1/author/episodes/{episode_id}/schedule"): "author_unschedule_episode",
+    ("get", "/v1/author/works/{work_id}/glossary"): "author_list_glossary",
+    ("post", "/v1/author/works/{work_id}/glossary"): "author_create_glossary_entry",
+    (
+        "patch",
+        "/v1/author/works/{work_id}/glossary/{entry_id}",
+    ): "author_update_glossary_entry",
     ("get", "/v1/works"): "catalogue_list_works",
     ("get", "/v1/works/{work_id}"): "catalogue_get_work",
     ("get", "/v1/works/{work_id}/episodes"): "catalogue_list_episodes",

@@ -1,8 +1,17 @@
+import json
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Any
 from uuid import UUID
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    JsonValue,
+    StringConstraints,
+    field_validator,
+)
 
 from api.catalogue.labels import WorkLabels
 from api.catalogue.models import (
@@ -10,6 +19,8 @@ from api.catalogue.models import (
     Episode,
     EpisodeStatus,
     EpisodeVersion,
+    GlossaryEntry,
+    GlossaryKind,
     Work,
     WorkStatus,
     WorkType,
@@ -29,6 +40,22 @@ Tags = Annotated[
     list[Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=30)]],
     Field(max_length=10),
 ]
+# A name in the glossary: of a character, a place or a term, or another way to write it.
+GlossaryName = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)
+]
+Aliases = Annotated[list[GlossaryName], Field(max_length=20)]
+# Whatever is known about the entry: eye colour, age, who is whose sister.
+Attributes = Annotated[
+    dict[
+        Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=50)],
+        JsonValue,
+    ],
+    Field(max_length=30),
+]
+# The name in the other content languages, keyed by language code.
+Translations = dict[ContentLanguage, GlossaryName]
+MAX_ATTRIBUTES_CHARS = 4_000
 # Far above a long chapter; the bound keeps one request from holding megabytes.
 BodyMd = Annotated[str, StringConstraints(max_length=200_000)]
 
@@ -206,3 +233,61 @@ class WufPresetResponse(BaseModel):
     @classmethod
     def from_preset(cls, preset: ConfigPreset) -> "WufPresetResponse":
         return cls(id=preset.id, seconds=preset.value)
+
+
+def _bounded_attributes(attributes: dict[str, Any] | None) -> dict[str, Any] | None:
+    # Counted in characters of the JSON text, whatever the script.
+    if (
+        attributes is not None
+        and len(json.dumps(attributes, ensure_ascii=False)) > MAX_ATTRIBUTES_CHARS
+    ):
+        raise ValueError(f"attributes may hold at most {MAX_ATTRIBUTES_CHARS} characters of JSON")
+    return attributes
+
+
+class GlossaryEntryCreate(AuthorRequest):
+    kind: GlossaryKind
+    name: GlossaryName
+    aliases: Aliases = []
+    attributes: Attributes = {}
+    translations: Translations = {}
+
+    _attributes_size = field_validator("attributes")(_bounded_attributes)
+
+
+class GlossaryEntryUpdate(AuthorRequest):
+    """Fields left out stay as they are. A list or an object that is sent replaces the old one."""
+
+    kind: GlossaryKind | None = None
+    name: GlossaryName | None = None
+    aliases: Aliases | None = None
+    attributes: Attributes | None = None
+    translations: Translations | None = None
+
+    _attributes_size = field_validator("attributes")(_bounded_attributes)
+
+
+class GlossaryEntryResponse(BaseModel):
+    id: UUID
+    work_id: UUID
+    kind: GlossaryKind
+    name: str
+    aliases: list[str]
+    attributes: dict[str, JsonValue]
+    translations: dict[str, str]
+    created_at: datetime
+    updated_at: datetime
+
+    @classmethod
+    def from_entry(cls, entry: GlossaryEntry) -> "GlossaryEntryResponse":
+        return cls(
+            id=entry.id,
+            work_id=entry.work_id,
+            kind=GlossaryKind(entry.kind),
+            name=entry.name,
+            aliases=entry.aliases,
+            attributes=entry.attributes,
+            translations=entry.translations,
+            created_at=entry.created_at,
+            updated_at=entry.updated_at,
+        )

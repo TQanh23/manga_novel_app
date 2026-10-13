@@ -5,6 +5,7 @@ from typing import Any
 from uuid import UUID
 
 import structlog
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth.models import User
@@ -15,6 +16,8 @@ from api.catalogue.models import (
     Episode,
     EpisodeStatus,
     EpisodeVersion,
+    GlossaryEntry,
+    GlossaryKind,
     TagKind,
     Work,
     WorkType,
@@ -458,3 +461,111 @@ async def publish_due_episodes(
             episode_ids=[str(episode_id) for episode_id in published],
         )
     return published
+
+
+def _glossary_entry_exists() -> AppError:
+    return AppError(
+        "glossary_entry_exists",
+        "This work already has an entry of that kind with that name",
+        status_code=409,
+    )
+
+
+def _unique(names: Sequence[str]) -> list[str]:
+    return list(dict.fromkeys(names))
+
+
+async def list_glossary(
+    session: AsyncSession, *, author: User, work_id: UUID
+) -> Sequence[GlossaryEntry]:
+    work = await _own_work(session, author, work_id)
+    return await repository.list_glossary(session, work.id)
+
+
+async def create_glossary_entry(
+    session: AsyncSession,
+    *,
+    author: User,
+    work_id: UUID,
+    kind: GlossaryKind,
+    name: str,
+    aliases: Sequence[str],
+    attributes: Mapping[str, Any],
+    translations: Mapping[str, str],
+) -> GlossaryEntry:
+    """Record a character, a place or a term of a work (FR-NV-03)."""
+    work = await _own_work(session, author, work_id)
+    if await repository.find_glossary_entry(session, work.id, kind, name) is not None:
+        raise _glossary_entry_exists()
+
+    entry = GlossaryEntry(
+        work_id=work.id,
+        kind=kind,
+        name=name,
+        aliases=_unique(aliases),
+        attributes=dict(attributes),
+        translations=dict(translations),
+    )
+    try:
+        # A savepoint, so losing a race for the same name undoes only this insert.
+        async with session.begin_nested():
+            session.add(entry)
+            await session.flush()
+    except IntegrityError:
+        raise _glossary_entry_exists() from None
+    await session.refresh(entry)
+    await session.commit()
+    logger.info(
+        "glossary_entry_created",
+        author_id=str(author.id),
+        work_id=str(work.id),
+        entry_id=str(entry.id),
+    )
+    return entry
+
+
+async def update_glossary_entry(
+    session: AsyncSession,
+    *,
+    author: User,
+    work_id: UUID,
+    entry_id: UUID,
+    changes: Mapping[str, Any],
+) -> GlossaryEntry:
+    """Apply the fields the author sent. `changes` holds only those."""
+    work = await _own_work(session, author, work_id)
+    entry = await repository.get_glossary_entry(session, work.id, entry_id, for_update=True)
+    if entry is None:
+        raise AppError("glossary_entry_not_found", "Glossary entry not found", status_code=404)
+
+    kind = changes.get("kind") or entry.kind
+    name = changes.get("name") or entry.name
+    if (kind, name) != (entry.kind, entry.name):
+        taken = await repository.find_glossary_entry(session, work.id, kind, name)
+        if taken is not None and taken.id != entry.id:
+            raise _glossary_entry_exists()
+
+    try:
+        # A savepoint, so losing a race for the same name undoes only this change.
+        async with session.begin_nested():
+            entry.kind, entry.name = kind, name
+            if changes.get("aliases") is not None:
+                entry.aliases = _unique(changes["aliases"])
+            if changes.get("attributes") is not None:
+                entry.attributes = dict(changes["attributes"])
+            if changes.get("translations") is not None:
+                entry.translations = {
+                    str(language): text for language, text in changes["translations"].items()
+                }
+            await session.flush()
+    except IntegrityError:
+        raise _glossary_entry_exists() from None
+    await session.refresh(entry)
+    await session.commit()
+    logger.info(
+        "glossary_entry_updated",
+        author_id=str(author.id),
+        work_id=str(work.id),
+        entry_id=str(entry.id),
+    )
+    return entry
