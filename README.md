@@ -9,7 +9,8 @@ today: register, sign in, roles, a `ping` job that travels from the API to the w
 author API (works with genres and tags, episodes, drafts with version history, publish now or on a
 schedule, glossary), the public catalogue with search that matches with or without diacritics,
 reading (episode text, progress shared between devices, library and favourites), and a seeded
-sample novel. No screens for these yet. See
+sample novel. The client has the catalogue, search and work pages; reading, the library and the
+author's screens are API only so far. See
 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [TASK_CHECKLIST.md](TASK_CHECKLIST.md).
 
 ## Layout
@@ -222,8 +223,17 @@ migration that has been applied, add a new one. Migrations run as the owner role
 cd app
 npm run typecheck
 npm run lint
+npm test
 npm run gen:api
 ```
+
+The app opens on the catalogue, signed in or not. Its tabs are Home (browse with filters),
+Search and Account; a work opens on its own page with its published episodes. Guests can use all
+of it. Signing in is reached from the Account tab.
+
+`npm test` runs the screens under jest with the API client mocked. Tests live in
+`app/src/__tests__/` (never inside `app/src/app/`, where every file is a route) and their helpers
+in `app/src/testing/`.
 
 `gen:api` regenerates the TypeScript client in `app/src/api/generated/` from the API's OpenAPI
 document. Run it after any API change and commit the result; CI fails when it is stale. It calls
