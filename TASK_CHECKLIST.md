@@ -181,8 +181,9 @@ Where the schema differs from the spec's data model:
 - [x] **(gap)** `favourites (user_id, work_id)` table: neither the spec's data model nor 1.1 has one. Added by migration `0006`.
 
 ### 1.7 Client: reader
-- [ ] Home, browse with filters, search
-- [ ] Work page with episode list
+- [x] Home, browse with filters, search. Guests browse without signing in: only the sign-in screens are guarded, and from the signed-out side.
+- [x] Work page with episode list. Rows open the reader once it exists.
+- [x] Client tests with jest-expo, run by CI (`cd app && npm test`)
 - [ ] Novel reader: font, size, light/dark theme
 - [ ] Restore reading position by paragraph
 - [ ] Library screen

@@ -172,3 +172,4 @@ jobs:
           test -z "$(git status --porcelain -- openapi.json src/api/generated)"
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm test -- --ci
