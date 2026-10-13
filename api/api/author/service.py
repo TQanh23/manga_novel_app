@@ -170,8 +170,14 @@ async def create_work(
     wuf_preset_id: UUID | None,
     genres: Sequence[str] = (),
     tags: Sequence[str] = (),
+    is_sample: bool = False,
 ) -> WorkState:
-    """Start a work (FR-NV-01). It is not a sample and not opted in to training."""
+    """Start a work (FR-NV-01). It is not opted in to training.
+
+    `is_sample` marks text written for this project, which may go to AI
+    providers that real manuscripts never reach. Only the seed script passes
+    it; no route does.
+    """
     if wuf_preset_id is not None:
         await _require_wuf_preset(session, wuf_preset_id)
     label_ids = await _resolve_labels(session, None, genres=genres, tags=tags)
@@ -183,6 +189,7 @@ async def create_work(
         synopsis=synopsis,
         language=language,
         wuf_preset_id=wuf_preset_id,
+        is_sample=is_sample,
     )
     session.add(work)
     await session.flush()

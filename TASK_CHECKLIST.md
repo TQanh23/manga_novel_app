@@ -151,7 +151,7 @@ Where the schema differs from the spec's data model:
 - [x] The service checks what the schema cannot: `wuf_preset_id` names a `wuf_period` preset, `published_version_id` names a version of the same episode
 - [x] Ownership checks: an author cannot touch another author's work (test). Another author's work answers 404, like one that does not exist.
 - [x] Read endpoints the author studio (1.8) needs: list and get works, list and get episodes, the current draft, one old version, the offered WUF periods
-- [ ] **(gap)** `PATCH /v1/author/episodes/{id}` to rename an episode: the spec says create and edit, no task had the edit
+- [x] **(gap)** `PATCH /v1/author/episodes/{id}` to rename an episode: the spec says create and edit, no task had the edit
 
 ### 1.3 Scheduled publish (FR-NV-02)
 - [x] Schedule publish with `publish_at`: `POST /v1/author/episodes/{id}/schedule`. Scheduling fixes the newest save as the one that goes live; saves made afterwards wait until the episode is scheduled again or published by hand.
@@ -160,8 +160,9 @@ Where the schema differs from the spec's data model:
 - [x] Test: running the cron twice is idempotent (also: two runs at once, and a run after a missed one)
 
 ### 1.4 Glossary (FR-NV-03)
-- [ ] `GET` / `POST` / `PATCH /v1/author/works/{id}/glossary`
-- [ ] Tests with KR, JP and VI names and aliases
+- [x] `GET` / `POST` / `PATCH /v1/author/works/{id}/glossary` (`PATCH` is on `.../glossary/{entry_id}`)
+- [x] Tests with KR, JP and VI names and aliases
+- [ ] **(gap)** Deleting a glossary entry: the spec lists `GET`, `POST` and `PATCH` only, and `app_rw` has no `DELETE` on the table. Decide whether authors need it.
 
 ### 1.5 Catalogue API (FR-RD-01, FR-RD-02, FR-RD-06)
 - [x] `GET /v1/works` for home, with filters: type, genre, completion status. A work is in the catalogue while it has at least one published episode; that rule is written once, in `_visible_works` in `api/catalogue/repository.py`.
@@ -194,7 +195,7 @@ Where the schema differs from the spec's data model:
 - [ ] Publish now and schedule
 
 ### 1.9 Seed
-- [ ] Sample novel with 5 episodes and a glossary, `is_sample = true`
+- [x] Sample novel with 5 episodes and a glossary, `is_sample = true`. In Vietnamese, under `infra/seed/sample_novel/`, published for `author@example.com` through the author services. Every glossary entry is stated in at least two chapters, so the eval set (4.9) has facts to contradict.
 
 ### Exit check
 - [x] An episode scheduled one minute ahead becomes readable on its own

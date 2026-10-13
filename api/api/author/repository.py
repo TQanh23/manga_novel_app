@@ -49,6 +49,12 @@ async def list_works(session: AsyncSession, author_id: UUID) -> Sequence[Work]:
     return (await session.execute(statement)).scalars().all()
 
 
+async def find_sample_work(session: AsyncSession, author_id: UUID, title: str) -> Work | None:
+    """The author's sample work with this title, if the seed has already made it."""
+    statement = select(Work).where(Work.author_id == author_id, Work.title == title, Work.is_sample)
+    return (await session.execute(statement)).scalars().first()
+
+
 async def get_episode_for_author(
     session: AsyncSession, episode_id: UUID, author_id: UUID, *, for_update: bool = False
 ) -> tuple[Episode, str] | None:
