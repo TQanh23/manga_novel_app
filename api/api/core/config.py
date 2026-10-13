@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     # Password of the accounts `python -m api.scripts.seed` creates. Local only:
     # the seed script refuses to run in any other environment.
     seed_password: SecretStr = SecretStr("local-dev-password")
+    # Where the seed script finds its data: infra/seed at the repository root,
+    # which is also where Compose mounts it in the seed container.
+    seed_dir: Path = _REPO_ROOT / "infra" / "seed"
 
     # Fixed-window rate limits on auth routes, per window.
     rate_limit_window_seconds: int = 60

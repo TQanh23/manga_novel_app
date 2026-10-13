@@ -109,6 +109,19 @@ jobs:
           echo "job $job_id: $status"
           [ "$status" = "succeeded" ]
           docker compose logs --no-color worker | grep -q '"request_id": "ci-ping"'
+      # The seeded novel, as a guest sees it: found without diacritics, five
+      # episodes, the first one readable. Seed, catalogue, search and reader in one go.
+      - name: Sample novel is published and readable
+        run: |
+          work_id=$(curl --fail --silent --show-error --get http://localhost:8000/v1/search \
+            --data-urlencode 'q=nguoi giu den ben suong' | jq -er '.items[0].id')
+          episodes=$(curl --fail --silent --show-error "http://localhost:8000/v1/works/$work_id/episodes")
+          [ "$(echo "$episodes" | jq 'length')" = "5" ]
+          first=$(echo "$episodes" | jq -r '.[0].id')
+          paragraphs=$(curl --fail --silent --show-error "http://localhost:8000/v1/episodes/$first/content" \
+            | jq '.paragraphs | length')
+          echo "episode 1 has $paragraphs paragraphs"
+          [ "$paragraphs" -ge 8 ]
       - name: Buckets exist
         run: docker compose run -T --rm --entrypoint mc minio-init stat local/raw local/tiles
       - name: API connects as app_rw

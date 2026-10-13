@@ -4,9 +4,11 @@ from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth.models import Role
-from api.testing import AuthHeaders, MakeEpisode, MakeUser, MakeWork
+from api.testing import AuthHeaders, MakeEpisode, MakeUser, MakeWork, PublishText
 
 
 async def test_fr_nv_01_a_new_episode_is_a_free_draft_with_nothing_saved(
@@ -169,3 +171,114 @@ async def test_fr_auth_03_episode_routes_are_for_authors_only(
 
     assert [response.status_code for response in as_reader] == [403] * 3
     assert [response.status_code for response in signed_out] == [401] * 3
+
+
+async def test_fr_nv_01_an_author_renames_an_episode_and_readers_see_it_at_once(
+    client: AsyncClient,
+    make_user: MakeUser,
+    make_work: MakeWork,
+    make_episode: MakeEpisode,
+    publish_text: PublishText,
+    auth_headers: AuthHeaders,
+) -> None:
+    author = await make_user(Role.AUTHOR)
+    headers = auth_headers(author)
+    work = await make_work(author)
+    draft = await make_episode(work, title="Working title")
+    published = await make_episode(work, title="First title")
+    await publish_text(published, "The text stays as it is.")
+
+    renamed_draft = await client.patch(
+        f"/v1/author/episodes/{draft.id}", json={"title": "제2화: 달빛"}, headers=headers
+    )
+    renamed_published = await client.patch(
+        f"/v1/author/episodes/{published.id}",
+        json={"title": "Chương 2: Ánh trăng"},
+        headers=headers,
+    )
+    unchanged = await client.patch(f"/v1/author/episodes/{published.id}", json={}, headers=headers)
+
+    assert renamed_draft.status_code == 200
+    assert (renamed_draft.json()["title"], renamed_draft.json()["status"]) == (
+        "제2화: 달빛",
+        "draft",
+    )
+    assert renamed_published.json()["title"] == "Chương 2: Ánh trăng"
+    assert renamed_published.json()["status"] == "published"
+    assert unchanged.json()["title"] == "Chương 2: Ánh trăng"
+    # The public pages show the new title; the text was not touched.
+    listed = (await client.get(f"/v1/works/{work.id}/episodes")).json()
+    content = (await client.get(f"/v1/episodes/{published.id}/content")).json()
+    assert [episode["title"] for episode in listed] == ["Chương 2: Ánh trăng"]
+    assert (content["title"], content["paragraphs"]) == (
+        "Chương 2: Ánh trăng",
+        ["The text stays as it is."],
+    )
+
+
+@pytest.mark.parametrize(
+    "payload", [{"title": "  "}, {"title": "x" * 201}, {"title": "Fine", "price_coins": 0}]
+)
+async def test_fr_nv_01_an_invalid_rename_is_rejected(
+    client: AsyncClient,
+    make_user: MakeUser,
+    make_work: MakeWork,
+    make_episode: MakeEpisode,
+    auth_headers: AuthHeaders,
+    payload: dict[str, object],
+) -> None:
+    author = await make_user(Role.AUTHOR)
+    episode = await make_episode(await make_work(author), title="Kept")
+
+    response = await client.patch(
+        f"/v1/author/episodes/{episode.id}", json=payload, headers=auth_headers(author)
+    )
+
+    assert response.status_code == 422
+    fetched = await client.get(f"/v1/author/episodes/{episode.id}", headers=auth_headers(author))
+    assert fetched.json()["title"] == "Kept"
+
+
+async def test_fr_nv_01_a_removed_episode_cannot_be_renamed(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    make_user: MakeUser,
+    make_work: MakeWork,
+    make_episode: MakeEpisode,
+    auth_headers: AuthHeaders,
+) -> None:
+    author = await make_user(Role.AUTHOR)
+    episode = await make_episode(await make_work(author), title="Taken down")
+    await db_session.execute(
+        text("UPDATE core.episodes SET status = 'removed' WHERE id = :id"), {"id": episode.id}
+    )
+
+    response = await client.patch(
+        f"/v1/author/episodes/{episode.id}", json={"title": "Back"}, headers=auth_headers(author)
+    )
+
+    assert (response.status_code, response.json()["error"]["code"]) == (409, "episode_removed")
+
+
+async def test_fr_nv_01_only_the_author_of_an_episode_can_rename_it(
+    client: AsyncClient,
+    make_user: MakeUser,
+    make_work: MakeWork,
+    make_episode: MakeEpisode,
+    auth_headers: AuthHeaders,
+) -> None:
+    author = await make_user(Role.AUTHOR)
+    episode = await make_episode(await make_work(author), title="Mine")
+    url = f"/v1/author/episodes/{episode.id}"
+    rename = {"title": "Taken"}
+
+    responses = [
+        await client.patch(url, json=rename, headers=auth_headers(await make_user(Role.AUTHOR))),
+        await client.patch(url, json=rename, headers=auth_headers(await make_user())),
+        await client.patch(url, json=rename, headers=auth_headers(await make_user(Role.ADMIN))),
+        await client.patch(url, json=rename),
+    ]
+
+    assert [response.status_code for response in responses] == [404, 403, 403, 401]
+    fetched = await client.get(url, headers=auth_headers(author))
+    assert fetched.json()["title"] == "Mine"
