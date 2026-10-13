@@ -47,6 +47,50 @@ export type DraftSave = {
 };
 
 /**
+ * EpisodeContentResponse
+ *
+ * A novel episode as a reader sees it.
+ */
+export type EpisodeContentResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Next Episode Id
+     */
+    next_episode_id: string | null;
+    /**
+     * Number
+     */
+    number: number;
+    /**
+     * Paragraphs
+     */
+    paragraphs: Array<string>;
+    /**
+     * Position
+     */
+    position: number | null;
+    /**
+     * Previous Episode Id
+     */
+    previous_episode_id: string | null;
+    /**
+     * Publish At
+     */
+    publish_at: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Work Id
+     */
+    work_id: string;
+};
+
+/**
  * EpisodeCreate
  */
 export type EpisodeCreate = {
@@ -296,6 +340,20 @@ export type JobAccepted = {
 };
 
 /**
+ * LibraryResponse
+ */
+export type LibraryResponse = {
+    /**
+     * Favourites
+     */
+    favourites: Array<WorkCard>;
+    /**
+     * Reading
+     */
+    reading: Array<ReadingEntryResponse>;
+};
+
+/**
  * Locale
  */
 export type Locale = 'en' | 'vi';
@@ -312,6 +370,63 @@ export type LoginRequest = {
      * Token Transport
      */
     token_transport?: 'body' | 'cookie';
+};
+
+/**
+ * ProgressResponse
+ */
+export type ProgressResponse = {
+    /**
+     * Episode Id
+     */
+    episode_id: string;
+    /**
+     * Position
+     */
+    position: number;
+    /**
+     * Saved At
+     */
+    saved_at: string;
+};
+
+/**
+ * ProgressSave
+ */
+export type ProgressSave = {
+    /**
+     * Position
+     */
+    position: number;
+};
+
+/**
+ * ReadingEntryResponse
+ *
+ * A work the reader is in, and the episode they read last.
+ */
+export type ReadingEntryResponse = {
+    /**
+     * Episode Id
+     */
+    episode_id: string;
+    /**
+     * Episode Number
+     */
+    episode_number: number;
+    /**
+     * Episode Title
+     */
+    episode_title: string;
+    /**
+     * Position
+     */
+    position: number;
+    /**
+     * Read At
+     */
+    read_at: string;
+    work: WorkCard;
 };
 
 /**
@@ -1400,6 +1515,108 @@ export type AuthorListWufPresetsResponses = {
 
 export type AuthorListWufPresetsResponse = AuthorListWufPresetsResponses[keyof AuthorListWufPresetsResponses];
 
+export type ReaderGetEpisodeContentData = {
+    body?: never;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/episodes/{episode_id}/content';
+};
+
+export type ReaderGetEpisodeContentErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type ReaderGetEpisodeContentError = ReaderGetEpisodeContentErrors[keyof ReaderGetEpisodeContentErrors];
+
+export type ReaderGetEpisodeContentResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeContentResponse;
+};
+
+export type ReaderGetEpisodeContentResponse = ReaderGetEpisodeContentResponses[keyof ReaderGetEpisodeContentResponses];
+
+export type ReaderRemoveFavouriteData = {
+    body?: never;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/favourites/{work_id}';
+};
+
+export type ReaderRemoveFavouriteErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type ReaderRemoveFavouriteError = ReaderRemoveFavouriteErrors[keyof ReaderRemoveFavouriteErrors];
+
+export type ReaderRemoveFavouriteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type ReaderRemoveFavouriteResponse = ReaderRemoveFavouriteResponses[keyof ReaderRemoveFavouriteResponses];
+
+export type ReaderAddFavouriteData = {
+    body?: never;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/favourites/{work_id}';
+};
+
+export type ReaderAddFavouriteErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type ReaderAddFavouriteError = ReaderAddFavouriteErrors[keyof ReaderAddFavouriteErrors];
+
+export type ReaderAddFavouriteResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type ReaderAddFavouriteResponse = ReaderAddFavouriteResponses[keyof ReaderAddFavouriteResponses];
+
 export type CatalogueListGenresData = {
     body?: never;
     path?: never;
@@ -1430,6 +1647,35 @@ export type CatalogueListGenresResponses = {
 };
 
 export type CatalogueListGenresResponse = CatalogueListGenresResponses[keyof CatalogueListGenresResponses];
+
+export type ReaderGetLibraryData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/v1/library';
+};
+
+export type ReaderGetLibraryErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type ReaderGetLibraryError = ReaderGetLibraryErrors[keyof ReaderGetLibraryErrors];
+
+export type ReaderGetLibraryResponses = {
+    /**
+     * Successful Response
+     */
+    200: LibraryResponse;
+};
+
+export type ReaderGetLibraryResponse = ReaderGetLibraryResponses[keyof ReaderGetLibraryResponses];
 
 export type AuthGetMeData = {
     body?: never;
@@ -1488,6 +1734,40 @@ export type AuthAddAuthorRoleResponses = {
 };
 
 export type AuthAddAuthorRoleResponse = AuthAddAuthorRoleResponses[keyof AuthAddAuthorRoleResponses];
+
+export type ReaderSaveProgressData = {
+    body: ProgressSave;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/progress/{episode_id}';
+};
+
+export type ReaderSaveProgressErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type ReaderSaveProgressError = ReaderSaveProgressErrors[keyof ReaderSaveProgressErrors];
+
+export type ReaderSaveProgressResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProgressResponse;
+};
+
+export type ReaderSaveProgressResponse = ReaderSaveProgressResponses[keyof ReaderSaveProgressResponses];
 
 export type CatalogueSearchWorksData = {
     body?: never;

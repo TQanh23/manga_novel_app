@@ -77,6 +77,89 @@
         "title": "DraftSave",
         "type": "object"
       },
+      "EpisodeContentResponse": {
+        "description": "A novel episode as a reader sees it.",
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "next_episode_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Episode Id"
+          },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
+          "paragraphs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Paragraphs",
+            "type": "array"
+          },
+          "position": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
+          },
+          "previous_episode_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Episode Id"
+          },
+          "publish_at": {
+            "format": "date-time",
+            "title": "Publish At",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "work_id": {
+            "format": "uuid",
+            "title": "Work Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "work_id",
+          "number",
+          "title",
+          "publish_at",
+          "paragraphs",
+          "previous_episode_id",
+          "next_episode_id",
+          "position"
+        ],
+        "title": "EpisodeContentResponse",
+        "type": "object"
+      },
       "EpisodeCreate": {
         "additionalProperties": false,
         "properties": {
@@ -478,6 +561,30 @@
         "title": "JobAccepted",
         "type": "object"
       },
+      "LibraryResponse": {
+        "properties": {
+          "favourites": {
+            "items": {
+              "$ref": "#/components/schemas/WorkCard"
+            },
+            "title": "Favourites",
+            "type": "array"
+          },
+          "reading": {
+            "items": {
+              "$ref": "#/components/schemas/ReadingEntryResponse"
+            },
+            "title": "Reading",
+            "type": "array"
+          }
+        },
+        "required": [
+          "reading",
+          "favourites"
+        ],
+        "title": "LibraryResponse",
+        "type": "object"
+      },
       "Locale": {
         "enum": [
           "en",
@@ -516,6 +623,87 @@
           "password"
         ],
         "title": "LoginRequest",
+        "type": "object"
+      },
+      "ProgressResponse": {
+        "properties": {
+          "episode_id": {
+            "format": "uuid",
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "saved_at": {
+            "format": "date-time",
+            "title": "Saved At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "episode_id",
+          "position",
+          "saved_at"
+        ],
+        "title": "ProgressResponse",
+        "type": "object"
+      },
+      "ProgressSave": {
+        "additionalProperties": false,
+        "properties": {
+          "position": {
+            "maximum": 100000.0,
+            "minimum": 0.0,
+            "title": "Position",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "position"
+        ],
+        "title": "ProgressSave",
+        "type": "object"
+      },
+      "ReadingEntryResponse": {
+        "description": "A work the reader is in, and the episode they read last.",
+        "properties": {
+          "episode_id": {
+            "format": "uuid",
+            "title": "Episode Id",
+            "type": "string"
+          },
+          "episode_number": {
+            "title": "Episode Number",
+            "type": "integer"
+          },
+          "episode_title": {
+            "title": "Episode Title",
+            "type": "string"
+          },
+          "position": {
+            "title": "Position",
+            "type": "integer"
+          },
+          "read_at": {
+            "format": "date-time",
+            "title": "Read At",
+            "type": "string"
+          },
+          "work": {
+            "$ref": "#/components/schemas/WorkCard"
+          }
+        },
+        "required": [
+          "work",
+          "episode_id",
+          "episode_number",
+          "episode_title",
+          "position",
+          "read_at"
+        ],
+        "title": "ReadingEntryResponse",
         "type": "object"
       },
       "RefreshRequest": {
@@ -2456,6 +2644,164 @@
         ]
       }
     },
+    "/v1/episodes/{episode_id}/content": {
+      "get": {
+        "operationId": "reader_get_episode_content",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EpisodeContentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Episode Content",
+        "tags": [
+          "reader"
+        ]
+      }
+    },
+    "/v1/favourites/{work_id}": {
+      "delete": {
+        "operationId": "reader_remove_favourite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Work Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Favourite",
+        "tags": [
+          "reader"
+        ]
+      },
+      "put": {
+        "operationId": "reader_add_favourite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "work_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Work Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Favourite",
+        "tags": [
+          "reader"
+        ]
+      }
+    },
     "/v1/genres": {
       "get": {
         "operationId": "catalogue_list_genres",
@@ -2498,6 +2844,52 @@
         "summary": "List Genres",
         "tags": [
           "catalogue"
+        ]
+      }
+    },
+    "/v1/library": {
+      "get": {
+        "operationId": "reader_get_library",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibraryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Library",
+        "tags": [
+          "reader"
         ]
       }
     },
@@ -2590,6 +2982,74 @@
         "summary": "Add Author Role",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/v1/progress/{episode_id}": {
+      "put": {
+        "operationId": "reader_save_progress",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "episode_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Episode Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProgressSave"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Validation error"
+          },
+          "default": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Save Progress",
+        "tags": [
+          "reader"
         ]
       }
     },

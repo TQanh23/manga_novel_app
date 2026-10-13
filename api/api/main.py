@@ -17,6 +17,7 @@ from api.core.middleware import RequestContextMiddleware
 from api.core.queue import close_arq_pool
 from api.core.redis import get_redis
 from api.core.request_id import REQUEST_ID_HEADER
+from api.reader.router import router as reader_router
 
 
 @asynccontextmanager
@@ -53,6 +54,7 @@ def create_app() -> FastAPI:
     v1.include_router(admin_router)
     v1.include_router(author_router)
     v1.include_router(catalogue_router)
+    v1.include_router(reader_router)
     app.include_router(v1)
 
     return app

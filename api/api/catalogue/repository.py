@@ -103,6 +103,14 @@ async def get_work(session: AsyncSession, work_id: UUID) -> ListedWork | None:
     return _listed(row) if row is not None else None
 
 
+async def get_works(session: AsyncSession, work_ids: Sequence[UUID]) -> list[ListedWork]:
+    """Those of the given works a reader may see."""
+    if not work_ids:
+        return []
+    rows = await session.execute(_visible_works().where(Work.id.in_(work_ids)))
+    return [_listed(row) for row in rows]
+
+
 async def list_published_episodes(session: AsyncSession, work_id: UUID) -> Sequence[Episode]:
     statement = (
         select(Episode)

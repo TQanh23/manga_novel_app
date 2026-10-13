@@ -13,11 +13,12 @@ from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
 
 from api.auth.models import User
 from api.catalogue.models import Episode, EpisodeVersion, GlossaryEntry, Tag, Work, WorkTag
-from api.reader.models import ReadingProgress
+from api.reader.models import Favourite, ReadingProgress
 
 WORK_OWNED_TABLES = [
     "core.episode_versions",
     "core.episodes",
+    "core.favourites",
     "core.glossary_entries",
     "core.reading_progress",
     "core.work_tags",
@@ -75,6 +76,7 @@ async def test_deleting_a_work_removes_everything_that_belonged_to_it(
                 GlossaryEntry(work_id=work.id, kind="character", name="Mira"),
                 WorkTag(work_id=work.id, tag_id=tag.id),
                 ReadingProgress(user_id=reader.id, episode_id=episodes[0].id, position=3),
+                Favourite(user_id=reader.id, work_id=work.id),
             ]
         )
         await session.flush()

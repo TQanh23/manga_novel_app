@@ -71,6 +71,9 @@ class Settings(BaseSettings):
     rate_limit_author_writes_per_user: int = 120
     # Catalogue and search, per address. Browsing makes several calls a screen.
     rate_limit_catalogue_per_ip: int = 300
+    # Reading progress and favourites, per account. A reader saves progress
+    # every few paragraphs.
+    rate_limit_reader_writes_per_user: int = 240
 
     @property
     def cookie_secure(self) -> bool:

@@ -33,6 +33,23 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
+async def get_optional_user(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    session: Session,
+) -> User | None:
+    """The signed-in account, or None for a guest.
+
+    A token that is sent has to be valid: an expired one gets 401, so the
+    client refreshes it instead of silently reading as a guest.
+    """
+    if credentials is None:
+        return None
+    return await service.authenticate(session, credentials.credentials)
+
+
+OptionalUser = Annotated[User | None, Depends(get_optional_user)]
+
+
 def require_role(*roles: Role) -> Callable[[User], Awaitable[User]]:
     """Route dependency: the caller must hold at least one of the roles."""
 
