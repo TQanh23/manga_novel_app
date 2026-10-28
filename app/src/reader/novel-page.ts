@@ -1,4 +1,4 @@
-import { ALLOWED_TAGS } from './sanitize';
+import { PAGE_CLEANER } from './sanitize';
 
 export type NovelAppearance = {
   font: 'sans' | 'serif';
@@ -29,31 +29,12 @@ export const FONT_STACKS = {
 export const TOP_GAP = 16;
 
 // Runs inside the page. Plain ES5, as it is a string and no bundler sees it.
-// Each paragraph is parsed into an inert document (nothing in it runs or
-// loads) and copied over element by element: allowlisted tags without any
-// attributes, and text. Elements whose content is code are dropped whole.
+// Each paragraph is parsed into an inert document and copied over by
+// PAGE_CLEANER's `copy`.
 const PAGE_SCRIPT = `(function () {
-  var ALLOWED = ${JSON.stringify(ALLOWED_TAGS)};
-  var DROPPED = ['script', 'style', 'iframe', 'object', 'embed', 'template', 'noscript', 'svg', 'math', 'textarea', 'select', 'title'];
+  ${PAGE_CLEANER}
   var TOP_GAP = ${TOP_GAP};
   var FONTS = ${JSON.stringify(FONT_STACKS)};
-
-  function copy(from, to) {
-    for (var node = from.firstChild; node; node = node.nextSibling) {
-      if (node.nodeType === 3) {
-        to.appendChild(document.createTextNode(node.data));
-      } else if (node.nodeType === 1) {
-        var tag = node.nodeName.toLowerCase();
-        if (ALLOWED.indexOf(tag) >= 0) {
-          var element = document.createElement(tag);
-          copy(node, element);
-          to.appendChild(element);
-        } else if (DROPPED.indexOf(tag) < 0) {
-          copy(node, to);
-        }
-      }
-    }
-  }
 
   var data = JSON.parse(document.getElementById('data').textContent);
   var article = document.getElementById('text');

@@ -34,6 +34,41 @@
     "newTitle": "Tác phẩm mới",
     "editTitle": "Sửa tác phẩm",
     "notFound": "Tác phẩm này không tồn tại hoặc không phải của bạn.",
+    "details": "Thông tin",
+    "episodes": "Danh sách chương",
+    "noEpisodes": "Chưa có chương nào.",
+    "newEpisodeTitle": "Tiêu đề chương tiếp theo",
+    "addEpisode": "Thêm chương",
+    "episodeStatus": {
+      "draft": "Bản nháp",
+      "scheduled": "Hẹn đăng lúc {{date}}",
+      "published": "Đã đăng",
+      "removed": "Đã gỡ"
+    },
+    "unpublishedChanges": "Có thay đổi chưa đăng",
+    "episode": {
+      "title": "Tiêu đề",
+      "text": "Nội dung",
+      "placeholder": "Bắt đầu viết…",
+      "notFound": "Chương này không tồn tại hoặc không phải của bạn.",
+      "manga": "Chưa thể tải trang manga lên ở phiên bản này."
+    },
+    "editor": {
+      "bold": "In đậm",
+      "italic": "In nghiêng",
+      "underline": "Gạch chân",
+      "strike": "Gạch ngang",
+      "h2": "Tiêu đề",
+      "h3": "Tiêu đề phụ",
+      "quote": "Trích dẫn",
+      "paragraph": "Đoạn văn",
+      "rule": "Ngắt cảnh",
+      "saved": "Đã lưu lúc {{time}}",
+      "nothingSaved": "Chưa lưu lần nào",
+      "saving": "Đang lưu…",
+      "unsaved": "Có thay đổi chưa lưu",
+      "failed": "Chưa lưu được: {{reason}} Sẽ thử lại sau ít giây."
+    },
     "form": {
       "type": "Định dạng",
       "typeHint": "Không thể đổi định dạng sau khi tạo.",
@@ -188,6 +223,7 @@
     "invalid_wuf_preset": "Thời gian chờ miễn phí này không còn được cung cấp. Hãy chọn thời gian khác.",
     "unknown_genre": "Hãy chọn thể loại trong danh sách.",
     "too_many_genres": "Một tác phẩm có tối đa ba thể loại.",
+    "episode_removed": "Chương này đã bị gỡ.",
     "network_error": "Không kết nối được máy chủ. Hãy kiểm tra mạng.",
     "unknown": "Đã có lỗi xảy ra. Hãy thử lại."
   }

@@ -1,6 +1,6 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { errorCode } from '@/api/client';
@@ -8,10 +8,12 @@ import { authorGetWork, authorUpdateWork, type WorkResponse } from '@/api/genera
 import { useLoad } from '@/api/hooks';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
+import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { EpisodeList } from '@/studio/episode-list';
 import { changedFields, formValues, WorkForm, type WorkFormValues } from '@/studio/work-form';
 
-/** Edit a work's details (FR-NV-01). */
+/** A work in the studio: its episodes, then its details (FR-NV-01). */
 export default function EditWorkScreen() {
   const { t } = useTranslation();
   const { workId } = useLocalSearchParams<{ workId: string }>();
@@ -50,7 +52,17 @@ export default function EditWorkScreen() {
     if (work.error || !current) {
       return <ErrorState code={work.error ?? 'unknown'} onRetry={work.reload} />;
     }
-    return <WorkForm mode="edit" initial={formValues(current)} onSubmit={save} />;
+    return (
+      <View style={styles.sections}>
+        <EpisodeList workId={workId} />
+        <View style={styles.section}>
+          <ThemedText type="smallBold" accessibilityRole="header">
+            {t('studio.details')}
+          </ThemedText>
+          <WorkForm mode="edit" initial={formValues(current)} onSubmit={save} />
+        </View>
+      </View>
+    );
   };
 
   return (
@@ -67,5 +79,11 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.three,
     paddingBottom: Spacing.five,
+  },
+  sections: {
+    gap: Spacing.five,
+  },
+  section: {
+    gap: Spacing.three,
   },
 });
