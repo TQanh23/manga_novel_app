@@ -35,6 +35,10 @@ type Options = {
 export function useDraftSaver({ episodeId, savedHtml, savedAt }: Options): {
   status: DraftStatus;
   change: (html: string) => void;
+  /** Saves what is pending now, and resolves once no save is in flight. */
+  settle: () => Promise<void>;
+  /** Takes `html` as saved at `savedAt`: a version the API made itself, such as a restore. */
+  reset: (html: string, savedAt: string) => void;
 } {
   const [status, setStatus] = useState<DraftStatus>({ kind: 'saved', savedAt });
   const state = useRef<{
@@ -45,6 +49,8 @@ export function useDraftSaver({ episodeId, savedHtml, savedAt }: Options): {
     timer: ReturnType<typeof setTimeout> | undefined;
   }>({ saved: savedHtml, savedAt, pending: null, inFlight: false, timer: undefined });
   const mounted = useRef(true);
+  // Who is waiting for the saves in flight to end.
+  const waiting = useRef<(() => void)[]>([]);
 
   const report = useCallback((next: DraftStatus) => {
     if (mounted.current) {
@@ -95,6 +101,11 @@ export function useDraftSaver({ episodeId, savedHtml, savedAt }: Options): {
           report({ kind: 'failed', error: outcome.error });
           clearTimeout(current.timer);
           current.timer = setTimeout(send, RETRY_DELAY_MS);
+        })
+        .finally(() => {
+          if (!current.inFlight) {
+            waiting.current.splice(0).forEach((resume) => resume());
+          }
         });
     }
     send();
@@ -134,5 +145,26 @@ export function useDraftSaver({ episodeId, savedHtml, savedAt }: Options): {
     [flush, report],
   );
 
-  return { status, change };
+  const settle = useCallback(() => {
+    flush();
+    if (!state.current.inFlight) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resume) => waiting.current.push(resume));
+  }, [flush]);
+
+  const reset = useCallback(
+    (html: string, at: string) => {
+      const current = state.current;
+      clearTimeout(current.timer);
+      current.timer = undefined;
+      current.pending = null;
+      current.saved = html;
+      current.savedAt = at;
+      report({ kind: 'saved', savedAt: at });
+    },
+    [report],
+  );
+
+  return { status, change, settle, reset };
 }

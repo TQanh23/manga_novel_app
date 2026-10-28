@@ -10,9 +10,10 @@ import {
   authorUpdateEpisode,
   type EpisodeDraft,
   type EpisodeResponse,
+  type EpisodeVersionSummary,
 } from '@/api/generated';
 import { useLoad } from '@/api/hooks';
-import { ErrorText, TextField } from '@/components/form';
+import { Button, ErrorText, TextField } from '@/components/form';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
@@ -20,10 +21,11 @@ import { Danger, Spacing } from '@/constants/theme';
 import { errorMessageKey, formatTime } from '@/i18n';
 import RichTextEditor from '@/studio/rich-text-editor';
 import { type DraftStatus, useDraftSaver } from '@/studio/use-draft-saver';
+import { VersionHistory } from '@/studio/version-history';
 
 const MAX_TITLE = 200;
 
-/** Write an episode: its title, and its text with autosave (FR-NV-01, D13). */
+/** Write an episode: its title, its text with autosave, and its versions (FR-NV-01, D13). */
 export default function EpisodeEditorScreen() {
   const { t } = useTranslation();
   const { episodeId } = useLocalSearchParams<{ episodeId: string }>();
@@ -75,19 +77,63 @@ export default function EpisodeEditorScreen() {
 }
 
 function EpisodeEditor({ episode, draft }: { episode: EpisodeResponse; draft: EpisodeDraft }) {
-  const { status, change } = useDraftSaver({
+  const { t } = useTranslation();
+  const { status, change, settle, reset } = useDraftSaver({
     episodeId: episode.id,
     savedHtml: draft.body_html,
     savedAt: draft.saved_at,
   });
+  // The text as the author left it. The editor reopens on it after the history.
+  const [html, setHtml] = useState(draft.body_html);
+  const [mode, setMode] = useState<'write' | 'opening' | 'history'>('write');
+
+  const write = (next: string) => {
+    setHtml(next);
+    change(next);
+  };
+
+  // What is typed goes in first, so the history ends with it.
+  const openHistory = async () => {
+    setMode('opening');
+    await settle();
+    setMode('history');
+  };
+
+  const restored = (text: string, version: EpisodeVersionSummary) => {
+    reset(text, version.created_at);
+    setHtml(text);
+    setMode('write');
+  };
 
   return (
     <View style={styles.fill}>
       <View style={styles.header}>
         <EpisodeTitle episode={episode} />
-        <SaveStatus status={status} />
+        <View style={styles.statusRow}>
+          <View style={styles.status}>
+            <SaveStatus status={status} />
+          </View>
+          {mode === 'history' ? (
+            <Button
+              label={t('studio.history.close')}
+              variant="secondary"
+              onPress={() => setMode('write')}
+            />
+          ) : (
+            <Button
+              label={t('studio.history.open')}
+              variant="secondary"
+              busy={mode === 'opening'}
+              onPress={() => void openHistory()}
+            />
+          )}
+        </View>
       </View>
-      <RichTextEditor initialHtml={draft.body_html} onChange={change} />
+      {mode === 'history' ? (
+        <VersionHistory episodeId={episode.id} onRestored={restored} />
+      ) : (
+        <RichTextEditor initialHtml={html} onChange={write} />
+      )}
     </View>
   );
 }
@@ -167,6 +213,14 @@ const styles = StyleSheet.create({
   header: {
     padding: Spacing.three,
     gap: Spacing.two,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  status: {
+    flex: 1,
   },
   failed: {
     color: Danger,

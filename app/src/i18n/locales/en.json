@@ -69,6 +69,17 @@
       "unsaved": "Unsaved changes",
       "failed": "Not saved: {{reason}} Trying again shortly."
     },
+    "history": {
+      "open": "Version history",
+      "close": "Back to writing",
+      "title": "Version history",
+      "empty": "Nothing has been saved yet.",
+      "current": "Current",
+      "published": "Published",
+      "allVersions": "All versions",
+      "restore": "Restore this version",
+      "restoreHint": "Restoring adds a new version with this text. Nothing in the history is deleted."
+    },
     "form": {
       "type": "Format",
       "typeHint": "The format cannot be changed later.",
@@ -224,6 +235,7 @@
     "unknown_genre": "Choose genres from the list.",
     "too_many_genres": "A work has at most three genres.",
     "episode_removed": "This episode has been removed.",
+    "version_not_found": "This version does not exist.",
     "network_error": "Could not reach the server. Check your connection.",
     "unknown": "Something went wrong. Try again."
   }
