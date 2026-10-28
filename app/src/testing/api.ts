@@ -6,7 +6,14 @@
  * Every call of the generated client then resolves to whatever the test says.
  */
 
-import type { EpisodeSummary, GenreResponse, WorkCard, WorkDetail, WorkPage } from '@/api/generated';
+import type {
+  EpisodeContentResponse,
+  EpisodeSummary,
+  GenreResponse,
+  WorkCard,
+  WorkDetail,
+  WorkPage,
+} from '@/api/generated';
 
 /** What a generated client call resolves to when the API answered with `data`. */
 export function ok<T>(data: T): Promise<never> {
@@ -66,6 +73,27 @@ export function episode(number: number, overrides: Partial<EpisodeSummary> = {})
     publish_at: '2026-10-13T04:30:00Z',
     price_coins: 0,
     wuf_eligible: false,
+    ...overrides,
+  };
+}
+
+export function episodeContent(
+  overrides: Partial<EpisodeContentResponse> = {},
+): EpisodeContentResponse {
+  return {
+    id: '01a00000-0000-7000-8000-000000000102',
+    work_id: '01a00000-0000-7000-8000-000000000001',
+    number: 2,
+    title: 'Chương 2: Dầu sương',
+    publish_at: '2026-10-13T04:30:00Z',
+    paragraphs: [
+      '<h2>Dầu sương</h2>',
+      '<p>Chiều nào cũng vậy, An Nhiên lại xách bình dầu lên Tháp Đèn.</p>',
+      '<p>Ông Bách gọi vọng lên: <em>chậm thôi</em>.</p>',
+    ],
+    previous_episode_id: '01a00000-0000-7000-8000-000000000101',
+    next_episode_id: '01a00000-0000-7000-8000-000000000103',
+    position: null,
     ...overrides,
   };
 }

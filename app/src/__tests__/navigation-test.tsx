@@ -48,6 +48,8 @@ const APP = {
   '(tabs)/search': SearchScreen,
   '(tabs)/account': AccountScreen,
   'works/[workId]': WorkScreen,
+  // The reader has its own tests; here only the way to it matters.
+  'read/[episodeId]': () => null,
   '(auth)/_layout': AuthLayout,
   '(auth)/sign-in': SignInScreen,
   '(auth)/register': RegisterScreen,
@@ -87,6 +89,14 @@ test('a guest opens a work from the catalogue', async () => {
 
   expect(router.pathname()).toBe('/works/lantern');
   expect(await screen.findByText('Episodes · 1 episode')).toBeOnTheScreen();
+});
+
+test('a guest opens an episode from its work page', async () => {
+  const router = await openRouter(APP, '/works/lantern');
+
+  await fireEvent.press(await screen.findByRole('link', { name: 'Chương 1' }));
+
+  expect(router.pathname()).toBe(`/read/${episode(1).id}`);
 });
 
 test('a guest can open a work page directly', async () => {

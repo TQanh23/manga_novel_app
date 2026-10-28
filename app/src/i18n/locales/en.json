@@ -98,6 +98,30 @@
     "waitUntilFree": "Wait until free",
     "notFound": "This work does not exist or has nothing published yet."
   },
+  "reader": {
+    "title": "Reading",
+    "heading": "{{number}}. {{title}}",
+    "previous": "Previous",
+    "next": "Next",
+    "settings": "Text",
+    "back": "Back",
+    "font": "Font",
+    "fonts": {
+      "serif": "Serif",
+      "sans": "Sans-serif"
+    },
+    "size": "Size",
+    "theme": "Theme",
+    "themes": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "locked": "This episode has to be unlocked before you can read it.",
+    "notFound": "This episode does not exist or is not published.",
+    "notANovel": "This episode is manga; it opens in the manga reader.",
+    "empty": "This episode has no text."
+  },
   "errors": {
     "invalid_credentials": "Email or password is incorrect.",
     "email_taken": "An account with this email already exists.",

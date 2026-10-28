@@ -5,6 +5,8 @@
   "dependencies": {
     "@expo/ui": "~57.0.22",
     "@expo/vector-icons": "^15.0.2",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "dompurify": "^3.4.17",
     "expo": "~57.0.27",
     "expo-constants": "~57.0.21",
     "expo-device": "~57.0.2",
@@ -30,6 +32,7 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
     "react-native-web": "~0.21.0",
+    "react-native-webview": "13.16.1",
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
@@ -58,6 +61,9 @@
   "private": true,
   "jest": {
     "preset": "jest-expo",
+    "setupFiles": [
+      "<rootDir>/src/testing/jest-setup.ts"
+    ],
     "moduleNameMapper": {
       "\\.css$": "<rootDir>/src/testing/style-stub.js"
     }

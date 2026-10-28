@@ -5,6 +5,7 @@ import { useColorScheme } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { SessionProvider, useSession } from '@/auth/session';
+import { ReaderSettingsProvider } from '@/reader/settings';
 
 // Held until the silent sign-in has finished, so a signed-in user never sees
 // the app flash by as a guest.
@@ -15,7 +16,9 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <SessionProvider>
-        <RootNavigator />
+        <ReaderSettingsProvider>
+          <RootNavigator />
+        </ReaderSettingsProvider>
       </SessionProvider>
     </ThemeProvider>
   );
@@ -36,6 +39,7 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="works/[workId]" options={{ headerShown: true, title: t('work.title') }} />
+      <Stack.Screen name="read/[episodeId]" options={{ headerShown: true, title: t('reader.title') }} />
       <Stack.Protected guard={user === null}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
