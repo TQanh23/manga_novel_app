@@ -25,6 +25,10 @@ export default function TabsLayout() {
         options={{ title: t('tabs.search'), tabBarIcon: icon('search-outline') }}
       />
       <Tabs.Screen
+        name="library"
+        options={{ title: t('tabs.library'), tabBarIcon: icon('library-outline') }}
+      />
+      <Tabs.Screen
         name="account"
         options={{ title: t('tabs.account'), tabBarIcon: icon('person-outline') }}
       />

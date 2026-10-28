@@ -1,23 +1,54 @@
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
 import { Stack } from 'expo-router';
 import { screen } from 'expo-router/testing-library';
 
-import { catalogueGetWork, catalogueListEpisodes } from '@/api/generated';
+import {
+  catalogueGetWork,
+  catalogueListEpisodes,
+  readerAddFavourite,
+  readerGetLibrary,
+  readerRemoveFavourite,
+  type UserResponse,
+} from '@/api/generated';
 import WorkScreen from '@/app/works/[workId]';
+import { useSession } from '@/auth/session';
 import i18n from '@/i18n';
-import { episode, fails, ok, workDetail } from '@/testing/api';
+import {
+  deferred,
+  episode,
+  fails,
+  library,
+  ok,
+  READER,
+  readingEntry,
+  work,
+  workDetail,
+} from '@/testing/api';
 import { openRouter } from '@/testing/router';
 
 jest.mock('@/api/generated');
+jest.mock('@/auth/session', () => ({ useSession: jest.fn() }));
 
 const getWork = jest.mocked(catalogueGetWork);
 const listEpisodes = jest.mocked(catalogueListEpisodes);
+const getLibrary = jest.mocked(readerGetLibrary);
+const addFavourite = jest.mocked(readerAddFavourite);
+const removeFavourite = jest.mocked(readerRemoveFavourite);
+const session = jest.mocked(useSession);
+
+function signedIn(user: UserResponse | null) {
+  session.mockReturnValue({ user, isLoading: false } as ReturnType<typeof useSession>);
+}
 
 const detail = workDetail({ id: 'lantern' });
 const NOT_FOUND = 'This work does not exist or has nothing published yet.';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  signedIn(null);
+  getLibrary.mockReturnValue(ok(library()));
+  addFavourite.mockReturnValue(ok(undefined));
+  removeFavourite.mockReturnValue(ok(undefined));
   getWork.mockReturnValue(ok(detail));
   listEpisodes.mockReturnValue(
     ok([
@@ -33,8 +64,79 @@ afterEach(async () => {
 });
 
 function openWork(id = 'lantern') {
-  return openRouter({ _layout: () => <Stack />, 'works/[workId]': WorkScreen }, `/works/${id}`);
+  return openRouter(
+    { _layout: () => <Stack />, 'works/[workId]': WorkScreen, 'read/[episodeId]': () => null },
+    `/works/${id}`,
+  );
 }
+
+test('FR-RD-03: a guest starts reading at episode 1 and has no favourites button', async () => {
+  const router = await openWork();
+
+  await fireEvent.press(await screen.findByRole('button', { name: 'Start reading' }));
+
+  expect(router.pathname()).toBe(`/read/${episode(1).id}`);
+  expect(screen.queryByRole('button', { name: 'Add to favourites' })).toBeNull();
+  expect(getLibrary).not.toHaveBeenCalled();
+});
+
+test('FR-RD-05: a reader who is in the work continues where they stopped', async () => {
+  signedIn(READER);
+  getLibrary.mockReturnValue(
+    ok(library({ reading: [readingEntry({ work: work({ id: 'lantern' }) })] })),
+  );
+  const router = await openWork();
+
+  await fireEvent.press(await screen.findByRole('button', { name: 'Continue: episode 2' }));
+
+  expect(router.pathname()).toBe(`/read/${readingEntry().episode_id}`);
+});
+
+test('FR-RD-05: a reader adds the work to their favourites and takes it out again', async () => {
+  signedIn(READER);
+  await openWork();
+
+  await fireEvent.press(await screen.findByRole('button', { name: 'Add to favourites' }));
+  await fireEvent.press(await screen.findByRole('button', { name: 'Remove from favourites' }));
+
+  expect(addFavourite.mock.lastCall?.[0].path).toEqual({ work_id: 'lantern' });
+  expect(removeFavourite.mock.lastCall?.[0].path).toEqual({ work_id: 'lantern' });
+  expect(await screen.findByRole('button', { name: 'Add to favourites' })).toBeOnTheScreen();
+});
+
+test('FR-RD-05: a favourite already in the library shows as one', async () => {
+  signedIn(READER);
+  getLibrary.mockReturnValue(ok(library({ favourites: [work({ id: 'lantern' })] })));
+  await openWork();
+
+  expect(await screen.findByRole('button', { name: 'Remove from favourites' })).toBeOnTheScreen();
+});
+
+test('FR-RD-05: the button changes at once, before the API has answered', async () => {
+  signedIn(READER);
+  const answer = deferred<undefined>();
+  addFavourite.mockReturnValue(answer.promise);
+  await openWork();
+
+  await fireEvent.press(await screen.findByRole('button', { name: 'Add to favourites' }));
+  expect(await screen.findByRole('button', { name: 'Remove from favourites' })).toBeDisabled();
+
+  await act(async () => answer.resolve(undefined));
+  expect(screen.getByRole('button', { name: 'Remove from favourites' })).toBeEnabled();
+});
+
+test('FR-RD-05: a favourite that failed to save goes back, with the reason', async () => {
+  signedIn(READER);
+  addFavourite.mockReturnValue(fails('rate_limited'));
+  await openWork();
+
+  await fireEvent.press(await screen.findByRole('button', { name: 'Add to favourites' }));
+
+  expect(
+    await screen.findByText('Too many attempts. Wait a moment and try again.'),
+  ).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: 'Add to favourites' })).toBeEnabled();
+});
 
 test('FR-RD-02: a work page shows what the work is and who wrote it', async () => {
   await openWork();

@@ -12,7 +12,17 @@
   "tabs": {
     "home": "Trang chủ",
     "search": "Tìm kiếm",
+    "library": "Tủ truyện",
     "account": "Tài khoản"
+  },
+  "library": {
+    "title": "Tủ truyện",
+    "reading": "Đang đọc",
+    "favourites": "Yêu thích",
+    "emptyReading": "Truyện bạn bắt đầu đọc sẽ hiện ở đây.",
+    "emptyFavourites": "Truyện bạn thêm vào yêu thích sẽ hiện ở đây.",
+    "readOn": "Đọc ngày {{date}}",
+    "guestHint": "Đăng nhập để lưu vị trí đang đọc và xây tủ truyện của riêng bạn."
   },
   "auth": {
     "signInTitle": "Đăng nhập",
@@ -96,6 +106,10 @@
     "coins_one": "{{count}} coin",
     "coins_other": "{{count}} coin",
     "waitUntilFree": "Chờ miễn phí",
+    "start": "Đọc từ đầu",
+    "continue": "Đọc tiếp: chương {{number}}",
+    "favourite": "Thêm vào yêu thích",
+    "unfavourite": "Bỏ khỏi yêu thích",
     "notFound": "Truyện này không tồn tại hoặc chưa có chương nào được đăng."
   },
   "reader": {

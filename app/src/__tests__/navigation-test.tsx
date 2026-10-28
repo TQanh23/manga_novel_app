@@ -13,6 +13,7 @@ import RegisterScreen from '@/app/(auth)/register';
 import SignInScreen from '@/app/(auth)/sign-in';
 import TabsLayout from '@/app/(tabs)/_layout';
 import AccountScreen from '@/app/(tabs)/account';
+import LibraryScreen from '@/app/(tabs)/library';
 import HomeScreen from '@/app/(tabs)/index';
 import SearchScreen from '@/app/(tabs)/search';
 import RootLayout from '@/app/_layout';
@@ -46,6 +47,7 @@ const APP = {
   '(tabs)/_layout': TabsLayout,
   '(tabs)/index': HomeScreen,
   '(tabs)/search': SearchScreen,
+  '(tabs)/library': LibraryScreen,
   '(tabs)/account': AccountScreen,
   'works/[workId]': WorkScreen,
   // The reader has its own tests; here only the way to it matters.

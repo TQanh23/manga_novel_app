@@ -10,6 +10,9 @@ import type {
   EpisodeContentResponse,
   EpisodeSummary,
   GenreResponse,
+  LibraryResponse,
+  ReadingEntryResponse,
+  UserResponse,
   WorkCard,
   WorkDetail,
   WorkPage,
@@ -97,6 +100,31 @@ export function episodeContent(
     ...overrides,
   };
 }
+
+export function readingEntry(overrides: Partial<ReadingEntryResponse> = {}): ReadingEntryResponse {
+  return {
+    work: work(),
+    episode_id: '01a00000-0000-7000-8000-000000000102',
+    episode_number: 2,
+    episode_title: 'Chương 2: Dầu sương',
+    position: 7,
+    read_at: '2026-10-27T09:00:00Z',
+    ...overrides,
+  };
+}
+
+export function library(overrides: Partial<LibraryResponse> = {}): LibraryResponse {
+  return { reading: [], favourites: [], ...overrides };
+}
+
+export const READER: UserResponse = {
+  id: 'reader-1',
+  email: 'reader1@example.com',
+  display_name: 'Reader One',
+  locale: 'en',
+  status: 'active',
+  roles: ['reader'],
+};
 
 export const GENRES: GenreResponse[] = [
   { slug: 'action', name: 'Action' },
