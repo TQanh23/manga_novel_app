@@ -1706,6 +1706,44 @@ export type AuthorCreateGlossaryEntryResponses = {
 
 export type AuthorCreateGlossaryEntryResponse = AuthorCreateGlossaryEntryResponses[keyof AuthorCreateGlossaryEntryResponses];
 
+export type AuthorDeleteGlossaryEntryData = {
+    body?: never;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/v1/author/works/{work_id}/glossary/{entry_id}';
+};
+
+export type AuthorDeleteGlossaryEntryErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorDeleteGlossaryEntryError = AuthorDeleteGlossaryEntryErrors[keyof AuthorDeleteGlossaryEntryErrors];
+
+export type AuthorDeleteGlossaryEntryResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type AuthorDeleteGlossaryEntryResponse = AuthorDeleteGlossaryEntryResponses[keyof AuthorDeleteGlossaryEntryResponses];
+
 export type AuthorUpdateGlossaryEntryData = {
     body: GlossaryEntryUpdate;
     path: {

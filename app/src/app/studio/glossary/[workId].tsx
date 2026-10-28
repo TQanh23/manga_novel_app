@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { errorCode } from '@/api/client';
 import {
   authorCreateGlossaryEntry,
+  authorDeleteGlossaryEntry,
   authorGetWork,
   authorListGlossary,
   authorUpdateGlossaryEntry,
@@ -57,6 +58,19 @@ export default function GlossaryScreen() {
     return null;
   };
 
+  const remove = async (entry: GlossaryEntryResponse) => {
+    const result = await authorDeleteGlossaryEntry({
+      path: { work_id: workId, entry_id: entry.id },
+    }).catch(() => null);
+    // A 204 has no body: the call worked when the API sent no error.
+    if (!result || result.error !== undefined) {
+      return result ? errorCode(result.error) : 'network_error';
+    }
+    setEditing(null);
+    entries.reload();
+    return null;
+  };
+
   const body = () => {
     if (work.isLoading || entries.isLoading) {
       return <LoadingState />;
@@ -84,6 +98,7 @@ export default function GlossaryScreen() {
           language={work.data.language}
           onSubmit={save}
           onCancel={() => setEditing(null)}
+          onDelete={editing === 'new' ? undefined : () => remove(editing)}
         />
       );
     }

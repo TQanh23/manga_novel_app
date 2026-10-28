@@ -4,6 +4,7 @@ import { screen } from 'expo-router/testing-library';
 
 import {
   authorCreateGlossaryEntry,
+  authorDeleteGlossaryEntry,
   authorGetWork,
   authorListGlossary,
   authorUpdateGlossaryEntry,
@@ -25,6 +26,7 @@ jest.mock('@/api/generated');
 const listGlossary = jest.mocked(authorListGlossary);
 const createEntry = jest.mocked(authorCreateGlossaryEntry);
 const updateEntry = jest.mocked(authorUpdateGlossaryEntry);
+const deleteEntry = jest.mocked(authorDeleteGlossaryEntry);
 
 function entry(overrides: Partial<GlossaryEntryResponse> = {}): GlossaryEntryResponse {
   return {
@@ -58,6 +60,7 @@ beforeEach(() => {
   listGlossary.mockReturnValue(ok([AN_NHIEN, TOWER]));
   createEntry.mockImplementation(({ body }) => ok(entry({ id: 'new', ...body })));
   updateEntry.mockImplementation(({ body }) => ok({ ...AN_NHIEN, ...body }));
+  deleteEntry.mockReturnValue(ok(undefined));
 });
 
 afterEach(async () => {
@@ -281,4 +284,55 @@ test('NFR-13: the glossary is in Vietnamese when that is the language', async ()
   expect(screen.getByRole('radio', { name: 'Địa danh' })).toBeOnTheScreen();
   expect(screen.getByLabelText('Tiếng Hàn')).toBeOnTheScreen();
   expect(screen.getByRole('button', { name: 'Thêm chi tiết' })).toBeOnTheScreen();
+});
+
+test('FR-NV-03: deleting an entry asks first, then takes it out of the glossary', async () => {
+  await openGlossary();
+  await fireEvent.press(await screen.findByRole('button', { name: 'Lê An Nhiên' }));
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Delete entry' }));
+  expect(
+    screen.getByText('Delete “Lê An Nhiên” from the glossary? This cannot be undone.'),
+  ).toBeOnTheScreen();
+  expect(deleteEntry).not.toHaveBeenCalled();
+
+  listGlossary.mockReturnValue(ok([TOWER]));
+  await fireEvent.press(screen.getByRole('button', { name: 'Delete' }));
+
+  expect(deleteEntry.mock.lastCall?.[0].path).toEqual({ work_id: 'lantern', entry_id: 'an-nhien' });
+  expect(await screen.findByRole('button', { name: 'Tháp Đèn' })).toBeOnTheScreen();
+  expect(screen.queryByRole('button', { name: 'Lê An Nhiên' })).toBeNull();
+});
+
+test('keeping the entry deletes nothing', async () => {
+  await openGlossary();
+  await fireEvent.press(await screen.findByRole('button', { name: 'Lê An Nhiên' }));
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Delete entry' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Keep it' }));
+
+  expect(deleteEntry).not.toHaveBeenCalled();
+  expect(screen.getByRole('button', { name: 'Delete entry' })).toBeOnTheScreen();
+});
+
+test('a delete that failed says why and leaves the entry open', async () => {
+  deleteEntry.mockReturnValue(fails('rate_limited'));
+  await openGlossary();
+  await fireEvent.press(await screen.findByRole('button', { name: 'Lê An Nhiên' }));
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Delete entry' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Delete' }));
+
+  expect(
+    await screen.findByText('Too many attempts. Wait a moment and try again.'),
+  ).toBeOnTheScreen();
+  expect(screen.getByDisplayValue('Lê An Nhiên')).toBeOnTheScreen();
+});
+
+test('a new entry has nothing to delete', async () => {
+  await openGlossary();
+
+  await fireEvent.press(await screen.findByRole('button', { name: 'New entry' }));
+
+  expect(screen.queryByRole('button', { name: 'Delete entry' })).toBeNull();
 });

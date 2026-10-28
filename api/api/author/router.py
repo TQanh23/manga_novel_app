@@ -268,3 +268,15 @@ async def update_glossary_entry(
         changes=payload.model_dump(exclude_unset=True),
     )
     return GlossaryEntryResponse.from_entry(entry)
+
+
+@router.delete(
+    "/works/{work_id}/glossary/{entry_id}",
+    operation_id="author_delete_glossary_entry",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[_limit_writes],
+)
+async def delete_glossary_entry(
+    work_id: UUID, entry_id: UUID, author: Author, session: Session
+) -> None:
+    await service.delete_glossary_entry(session, author=author, work_id=work_id, entry_id=entry_id)

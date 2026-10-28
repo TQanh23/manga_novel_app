@@ -267,6 +267,11 @@ async def get_glossary_entry(
     return (await session.execute(statement)).scalar_one_or_none()
 
 
+async def delete_glossary_entry(session: AsyncSession, entry: GlossaryEntry) -> None:
+    await session.delete(entry)
+    await session.flush()
+
+
 async def find_glossary_entry(
     session: AsyncSession, work_id: UUID, kind: str, name: str
 ) -> GlossaryEntry | None:

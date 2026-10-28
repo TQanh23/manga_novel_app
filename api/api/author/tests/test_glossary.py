@@ -152,6 +152,34 @@ async def test_fr_nv_03_a_work_lists_a_name_once_per_kind(
     ]
 
 
+async def test_fr_nv_03_an_author_deletes_an_entry_and_only_that_one(
+    client: AsyncClient, auth_headers: AuthHeaders, author: User, work: Work
+) -> None:
+    headers = auth_headers(author)
+    haneul = await add(client, headers, work, HANEUL)
+    seoul = await add(client, headers, work, {"kind": "place", "name": "서울"})
+    url = f"/v1/author/works/{work.id}/glossary"
+
+    deleted = await client.delete(f"{url}/{haneul['id']}", headers=headers)
+    again = await client.delete(f"{url}/{haneul['id']}", headers=headers)
+
+    assert (deleted.status_code, deleted.content) == (204, b"")
+    assert (again.status_code, again.json()["error"]["code"]) == (404, "glossary_entry_not_found")
+    assert (await client.get(url, headers=headers)).json() == [seoul]
+
+
+async def test_fr_nv_03_a_deleted_name_can_be_noted_again(
+    client: AsyncClient, auth_headers: AuthHeaders, author: User, work: Work
+) -> None:
+    headers = auth_headers(author)
+    entry = await add(client, headers, work, HANEUL)
+
+    await client.delete(f"/v1/author/works/{work.id}/glossary/{entry['id']}", headers=headers)
+    again = await add(client, headers, work, {"kind": "character", "name": HANEUL["name"]})
+
+    assert again["id"] != entry["id"]
+
+
 @pytest.mark.parametrize(
     "payload",
     [
@@ -226,6 +254,7 @@ async def test_fr_nv_03_another_authors_glossary_does_not_exist_as_far_as_an_aut
         await client.get(url, headers=headers),
         await client.post(url, json={"kind": "term", "name": "Uninvited"}, headers=headers),
         await client.patch(f"{url}/{entry['id']}", json={"name": "Taken"}, headers=headers),
+        await client.delete(f"{url}/{entry['id']}", headers=headers),
     ]
     # An entry is reached only through its own work.
     through_own_work = await client.patch(
@@ -233,14 +262,17 @@ async def test_fr_nv_03_another_authors_glossary_does_not_exist_as_far_as_an_aut
         json={"name": "Taken"},
         headers=headers,
     )
+    deleted_through_own_work = await client.delete(
+        f"/v1/author/works/{own_work.id}/glossary/{entry['id']}", headers=headers
+    )
     unknown = await client.patch(
         f"/v1/author/works/{own_work.id}/glossary/{uuid4()}", json={"name": "X"}, headers=headers
     )
 
     assert [(r.status_code, r.json()["error"]["code"]) for r in on_their_work] == [
         (404, "work_not_found")
-    ] * 3
-    for response in (through_own_work, unknown):
+    ] * 4
+    for response in (through_own_work, deleted_through_own_work, unknown):
         assert (response.status_code, response.json()["error"]["code"]) == (
             404,
             "glossary_entry_not_found",
@@ -270,9 +302,10 @@ async def test_fr_auth_03_glossary_routes_are_for_authors_only(
             await client.get(url, headers=headers),
             await client.post(url, json={"kind": "term", "name": "X"}, headers=headers),
             await client.patch(f"{url}/{entry['id']}", json={"name": "X"}, headers=headers),
+            await client.delete(f"{url}/{entry['id']}", headers=headers),
         ]
 
-        assert [response.status_code for response in responses] == [expected] * 3
+        assert [response.status_code for response in responses] == [expected] * 4
 
 
 async def test_the_glossary_never_reaches_the_logs(
@@ -290,9 +323,10 @@ async def test_the_glossary_never_reaches_the_logs(
         json={"attributes": {"비밀": "아무도 모르는 사실"}},
         headers=headers,
     )
+    await client.delete(f"/v1/author/works/{work.id}/glossary/{entry['id']}", headers=headers)
 
     lines = log_lines()
-    assert {"glossary_entry_created", "glossary_entry_updated"} <= {
+    assert {"glossary_entry_created", "glossary_entry_updated", "glossary_entry_deleted"} <= {
         line.get("event") for line in lines
     }
     logged = str(lines)

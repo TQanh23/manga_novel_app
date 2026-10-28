@@ -179,10 +179,19 @@ type GlossaryFormProps = {
   /** Resolves to an API error code, or null when it was saved. */
   onSubmit: (fields: GlossaryEntryFields) => Promise<string | null>;
   onCancel: () => void;
+  /** For an entry that exists. Resolves to an API error code, or null when it was deleted. */
+  onDelete?: () => Promise<string | null>;
 };
 
 /** A character, place or term: its names in each language, and what is true of it (FR-NV-03). */
-export function GlossaryForm({ initial, language, mode, onSubmit, onCancel }: GlossaryFormProps) {
+export function GlossaryForm({
+  initial,
+  language,
+  mode,
+  onSubmit,
+  onCancel,
+  onDelete,
+}: GlossaryFormProps) {
   const { t } = useTranslation();
   const [values, setValues] = useState(initial);
   const [nextId, setNextId] = useState(initial.facts.length);
@@ -281,6 +290,60 @@ export function GlossaryForm({ initial, language, mode, onSubmit, onCancel }: Gl
         onPress={() => void submit()}
       />
       <Button label={t('studio.glossary.form.cancel')} variant="secondary" onPress={onCancel} />
+      {onDelete ? <DeleteEntry name={initial.name} onDelete={onDelete} /> : null}
+    </View>
+  );
+}
+
+/**
+ * Deleting takes two presses: the first asks, the second deletes. Written out
+ * here rather than as an Alert, which react-native-web does not show.
+ */
+function DeleteEntry({
+  name,
+  onDelete,
+}: {
+  name: string;
+  onDelete: () => Promise<string | null>;
+}) {
+  const { t } = useTranslation();
+  const [asking, setAsking] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const confirm = async () => {
+    setBusy(true);
+    setError(null);
+    const failure = await onDelete();
+    // Deleted: the screen goes back to the list and this form is gone.
+    if (failure) {
+      setBusy(false);
+      setError(failure);
+    }
+  };
+
+  if (!asking) {
+    return (
+      <Button
+        label={t('studio.glossary.form.delete')}
+        variant="secondary"
+        onPress={() => setAsking(true)}
+      />
+    );
+  }
+  return (
+    <View style={styles.group}>
+      <ThemedText accessibilityRole="alert">
+        {t('studio.glossary.form.confirmDelete', { name })}
+      </ThemedText>
+      {error ? <ErrorText>{t(errorMessageKey(error))}</ErrorText> : null}
+      <Button label={t('studio.glossary.form.confirm')} busy={busy} onPress={() => void confirm()} />
+      <Button
+        label={t('studio.glossary.form.keep')}
+        variant="secondary"
+        disabled={busy}
+        onPress={() => setAsking(false)}
+      />
     </View>
   );
 }

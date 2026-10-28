@@ -501,6 +501,10 @@ def _glossary_entry_exists() -> AppError:
     )
 
 
+def _glossary_entry_not_found() -> AppError:
+    return AppError("glossary_entry_not_found", "Glossary entry not found", status_code=404)
+
+
 def _unique(names: Sequence[str]) -> list[str]:
     return list(dict.fromkeys(names))
 
@@ -566,7 +570,7 @@ async def update_glossary_entry(
     work = await _own_work(session, author, work_id)
     entry = await repository.get_glossary_entry(session, work.id, entry_id, for_update=True)
     if entry is None:
-        raise AppError("glossary_entry_not_found", "Glossary entry not found", status_code=404)
+        raise _glossary_entry_not_found()
 
     kind = changes.get("kind") or entry.kind
     name = changes.get("name") or entry.name
@@ -599,3 +603,22 @@ async def update_glossary_entry(
         entry_id=str(entry.id),
     )
     return entry
+
+
+async def delete_glossary_entry(
+    session: AsyncSession, *, author: User, work_id: UUID, entry_id: UUID
+) -> None:
+    """Take an entry out of a work's glossary (FR-NV-03). Nothing references one."""
+    work = await _own_work(session, author, work_id)
+    entry = await repository.get_glossary_entry(session, work.id, entry_id, for_update=True)
+    if entry is None:
+        raise _glossary_entry_not_found()
+
+    await repository.delete_glossary_entry(session, entry)
+    await session.commit()
+    logger.info(
+        "glossary_entry_deleted",
+        author_id=str(author.id),
+        work_id=str(work.id),
+        entry_id=str(entry_id),
+    )
