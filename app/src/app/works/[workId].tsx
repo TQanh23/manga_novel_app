@@ -1,5 +1,5 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Link, Stack, useLocalSearchParams } from 'expo-router';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -13,8 +13,8 @@ import { Chip } from '@/components/chip';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { formatDate, genreName } from '@/i18n';
 
 const SEPARATOR = ' · ';
@@ -111,24 +111,36 @@ function WorkDetails({ work, episodes }: { work: WorkDetail; episodes: EpisodeSu
   );
 }
 
+/** An episode in the list. Opens the reader. */
 function EpisodeRow({ episode }: { episode: EpisodeSummary }) {
   const { t } = useTranslation();
+  const theme = useTheme();
   const price =
     episode.price_coins === 0 ? t('work.free') : t('work.coins', { count: episode.price_coins });
   const terms = episode.wuf_eligible ? [price, t('work.waitUntilFree')] : [price];
 
   return (
-    <ThemedView type="backgroundElement" style={styles.episode}>
-      <ThemedText type="small" themeColor="textSecondary">
-        {[t('work.episodeNumber', { number: episode.number }), formatDate(episode.publish_at)].join(
-          SEPARATOR,
-        )}
-      </ThemedText>
-      <ThemedText>{episode.title}</ThemedText>
-      <ThemedText type="smallBold" themeColor="textSecondary">
-        {terms.join(SEPARATOR)}
-      </ThemedText>
-    </ThemedView>
+    <Link href={{ pathname: '/read/[episodeId]', params: { episodeId: episode.id } }} asChild>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={episode.title}
+        style={({ pressed }) => [
+          styles.episode,
+          { backgroundColor: theme.backgroundElement },
+          pressed && styles.pressed,
+        ]}>
+        <ThemedText type="small" themeColor="textSecondary">
+          {[
+            t('work.episodeNumber', { number: episode.number }),
+            formatDate(episode.publish_at),
+          ].join(SEPARATOR)}
+        </ThemedText>
+        <ThemedText>{episode.title}</ThemedText>
+        <ThemedText type="smallBold" themeColor="textSecondary">
+          {terms.join(SEPARATOR)}
+        </ThemedText>
+      </Pressable>
+    </Link>
   );
 }
 
@@ -152,5 +164,8 @@ const styles = StyleSheet.create({
     borderRadius: Spacing.two,
     padding: Spacing.three,
     gap: Spacing.half,
+  },
+  pressed: {
+    opacity: 0.7,
   },
 });

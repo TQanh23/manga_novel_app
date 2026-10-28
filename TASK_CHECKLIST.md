@@ -185,8 +185,8 @@ Where the schema differs from the spec's data model:
 - [x] Home, browse with filters, search. Guests browse without signing in: only the sign-in screens are guarded, and from the signed-out side.
 - [x] Work page with episode list. Rows open the reader once it exists.
 - [x] Client tests with jest-expo, run by CI (`cd app && npm test`)
-- [ ] Novel reader: font, size, light/dark theme
-- [ ] Restore reading position by paragraph
+- [x] Novel reader: font, size, light/dark theme. `/read/[episodeId]`; the text is an Expo DOM component (`app/src/reader/novel-view.tsx`: the DOM on web, a WebView on Android) because the paragraphs are HTML (D13), cleaned again with DOMPurify. Settings are kept per device in AsyncStorage.
+- [x] Restore reading position by paragraph. Opens at the saved `position`; the position is saved 1.5 s after scrolling stops, and at once on leaving the episode or the app going to the background. Guests save nothing.
 - [ ] Library screen
 
 ### 1.8 Client: author studio
