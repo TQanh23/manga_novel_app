@@ -3,8 +3,10 @@ import { Stack } from 'expo-router';
 import { screen } from 'expo-router/testing-library';
 
 import {
+  authorCreateEpisode,
   authorCreateWork,
   authorGetWork,
+  authorListEpisodes,
   authorListWorks,
   authorListWufPresets,
   authorUpdateWork,
@@ -16,7 +18,16 @@ import EditWorkScreen from '@/app/studio/[workId]';
 import NewWorkScreen from '@/app/studio/new';
 import { useSession } from '@/auth/session';
 import i18n from '@/i18n';
-import { AUTHOR, authorWork, fails, GENRES, ok, READER, WUF_PRESETS } from '@/testing/api';
+import {
+  AUTHOR,
+  authorEpisode,
+  authorWork,
+  fails,
+  GENRES,
+  ok,
+  READER,
+  WUF_PRESETS,
+} from '@/testing/api';
 import { openRouter } from '@/testing/router';
 
 jest.mock('@/api/generated');
@@ -26,6 +37,8 @@ const listWorks = jest.mocked(authorListWorks);
 const getWork = jest.mocked(authorGetWork);
 const createWork = jest.mocked(authorCreateWork);
 const updateWork = jest.mocked(authorUpdateWork);
+const listEpisodes = jest.mocked(authorListEpisodes);
+const createEpisode = jest.mocked(authorCreateEpisode);
 const session = jest.mocked(useSession);
 
 function signedIn(user: UserResponse | null) {
@@ -43,6 +56,14 @@ beforeEach(() => {
   getWork.mockReturnValue(ok(LANTERN));
   createWork.mockReturnValue(ok(authorWork({ id: 'created' })));
   updateWork.mockImplementation(({ body }) => ok({ ...LANTERN, ...body }));
+  listEpisodes.mockReturnValue(
+    ok([
+      authorEpisode(1, { status: 'published', has_unpublished_changes: true }),
+      authorEpisode(2, { status: 'scheduled', publish_at: '2026-11-01T12:00:00Z' }),
+      authorEpisode(3),
+    ]),
+  );
+  createEpisode.mockReturnValue(ok(authorEpisode(4, { id: 'new-episode' })));
 });
 
 afterEach(async () => {
@@ -56,6 +77,7 @@ function openStudio(url: string) {
       studio: StudioScreen,
       'studio/new': NewWorkScreen,
       'studio/[workId]': EditWorkScreen,
+      'studio/episodes/[episodeId]': () => null,
     },
     url,
   );
@@ -253,4 +275,46 @@ test('NFR-13: the studio form is in Vietnamese when that is the language', async
   expect(screen.getByRole('radio', { name: '12 giờ' })).toBeOnTheScreen();
   expect(screen.getByRole('radio', { name: '3 ngày' })).toBeOnTheScreen();
   expect(screen.getByRole('button', { name: 'Tạo tác phẩm' })).toBeOnTheScreen();
+});
+
+test('FR-NV-01: a work in the studio lists its episodes, drafts included, with their state', async () => {
+  await openStudio('/studio/lantern');
+
+  expect(await screen.findByRole('header', { name: 'Episodes' })).toBeOnTheScreen();
+  expect(listEpisodes.mock.lastCall?.[0].path).toEqual({ work_id: 'lantern' });
+  expect(screen.getByText('Published · Unpublished changes')).toBeOnTheScreen();
+  expect(screen.getByText(/^Scheduled for /)).toBeOnTheScreen();
+  expect(screen.getByText('Draft')).toBeOnTheScreen();
+  expect(screen.getByRole('header', { name: 'Details' })).toBeOnTheScreen();
+});
+
+test('FR-NV-01: an episode opens in the editor', async () => {
+  const router = await openStudio('/studio/lantern');
+
+  await fireEvent.press(await screen.findByRole('link', { name: 'Chương 3' }));
+
+  expect(router.pathname()).toBe(`/studio/episodes/${authorEpisode(3).id}`);
+});
+
+test('FR-NV-01: the next episode is named, added and opened in the editor', async () => {
+  const router = await openStudio('/studio/lantern');
+
+  const add = await screen.findByRole('button', { name: 'Add episode' });
+  expect(add).toBeDisabled();
+
+  await fireEvent.changeText(screen.getByLabelText('Title of the next episode'), ' Chương 4: Bão ');
+  await fireEvent.press(add);
+
+  expect(createEpisode.mock.lastCall?.[0]).toEqual({
+    path: { work_id: 'lantern' },
+    body: { title: 'Chương 4: Bão' },
+  });
+  expect(router.pathname()).toBe('/studio/episodes/new-episode');
+});
+
+test('FR-NV-01: a work with no episodes says so', async () => {
+  listEpisodes.mockReturnValue(ok([]));
+  await openStudio('/studio/lantern');
+
+  expect(await screen.findByText('No episodes yet.')).toBeOnTheScreen();
 });

@@ -55,6 +55,18 @@ export function formatDate(iso: string): string {
   return new Intl.DateTimeFormat(currentLocale(), { dateStyle: 'medium' }).format(new Date(iso));
 }
 
+/** A date and time of day as the current language writes them. */
+export function formatDateTime(iso: string): string {
+  return new Intl.DateTimeFormat(currentLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(iso),
+  );
+}
+
+/** A time of day as the current language writes it. */
+export function formatTime(iso: string): string {
+  return new Intl.DateTimeFormat(currentLocale(), { timeStyle: 'short' }).format(new Date(iso));
+}
+
 const HOUR = 3_600;
 const DAY = 24 * HOUR;
 

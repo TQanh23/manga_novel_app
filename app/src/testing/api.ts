@@ -8,6 +8,8 @@
 
 import type {
   EpisodeContentResponse,
+  EpisodeDraft,
+  EpisodeResponse,
   EpisodeSummary,
   GenreResponse,
   LibraryResponse,
@@ -154,6 +156,35 @@ export function authorWork(overrides: Partial<WorkResponse> = {}): WorkResponse 
     tags: ['Bến sông'],
     created_at: '2026-10-01T02:00:00Z',
     updated_at: '2026-10-13T04:30:00Z',
+    ...overrides,
+  };
+}
+
+/** An episode as its author sees it in the studio: a draft unless told otherwise. */
+export function authorEpisode(number: number, overrides: Partial<EpisodeResponse> = {}): EpisodeResponse {
+  return {
+    id: `01a00000-0000-7000-8000-0000000002${String(number).padStart(2, '0')}`,
+    work_id: '01a00000-0000-7000-8000-000000000001',
+    number,
+    title: `Chương ${number}`,
+    status: 'draft',
+    publish_at: null,
+    price_coins: 0,
+    wuf_eligible: false,
+    published_version_id: null,
+    latest_version_id: null,
+    has_unpublished_changes: false,
+    created_at: '2026-10-01T02:00:00Z',
+    updated_at: '2026-10-13T04:30:00Z',
+    ...overrides,
+  };
+}
+
+export function draft(overrides: Partial<EpisodeDraft> = {}): EpisodeDraft {
+  return {
+    version_id: '01a00000-0000-7000-8000-000000000301',
+    body_html: '<p>Chiều nào cũng vậy, An Nhiên lại xách bình dầu lên Tháp Đèn.</p>',
+    saved_at: '2026-10-27T09:00:00Z',
     ...overrides,
   };
 }
