@@ -19,6 +19,7 @@ from api.catalogue.models import (
     Episode,
     EpisodeStatus,
     EpisodeVersion,
+    GlossaryEntry,
     Tag,
     TagKind,
     Work,
@@ -46,6 +47,12 @@ async def list_works(session: AsyncSession, author_id: UUID) -> Sequence[Work]:
     # Ids are UUID v7, so id order is creation order.
     statement = select(Work).where(Work.author_id == author_id).order_by(Work.id.desc())
     return (await session.execute(statement)).scalars().all()
+
+
+async def find_sample_work(session: AsyncSession, author_id: UUID, title: str) -> Work | None:
+    """The author's sample work with this title, if the seed has already made it."""
+    statement = select(Work).where(Work.author_id == author_id, Work.title == title, Work.is_sample)
+    return (await session.execute(statement)).scalars().first()
 
 
 async def get_episode_for_author(
@@ -235,3 +242,35 @@ async def add_version(
     await session.flush()
     await session.refresh(version)
     return version
+
+
+async def list_glossary(session: AsyncSession, work_id: UUID) -> Sequence[GlossaryEntry]:
+    statement = (
+        select(GlossaryEntry)
+        .where(GlossaryEntry.work_id == work_id)
+        .order_by(GlossaryEntry.kind, GlossaryEntry.name)
+    )
+    return (await session.execute(statement)).scalars().all()
+
+
+async def get_glossary_entry(
+    session: AsyncSession, work_id: UUID, entry_id: UUID, *, for_update: bool = False
+) -> GlossaryEntry | None:
+    """An entry of the given work. An entry of another work is not found."""
+    statement = (
+        select(GlossaryEntry)
+        .where(GlossaryEntry.id == entry_id, GlossaryEntry.work_id == work_id)
+        .execution_options(populate_existing=True)
+    )
+    if for_update:
+        statement = statement.with_for_update()
+    return (await session.execute(statement)).scalar_one_or_none()
+
+
+async def find_glossary_entry(
+    session: AsyncSession, work_id: UUID, kind: str, name: str
+) -> GlossaryEntry | None:
+    statement = select(GlossaryEntry).where(
+        GlossaryEntry.work_id == work_id, GlossaryEntry.kind == kind, GlossaryEntry.name == name
+    )
+    return (await session.execute(statement)).scalar_one_or_none()

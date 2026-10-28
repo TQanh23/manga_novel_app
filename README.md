@@ -7,9 +7,10 @@ with a data policy enforced in code).
 Status: Phase 0 (foundation) done, Phase 1 (catalogue and novel reader) in progress. What works
 today: register, sign in, roles, a `ping` job that travels from the API to the worker, the
 author API (works with genres and tags, episodes, drafts with version history, publish now or on a
-schedule), the public catalogue with search that matches with or without diacritics, and reading
-(episode text, progress shared between devices, library and favourites). No screens for these
-yet. See
+schedule, glossary), the public catalogue with search that matches with or without diacritics,
+reading (episode text, progress shared between devices, library and favourites), and a seeded
+sample novel. The client has the catalogue, search and work pages; reading, the library and the
+author's screens are API only so far. See
 [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) and [TASK_CHECKLIST.md](TASK_CHECKLIST.md).
 
 ## Layout
@@ -99,6 +100,17 @@ The `seed` step creates four accounts, all with the password `local-dev-password
 | `reader2@example.com` | reader |
 
 It leaves existing accounts untouched and refuses to run unless `ENVIRONMENT=local`.
+
+### Sample novel
+
+The same step publishes one novel for `author@example.com`: *Người Giữ Đèn Bến Sương*, five
+chapters in Vietnamese with a glossary of fourteen characters, places and terms. Its text is in
+[infra/seed/sample_novel/](infra/seed/sample_novel/). It is marked `is_sample`, because it was
+written for this project. To see it, open http://localhost:8000/v1/search?q=nguoi+giu+den (search
+matches without diacritics).
+
+The seed creates the novel once and then leaves it alone, edits included. To get the files'
+current text into a database that already has it, start over with `docker compose down -v`.
 
 ## Working on the backend
 
@@ -211,8 +223,17 @@ migration that has been applied, add a new one. Migrations run as the owner role
 cd app
 npm run typecheck
 npm run lint
+npm test
 npm run gen:api
 ```
+
+The app opens on the catalogue, signed in or not. Its tabs are Home (browse with filters),
+Search and Account; a work opens on its own page with its published episodes. Guests can use all
+of it. Signing in is reached from the Account tab.
+
+`npm test` runs the screens under jest with the API client mocked. Tests live in
+`app/src/__tests__/` (never inside `app/src/app/`, where every file is a route) and their helpers
+in `app/src/testing/`.
 
 `gen:api` regenerates the TypeScript client in `app/src/api/generated/` from the API's OpenAPI
 document. Run it after any API change and commit the result; CI fails when it is stale. It calls

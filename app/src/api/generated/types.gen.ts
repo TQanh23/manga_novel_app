@@ -223,6 +223,18 @@ export type EpisodeSummary = {
 };
 
 /**
+ * EpisodeUpdate
+ *
+ * Fields left out stay as they are. The text is saved through the draft route.
+ */
+export type EpisodeUpdate = {
+    /**
+     * Title
+     */
+    title?: string | null;
+};
+
+/**
  * EpisodeVersionDetail
  */
 export type EpisodeVersionDetail = {
@@ -328,6 +340,110 @@ export type GenreResponse = {
 };
 
 /**
+ * GlossaryEntryCreate
+ */
+export type GlossaryEntryCreate = {
+    /**
+     * Aliases
+     */
+    aliases?: Array<string>;
+    /**
+     * Attributes
+     */
+    attributes?: {
+        [key: string]: JsonValue;
+    };
+    kind: GlossaryKind;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Translations
+     */
+    translations?: {
+        [key in ContentLanguage]?: string;
+    };
+};
+
+/**
+ * GlossaryEntryResponse
+ */
+export type GlossaryEntryResponse = {
+    /**
+     * Aliases
+     */
+    aliases: Array<string>;
+    /**
+     * Attributes
+     */
+    attributes: {
+        [key: string]: JsonValue;
+    };
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Id
+     */
+    id: string;
+    kind: GlossaryKind;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Translations
+     */
+    translations: {
+        [key: string]: string;
+    };
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Work Id
+     */
+    work_id: string;
+};
+
+/**
+ * GlossaryEntryUpdate
+ *
+ * Fields left out stay as they are. A list or an object that is sent replaces the old one.
+ */
+export type GlossaryEntryUpdate = {
+    /**
+     * Aliases
+     */
+    aliases?: Array<string> | null;
+    /**
+     * Attributes
+     */
+    attributes?: {
+        [key: string]: JsonValue;
+    } | null;
+    kind?: GlossaryKind | null;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Translations
+     */
+    translations?: {
+        [key in ContentLanguage]?: string;
+    } | null;
+};
+
+/**
+ * GlossaryKind
+ */
+export type GlossaryKind = 'character' | 'place' | 'term';
+
+/**
  * JobAccepted
  *
  * Body of a 202: the work was queued, not done.
@@ -338,6 +454,8 @@ export type JobAccepted = {
      */
     job_id: string;
 };
+
+export type JsonValue = unknown;
 
 /**
  * LibraryResponse
@@ -995,6 +1113,40 @@ export type AuthorGetEpisodeResponses = {
 
 export type AuthorGetEpisodeResponse = AuthorGetEpisodeResponses[keyof AuthorGetEpisodeResponses];
 
+export type AuthorUpdateEpisodeData = {
+    body: EpisodeUpdate;
+    path: {
+        /**
+         * Episode Id
+         */
+        episode_id: string;
+    };
+    query?: never;
+    url: '/v1/author/episodes/{episode_id}';
+};
+
+export type AuthorUpdateEpisodeErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorUpdateEpisodeError = AuthorUpdateEpisodeErrors[keyof AuthorUpdateEpisodeErrors];
+
+export type AuthorUpdateEpisodeResponses = {
+    /**
+     * Successful Response
+     */
+    200: EpisodeResponse;
+};
+
+export type AuthorUpdateEpisodeResponse = AuthorUpdateEpisodeResponses[keyof AuthorUpdateEpisodeResponses];
+
 export type AuthorGetDraftData = {
     body?: never;
     path: {
@@ -1483,6 +1635,114 @@ export type AuthorCreateEpisodeResponses = {
 };
 
 export type AuthorCreateEpisodeResponse = AuthorCreateEpisodeResponses[keyof AuthorCreateEpisodeResponses];
+
+export type AuthorListGlossaryData = {
+    body?: never;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/author/works/{work_id}/glossary';
+};
+
+export type AuthorListGlossaryErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorListGlossaryError = AuthorListGlossaryErrors[keyof AuthorListGlossaryErrors];
+
+export type AuthorListGlossaryResponses = {
+    /**
+     * Response Author List Glossary
+     *
+     * Successful Response
+     */
+    200: Array<GlossaryEntryResponse>;
+};
+
+export type AuthorListGlossaryResponse = AuthorListGlossaryResponses[keyof AuthorListGlossaryResponses];
+
+export type AuthorCreateGlossaryEntryData = {
+    body: GlossaryEntryCreate;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+    };
+    query?: never;
+    url: '/v1/author/works/{work_id}/glossary';
+};
+
+export type AuthorCreateGlossaryEntryErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorCreateGlossaryEntryError = AuthorCreateGlossaryEntryErrors[keyof AuthorCreateGlossaryEntryErrors];
+
+export type AuthorCreateGlossaryEntryResponses = {
+    /**
+     * Successful Response
+     */
+    201: GlossaryEntryResponse;
+};
+
+export type AuthorCreateGlossaryEntryResponse = AuthorCreateGlossaryEntryResponses[keyof AuthorCreateGlossaryEntryResponses];
+
+export type AuthorUpdateGlossaryEntryData = {
+    body: GlossaryEntryUpdate;
+    path: {
+        /**
+         * Work Id
+         */
+        work_id: string;
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/v1/author/works/{work_id}/glossary/{entry_id}';
+};
+
+export type AuthorUpdateGlossaryEntryErrors = {
+    /**
+     * Validation error
+     */
+    422: ErrorResponse;
+    /**
+     * Error
+     */
+    default: ErrorResponse;
+};
+
+export type AuthorUpdateGlossaryEntryError = AuthorUpdateGlossaryEntryErrors[keyof AuthorUpdateGlossaryEntryErrors];
+
+export type AuthorUpdateGlossaryEntryResponses = {
+    /**
+     * Successful Response
+     */
+    200: GlossaryEntryResponse;
+};
+
+export type AuthorUpdateGlossaryEntryResponse = AuthorUpdateGlossaryEntryResponses[keyof AuthorUpdateGlossaryEntryResponses];
 
 export type AuthorListWufPresetsData = {
     body?: never;

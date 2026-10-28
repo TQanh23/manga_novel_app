@@ -2,11 +2,17 @@
   "common": {
     "appName": "Manga & Novel",
     "loading": "Loading…",
+    "retry": "Try again",
     "language": "Language",
     "languageName": {
       "en": "English",
       "vi": "Tiếng Việt"
     }
+  },
+  "tabs": {
+    "home": "Home",
+    "search": "Search",
+    "account": "Account"
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -21,17 +27,76 @@
     "noAccount": "New here? Create an account",
     "haveAccount": "Already have an account? Sign in"
   },
-  "home": {
+  "account": {
     "greeting": "Hello, {{name}}",
     "email": "Email",
     "roles": "Your roles",
     "becomeAuthor": "Become an author",
-    "becomeAuthorHint": "Authors can publish their own novels and manga."
+    "becomeAuthorHint": "Authors can publish their own novels and manga.",
+    "guestTitle": "You are browsing as a guest",
+    "guestHint": "Sign in to keep your place in a story and build your library."
   },
   "roles": {
     "reader": "Reader",
     "author": "Author",
     "admin": "Admin"
+  },
+  "catalogue": {
+    "title": "Browse",
+    "all": "All",
+    "filterType": "Format",
+    "filterStatus": "Status",
+    "filterGenre": "Genre",
+    "filterSort": "Sort by",
+    "sort": {
+      "newest": "Newest",
+      "popular": "Popular"
+    },
+    "empty": "No works match these filters.",
+    "loadMore": "Load more",
+    "episodeCount_one": "{{count}} episode",
+    "episodeCount_other": "{{count}} episodes",
+    "updated": "Updated {{date}}"
+  },
+  "workType": {
+    "novel": "Novel",
+    "manga": "Manga"
+  },
+  "workStatus": {
+    "ongoing": "Ongoing",
+    "completed": "Completed"
+  },
+  "genres": {
+    "action": "Action",
+    "adventure": "Adventure",
+    "comedy": "Comedy",
+    "drama": "Drama",
+    "fantasy": "Fantasy",
+    "historical": "Historical",
+    "horror": "Horror",
+    "mystery": "Mystery",
+    "romance": "Romance",
+    "sci-fi": "Sci-Fi",
+    "slice-of-life": "Slice of Life",
+    "thriller": "Thriller"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Title, author or tag",
+    "hint": "Search by title, author or tag. Vietnamese works with or without diacritics.",
+    "empty": "Nothing found for “{{query}}”."
+  },
+  "work": {
+    "title": "Work",
+    "by": "by {{author}}",
+    "tags": "Tags",
+    "episodes": "Episodes",
+    "episodeNumber": "Episode {{number}}",
+    "free": "Free",
+    "coins_one": "{{count}} coin",
+    "coins_other": "{{count}} coins",
+    "waitUntilFree": "Wait until free",
+    "notFound": "This work does not exist or has nothing published yet."
   },
   "errors": {
     "invalid_credentials": "Email or password is incorrect.",

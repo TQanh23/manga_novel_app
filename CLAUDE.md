@@ -33,6 +33,7 @@ cd api && uv run alembic upgrade head
 cd api && uv run alembic revision --autogenerate --rev-id <next number> -m "<msg>"
 cd app && npx expo start          # client; press w for web, a for Android
 cd app && npm run typecheck && npm run lint
+cd app && npm test                # client tests (jest-expo)
 cd app && npm run gen:api         # regenerate the TS client from the API's OpenAPI spec
 cd eval && uv run python run.py --provider <name>
 ```

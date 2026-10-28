@@ -40,6 +40,21 @@ export function errorMessageKey(code: string) {
   return `errors.${match}` as const;
 }
 
+/**
+ * A genre's name in the current language. Genres come from the API by slug;
+ * one this build has no translation for falls back to the name the API sent.
+ */
+export function genreName(slug: string, fallback?: string): string {
+  return slug in en.genres
+    ? i18n.t(`genres.${slug as keyof typeof en.genres}`)
+    : (fallback ?? slug);
+}
+
+/** A date as the current language writes it. */
+export function formatDate(iso: string): string {
+  return new Intl.DateTimeFormat(currentLocale(), { dateStyle: 'medium' }).format(new Date(iso));
+}
+
 void i18n.init({
   resources,
   lng: deviceLocale(),

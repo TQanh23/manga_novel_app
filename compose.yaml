@@ -90,12 +90,16 @@ services:
       postgres:
         condition: service_healthy
 
-  # One-shot: creates the development accounts (see README). Leaves existing ones alone.
+  # One-shot: creates the development accounts and the sample novel (see README).
+  # Leaves existing ones alone.
   seed:
     <<: *api-image
     command: ["python", "-m", "api.scripts.seed"]
     environment:
       <<: *app-environment
+    # The sample novel's text is not in the image; the seed reads it from here.
+    volumes:
+      - ./infra/seed:/srv/infra/seed:ro
     depends_on:
       migrate:
         condition: service_completed_successfully

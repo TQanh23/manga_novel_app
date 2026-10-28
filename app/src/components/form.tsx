@@ -13,11 +13,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Accent, Danger, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-const ACCENT = '#3c87f7';
-const DANGER = '#d93f3f';
 const FORM_WIDTH = 420;
 
 /** Full-height, scrollable page with its content in a centred column. */
@@ -76,7 +74,7 @@ export function Button({ label, variant = 'primary', busy = false, disabled, ...
       disabled={disabled ?? busy}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: primary ? ACCENT : theme.backgroundElement },
+        { backgroundColor: primary ? Accent : theme.backgroundElement },
         (pressed || busy) && styles.dimmed,
       ]}
       {...rest}>
@@ -137,6 +135,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
   },
   error: {
-    color: DANGER,
+    color: Danger,
   },
 });

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorScheduleEpisodeData, AuthorScheduleEpisodeErrors, AuthorScheduleEpisodeResponses, AuthorUnscheduleEpisodeData, AuthorUnscheduleEpisodeErrors, AuthorUnscheduleEpisodeResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses, CatalogueGetWorkData, CatalogueGetWorkErrors, CatalogueGetWorkResponses, CatalogueListEpisodesData, CatalogueListEpisodesErrors, CatalogueListEpisodesResponses, CatalogueListGenresData, CatalogueListGenresErrors, CatalogueListGenresResponses, CatalogueListWorksData, CatalogueListWorksErrors, CatalogueListWorksResponses, CatalogueSearchWorksData, CatalogueSearchWorksErrors, CatalogueSearchWorksResponses, ReaderAddFavouriteData, ReaderAddFavouriteErrors, ReaderAddFavouriteResponses, ReaderGetEpisodeContentData, ReaderGetEpisodeContentErrors, ReaderGetEpisodeContentResponses, ReaderGetLibraryData, ReaderGetLibraryErrors, ReaderGetLibraryResponses, ReaderRemoveFavouriteData, ReaderRemoveFavouriteErrors, ReaderRemoveFavouriteResponses, ReaderSaveProgressData, ReaderSaveProgressErrors, ReaderSaveProgressResponses } from './types.gen';
+import type { AdminEnqueuePingData, AdminEnqueuePingErrors, AdminEnqueuePingResponses, AdminUpdateUserData, AdminUpdateUserErrors, AdminUpdateUserResponses, AuthAddAuthorRoleData, AuthAddAuthorRoleErrors, AuthAddAuthorRoleResponses, AuthGetMeData, AuthGetMeErrors, AuthGetMeResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthLogoutData, AuthLogoutErrors, AuthLogoutResponses, AuthorCreateEpisodeData, AuthorCreateEpisodeErrors, AuthorCreateEpisodeResponses, AuthorCreateGlossaryEntryData, AuthorCreateGlossaryEntryErrors, AuthorCreateGlossaryEntryResponses, AuthorCreateWorkData, AuthorCreateWorkErrors, AuthorCreateWorkResponses, AuthorGetDraftData, AuthorGetDraftErrors, AuthorGetDraftResponses, AuthorGetEpisodeData, AuthorGetEpisodeErrors, AuthorGetEpisodeResponses, AuthorGetVersionData, AuthorGetVersionErrors, AuthorGetVersionResponses, AuthorGetWorkData, AuthorGetWorkErrors, AuthorGetWorkResponses, AuthorListEpisodesData, AuthorListEpisodesErrors, AuthorListEpisodesResponses, AuthorListGlossaryData, AuthorListGlossaryErrors, AuthorListGlossaryResponses, AuthorListVersionsData, AuthorListVersionsErrors, AuthorListVersionsResponses, AuthorListWorksData, AuthorListWorksErrors, AuthorListWorksResponses, AuthorListWufPresetsData, AuthorListWufPresetsErrors, AuthorListWufPresetsResponses, AuthorPublishEpisodeData, AuthorPublishEpisodeErrors, AuthorPublishEpisodeResponses, AuthorRestoreVersionData, AuthorRestoreVersionErrors, AuthorRestoreVersionResponses, AuthorSaveDraftData, AuthorSaveDraftErrors, AuthorSaveDraftResponses, AuthorScheduleEpisodeData, AuthorScheduleEpisodeErrors, AuthorScheduleEpisodeResponses, AuthorUnscheduleEpisodeData, AuthorUnscheduleEpisodeErrors, AuthorUnscheduleEpisodeResponses, AuthorUpdateEpisodeData, AuthorUpdateEpisodeErrors, AuthorUpdateEpisodeResponses, AuthorUpdateGlossaryEntryData, AuthorUpdateGlossaryEntryErrors, AuthorUpdateGlossaryEntryResponses, AuthorUpdateWorkData, AuthorUpdateWorkErrors, AuthorUpdateWorkResponses, AuthRefreshTokenData, AuthRefreshTokenErrors, AuthRefreshTokenResponses, AuthRegisterUserData, AuthRegisterUserErrors, AuthRegisterUserResponses, CatalogueGetWorkData, CatalogueGetWorkErrors, CatalogueGetWorkResponses, CatalogueListEpisodesData, CatalogueListEpisodesErrors, CatalogueListEpisodesResponses, CatalogueListGenresData, CatalogueListGenresErrors, CatalogueListGenresResponses, CatalogueListWorksData, CatalogueListWorksErrors, CatalogueListWorksResponses, CatalogueSearchWorksData, CatalogueSearchWorksErrors, CatalogueSearchWorksResponses, ReaderAddFavouriteData, ReaderAddFavouriteErrors, ReaderAddFavouriteResponses, ReaderGetEpisodeContentData, ReaderGetEpisodeContentErrors, ReaderGetEpisodeContentResponses, ReaderGetLibraryData, ReaderGetLibraryErrors, ReaderGetLibraryResponses, ReaderRemoveFavouriteData, ReaderRemoveFavouriteErrors, ReaderRemoveFavouriteResponses, ReaderSaveProgressData, ReaderSaveProgressErrors, ReaderSaveProgressResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -95,6 +95,19 @@ export const authorGetEpisode = <ThrowOnError extends boolean = false>(options: 
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/author/episodes/{episode_id}',
     ...options
+});
+
+/**
+ * Update Episode
+ */
+export const authorUpdateEpisode = <ThrowOnError extends boolean = false>(options: Options<AuthorUpdateEpisodeData, ThrowOnError>) => (options.client ?? client).patch<AuthorUpdateEpisodeResponses, AuthorUpdateEpisodeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/episodes/{episode_id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -236,6 +249,41 @@ export const authorListEpisodes = <ThrowOnError extends boolean = false>(options
 export const authorCreateEpisode = <ThrowOnError extends boolean = false>(options: Options<AuthorCreateEpisodeData, ThrowOnError>) => (options.client ?? client).post<AuthorCreateEpisodeResponses, AuthorCreateEpisodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/author/works/{work_id}/episodes',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Glossary
+ */
+export const authorListGlossary = <ThrowOnError extends boolean = false>(options: Options<AuthorListGlossaryData, ThrowOnError>) => (options.client ?? client).get<AuthorListGlossaryResponses, AuthorListGlossaryErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works/{work_id}/glossary',
+    ...options
+});
+
+/**
+ * Create Glossary Entry
+ */
+export const authorCreateGlossaryEntry = <ThrowOnError extends boolean = false>(options: Options<AuthorCreateGlossaryEntryData, ThrowOnError>) => (options.client ?? client).post<AuthorCreateGlossaryEntryResponses, AuthorCreateGlossaryEntryErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works/{work_id}/glossary',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update Glossary Entry
+ */
+export const authorUpdateGlossaryEntry = <ThrowOnError extends boolean = false>(options: Options<AuthorUpdateGlossaryEntryData, ThrowOnError>) => (options.client ?? client).patch<AuthorUpdateGlossaryEntryResponses, AuthorUpdateGlossaryEntryErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }],
+    url: '/v1/author/works/{work_id}/glossary/{entry_id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

@@ -2,11 +2,17 @@
   "common": {
     "appName": "Manga & Novel",
     "loading": "Đang tải…",
+    "retry": "Thử lại",
     "language": "Ngôn ngữ",
     "languageName": {
       "en": "English",
       "vi": "Tiếng Việt"
     }
+  },
+  "tabs": {
+    "home": "Trang chủ",
+    "search": "Tìm kiếm",
+    "account": "Tài khoản"
   },
   "auth": {
     "signInTitle": "Đăng nhập",
@@ -21,17 +27,76 @@
     "noAccount": "Chưa có tài khoản? Tạo tài khoản",
     "haveAccount": "Đã có tài khoản? Đăng nhập"
   },
-  "home": {
+  "account": {
     "greeting": "Xin chào, {{name}}",
     "email": "Email",
     "roles": "Vai trò của bạn",
     "becomeAuthor": "Trở thành tác giả",
-    "becomeAuthorHint": "Tác giả có thể đăng tiểu thuyết và manga của riêng mình."
+    "becomeAuthorHint": "Tác giả có thể đăng tiểu thuyết và manga của riêng mình.",
+    "guestTitle": "Bạn đang xem với tư cách khách",
+    "guestHint": "Đăng nhập để lưu vị trí đang đọc và xây thư viện của riêng bạn."
   },
   "roles": {
     "reader": "Độc giả",
     "author": "Tác giả",
     "admin": "Quản trị viên"
+  },
+  "catalogue": {
+    "title": "Khám phá",
+    "all": "Tất cả",
+    "filterType": "Định dạng",
+    "filterStatus": "Trạng thái",
+    "filterGenre": "Thể loại",
+    "filterSort": "Sắp xếp",
+    "sort": {
+      "newest": "Mới nhất",
+      "popular": "Phổ biến"
+    },
+    "empty": "Không có truyện nào khớp bộ lọc này.",
+    "loadMore": "Tải thêm",
+    "episodeCount_one": "{{count}} chương",
+    "episodeCount_other": "{{count}} chương",
+    "updated": "Cập nhật {{date}}"
+  },
+  "workType": {
+    "novel": "Tiểu thuyết",
+    "manga": "Manga"
+  },
+  "workStatus": {
+    "ongoing": "Đang ra",
+    "completed": "Hoàn thành"
+  },
+  "genres": {
+    "action": "Hành động",
+    "adventure": "Phiêu lưu",
+    "comedy": "Hài hước",
+    "drama": "Chính kịch",
+    "fantasy": "Kỳ ảo",
+    "historical": "Lịch sử",
+    "horror": "Kinh dị",
+    "mystery": "Bí ẩn",
+    "romance": "Lãng mạn",
+    "sci-fi": "Khoa học viễn tưởng",
+    "slice-of-life": "Đời thường",
+    "thriller": "Giật gân"
+  },
+  "search": {
+    "title": "Tìm kiếm",
+    "placeholder": "Tên truyện, tác giả hoặc tag",
+    "hint": "Tìm theo tên truyện, tác giả hoặc tag. Tiếng Việt gõ có dấu hay không dấu đều được.",
+    "empty": "Không tìm thấy gì cho “{{query}}”."
+  },
+  "work": {
+    "title": "Truyện",
+    "by": "của {{author}}",
+    "tags": "Tag",
+    "episodes": "Danh sách chương",
+    "episodeNumber": "Chương {{number}}",
+    "free": "Miễn phí",
+    "coins_one": "{{count}} coin",
+    "coins_other": "{{count}} coin",
+    "waitUntilFree": "Chờ miễn phí",
+    "notFound": "Truyện này không tồn tại hoặc chưa có chương nào được đăng."
   },
   "errors": {
     "invalid_credentials": "Email hoặc mật khẩu không đúng.",

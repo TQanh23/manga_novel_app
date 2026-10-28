@@ -12,8 +12,12 @@ from api.author.schemas import (
     EpisodeDraft,
     EpisodeResponse,
     EpisodeSchedule,
+    EpisodeUpdate,
     EpisodeVersionDetail,
     EpisodeVersionSummary,
+    GlossaryEntryCreate,
+    GlossaryEntryResponse,
+    GlossaryEntryUpdate,
     WorkCreate,
     WorkResponse,
     WorkUpdate,
@@ -110,6 +114,18 @@ async def get_episode(episode_id: UUID, author: Author, session: Session) -> Epi
     return EpisodeResponse.from_episode(state.episode, state.latest_version_id)
 
 
+@router.patch(
+    "/episodes/{episode_id}", operation_id="author_update_episode", dependencies=[_limit_writes]
+)
+async def update_episode(
+    episode_id: UUID, payload: EpisodeUpdate, author: Author, session: Session
+) -> EpisodeResponse:
+    state = await service.update_episode(
+        session, author=author, episode_id=episode_id, title=payload.title
+    )
+    return EpisodeResponse.from_episode(state.episode, state.latest_version_id)
+
+
 @router.put(
     "/episodes/{episode_id}/draft", operation_id="author_save_draft", dependencies=[_limit_writes]
 )
@@ -200,3 +216,55 @@ async def schedule_episode(
 async def unschedule_episode(episode_id: UUID, author: Author, session: Session) -> EpisodeResponse:
     state = await service.unschedule_episode(session, author=author, episode_id=episode_id)
     return EpisodeResponse.from_episode(state.episode, state.latest_version_id)
+
+
+@router.get("/works/{work_id}/glossary", operation_id="author_list_glossary")
+async def list_glossary(
+    work_id: UUID, author: Author, session: Session
+) -> list[GlossaryEntryResponse]:
+    entries = await service.list_glossary(session, author=author, work_id=work_id)
+    return [GlossaryEntryResponse.from_entry(entry) for entry in entries]
+
+
+@router.post(
+    "/works/{work_id}/glossary",
+    operation_id="author_create_glossary_entry",
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[_limit_writes],
+)
+async def create_glossary_entry(
+    work_id: UUID, payload: GlossaryEntryCreate, author: Author, session: Session
+) -> GlossaryEntryResponse:
+    entry = await service.create_glossary_entry(
+        session,
+        author=author,
+        work_id=work_id,
+        kind=payload.kind,
+        name=payload.name,
+        aliases=payload.aliases,
+        attributes=payload.attributes,
+        translations={str(code): text for code, text in payload.translations.items()},
+    )
+    return GlossaryEntryResponse.from_entry(entry)
+
+
+@router.patch(
+    "/works/{work_id}/glossary/{entry_id}",
+    operation_id="author_update_glossary_entry",
+    dependencies=[_limit_writes],
+)
+async def update_glossary_entry(
+    work_id: UUID,
+    entry_id: UUID,
+    payload: GlossaryEntryUpdate,
+    author: Author,
+    session: Session,
+) -> GlossaryEntryResponse:
+    entry = await service.update_glossary_entry(
+        session,
+        author=author,
+        work_id=work_id,
+        entry_id=entry_id,
+        changes=payload.model_dump(exclude_unset=True),
+    )
+    return GlossaryEntryResponse.from_entry(entry)

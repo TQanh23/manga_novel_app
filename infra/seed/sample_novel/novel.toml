@@ -1,0 +1,209 @@
+# The sample novel the seed script publishes for author@example.com.
+#
+# Written for this project, so the work is marked is_sample: it may be sent to
+# AI providers that real manuscripts never reach, and it is the base of the
+# eval set. The text here is consistent. Planted contradictions belong in the
+# copies under eval/, never here.
+#
+# Every fact in the glossary is stated in at least two chapters.
+
+title = "Người Giữ Đèn Bến Sương"
+synopsis = "Ở Bến Sương, một ngọn đèn ánh lam trên đỉnh tháp dẫn thuyền qua sương mù. An Nhiên, mười bảy tuổi, học việc giữ đèn và mang theo chiếc la bàn đồng của người mẹ mất tích. Khi một thương nhân từ Kinh Lạc tới hỏi mua dầu thắp đèn, chiếc la bàn bắt đầu chỉ sai hướng."
+language = "vi"
+genres = ["fantasy", "mystery"]
+tags = ["Kỳ ảo", "Phiêu lưu", "Bến sông"]
+
+# One per chapter file, in order: 01.md, 02.md, ...
+episodes = [
+    "Một trăm lẻ tám bậc",
+    "Người khách từ Kinh Lạc",
+    "Chiếc la bàn chỉ sai hướng",
+    "Đêm không có ánh lam",
+    "Ánh đèn gọi người về",
+]
+
+[[glossary]]
+kind = "character"
+name = "Lê An Nhiên"
+aliases = ["An Nhiên"]
+[glossary.attributes]
+"tuổi" = 17
+"màu mắt" = "nâu"
+"tay thuận" = "trái"
+"vai trò" = "học việc ở Tháp Đèn từ năm mười tuổi, về sau là người giữ đèn"
+"vật mang theo" = "chiếc la bàn đồng của mẹ"
+"mẹ" = "Lê Thu Hà"
+"thầy" = "Trần Bách"
+"bạn" = "Vũ Khải"
+[glossary.translations]
+en = "Le An Nhien"
+ko = "레 안 니엔"
+ja = "レ・アン・ニエン"
+
+[[glossary]]
+kind = "character"
+name = "Trần Bách"
+aliases = ["ông Bách"]
+[glossary.attributes]
+"tuổi" = 62
+"màu mắt" = "xám"
+"vai trò" = "người giữ đèn của Bến Sương"
+"thương tật" = "chân trái tập tễnh từ Đêm Sương Đen, mười năm trước"
+[glossary.translations]
+en = "Tran Bach"
+ko = "쩐 바익"
+ja = "チャン・バック"
+
+[[glossary]]
+kind = "character"
+name = "Vũ Khải"
+aliases = ["Khải"]
+[glossary.attributes]
+"tuổi" = 19
+"màu mắt" = "đen"
+"nghề" = "lái đò ngang sông Vọng từ năm mười lăm tuổi"
+"mẹ" = "Vũ Thị Hòa"
+[glossary.translations]
+en = "Vu Khai"
+ko = "부 카이"
+ja = "ヴー・カイ"
+
+[[glossary]]
+kind = "character"
+name = "Vũ Thị Hòa"
+aliases = ["bà Hòa"]
+[glossary.attributes]
+"vai trò" = "chủ quán trà Hòa Ký"
+"con trai" = "Vũ Khải"
+[glossary.translations]
+en = "Vu Thi Hoa"
+ko = "부 티 호아"
+ja = "ヴー・ティ・ホア"
+
+[[glossary]]
+kind = "character"
+name = "Đoàn Mặc"
+aliases = []
+[glossary.attributes]
+"tuổi" = 40
+"nghề" = "thương nhân từ Kinh Lạc"
+"đặc điểm" = "đeo nhẫn ngọc xanh ở bàn tay phải"
+"thuyền" = "thuyền lớn sơn đen"
+"quá khứ" = "mười năm trước, khi ba mươi tuổi, đã tráo một bình dầu sương lấy nước"
+[glossary.translations]
+en = "Doan Mac"
+ko = "도안 막"
+ja = "ドアン・マック"
+
+[[glossary]]
+kind = "character"
+name = "Lê Thu Hà"
+aliases = ["Thu Hà"]
+[glossary.attributes]
+"quan hệ" = "mẹ của Lê An Nhiên"
+"số phận" = "mất tích cùng thuyền trong Đêm Sương Đen"
+"để lại" = "chiếc la bàn đồng"
+[glossary.translations]
+en = "Le Thu Ha"
+ko = "레 투 하"
+ja = "レ・トゥー・ハー"
+
+[[glossary]]
+kind = "place"
+name = "Bến Sương"
+aliases = []
+[glossary.attributes]
+"loại" = "thị trấn bến sông bên bờ sông Vọng"
+"đặc điểm" = "sương kéo đến thành từng mảng"
+[glossary.translations]
+en = "Mist Harbour"
+ko = "안개 나루"
+ja = "霧の渡し"
+
+[[glossary]]
+kind = "place"
+name = "Tháp Đèn"
+aliases = []
+[glossary.attributes]
+"số tầng" = 7
+"số bậc thang" = 108
+"tầng một" = "nơi cất các bình dầu sương"
+"tầng bảy" = "buồng đèn"
+[glossary.translations]
+en = "the Lamp Tower"
+ko = "등탑"
+ja = "灯の塔"
+
+[[glossary]]
+kind = "place"
+name = "sông Vọng"
+aliases = []
+[glossary.attributes]
+"loại" = "con sông chảy qua Bến Sương"
+[glossary.translations]
+en = "the Vong River"
+ko = "봉 강"
+ja = "ヴォン川"
+
+[[glossary]]
+kind = "place"
+name = "Kinh Lạc"
+aliases = []
+[glossary.attributes]
+"loại" = "kinh đô"
+"vị trí" = "phía nam Bến Sương, cách ba ngày đường thuyền"
+[glossary.translations]
+en = "Kinh Lac"
+ko = "낀 락"
+ja = "キン・ラック"
+
+[[glossary]]
+kind = "place"
+name = "Hòa Ký"
+aliases = ["quán trà Hòa Ký"]
+[glossary.attributes]
+"loại" = "quán trà dưới chân Tháp Đèn"
+"chủ quán" = "Vũ Thị Hòa"
+[glossary.translations]
+en = "Hoa Ky teahouse"
+ko = "호아 끼 찻집"
+ja = "ホア・キー茶屋"
+
+[[glossary]]
+kind = "term"
+name = "Đèn Hồi Hương"
+aliases = []
+[glossary.attributes]
+"vị trí" = "tầng bảy của Tháp Đèn"
+"màu ánh sáng" = "lam"
+"nhiên liệu" = "dầu sương"
+[glossary.translations]
+en = "the Homecoming Lamp"
+ko = "귀향등"
+ja = "帰郷の灯"
+
+[[glossary]]
+kind = "term"
+name = "dầu sương"
+aliases = []
+[glossary.attributes]
+"nguồn gốc" = "chưng từ sương đêm rằm"
+"sản lượng" = "mỗi tháng một bình"
+"số bình trong tháp" = 6
+[glossary.translations]
+en = "mist oil"
+ko = "안개 기름"
+ja = "霧の油"
+
+[[glossary]]
+kind = "term"
+name = "Đêm Sương Đen"
+aliases = []
+[glossary.attributes]
+"thời điểm" = "mười năm trước"
+"số thuyền mất tích" = 12
+"đèn" = "không sáng, vì một bình dầu sương đã bị tráo lấy nước"
+[glossary.translations]
+en = "the Night of Black Mist"
+ko = "검은 안개의 밤"
+ja = "黒霧の夜"
