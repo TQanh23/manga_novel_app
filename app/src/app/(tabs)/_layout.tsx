@@ -4,6 +4,7 @@ import type { ComponentProps } from 'react';
 import type { ColorValue } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { useSession } from '@/auth/session';
 import { Accent } from '@/constants/theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -17,6 +18,8 @@ function icon(name: IconName) {
 
 export default function TabsLayout() {
   const { t } = useTranslation();
+  const { user } = useSession();
+  const isAuthor = user?.roles.includes('author') ?? false;
   return (
     <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: Accent }}>
       <Tabs.Screen name="index" options={{ title: t('tabs.home'), tabBarIcon: icon('home-outline') }} />
@@ -27,6 +30,15 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="library"
         options={{ title: t('tabs.library'), tabBarIcon: icon('library-outline') }}
+      />
+      <Tabs.Screen
+        name="studio"
+        // Only authors have a studio; for everyone else the tab is not there.
+        options={{
+          title: t('tabs.studio'),
+          tabBarIcon: icon('create-outline'),
+          href: isAuthor ? undefined : null,
+        }}
       />
       <Tabs.Screen
         name="account"

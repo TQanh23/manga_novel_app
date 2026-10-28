@@ -13,7 +13,8 @@
     "home": "Home",
     "search": "Search",
     "library": "Library",
-    "account": "Account"
+    "account": "Account",
+    "studio": "Studio"
   },
   "library": {
     "title": "Library",
@@ -23,6 +24,42 @@
     "emptyFavourites": "Works you add to your favourites show up here.",
     "readOn": "Read {{date}}",
     "guestHint": "Sign in to keep your place in a story and build your library."
+  },
+  "studio": {
+    "title": "Studio",
+    "newWork": "New work",
+    "empty": "You have no works yet. Start one to publish your first episode.",
+    "notAuthor": "The studio is for authors. You can become one on the Account tab.",
+    "sample": "Sample",
+    "newTitle": "New work",
+    "editTitle": "Edit work",
+    "notFound": "This work does not exist or is not yours.",
+    "form": {
+      "type": "Format",
+      "typeHint": "The format cannot be changed later.",
+      "title": "Title",
+      "synopsis": "Synopsis",
+      "language": "Language of the text",
+      "status": "Status",
+      "genres": "Genres (up to 3)",
+      "tags": "Tags",
+      "tagsHint": "Up to 10, separated by commas.",
+      "wuf": "Wait until free",
+      "wufHint": "How long a reader waits before the next episode opens for free.",
+      "wufOff": "Off",
+      "create": "Create work",
+      "save": "Save changes",
+      "saved": "Saved.",
+      "titleRequired": "Give the work a title.",
+      "tooManyTags": "A work has at most 10 tags.",
+      "tagTooLong": "A tag has at most 30 characters."
+    },
+    "duration": {
+      "hours_one": "{{count}} hour",
+      "hours_other": "{{count}} hours",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days"
+    }
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -75,6 +112,12 @@
   "workStatus": {
     "ongoing": "Ongoing",
     "completed": "Completed"
+  },
+  "contentLanguage": {
+    "ko": "Korean",
+    "ja": "Japanese",
+    "en": "English",
+    "vi": "Vietnamese"
   },
   "genres": {
     "action": "Action",
@@ -142,6 +185,9 @@
     "account_locked": "This account is locked.",
     "rate_limited": "Too many attempts. Wait a moment and try again.",
     "validation_error": "Check the fields and try again.",
+    "invalid_wuf_preset": "That wait-until-free period is no longer offered. Choose another.",
+    "unknown_genre": "Choose genres from the list.",
+    "too_many_genres": "A work has at most three genres.",
     "network_error": "Could not reach the server. Check your connection.",
     "unknown": "Something went wrong. Try again."
   }

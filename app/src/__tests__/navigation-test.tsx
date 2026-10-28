@@ -2,6 +2,8 @@ import { fireEvent } from '@testing-library/react-native';
 import { screen } from 'expo-router/testing-library';
 
 import {
+  authorListWorks,
+  authorListWufPresets,
   catalogueGetWork,
   catalogueListEpisodes,
   catalogueListGenres,
@@ -16,10 +18,13 @@ import AccountScreen from '@/app/(tabs)/account';
 import LibraryScreen from '@/app/(tabs)/library';
 import HomeScreen from '@/app/(tabs)/index';
 import SearchScreen from '@/app/(tabs)/search';
+import StudioScreen from '@/app/(tabs)/studio';
 import RootLayout from '@/app/_layout';
+import EditWorkScreen from '@/app/studio/[workId]';
+import NewWorkScreen from '@/app/studio/new';
 import WorkScreen from '@/app/works/[workId]';
 import { useSession } from '@/auth/session';
-import { episode, GENRES, ok, page, work, workDetail } from '@/testing/api';
+import { authorWork, episode, GENRES, ok, page, work, workDetail, WUF_PRESETS } from '@/testing/api';
 import { openRouter } from '@/testing/router';
 
 jest.mock('@/api/generated');
@@ -48,8 +53,11 @@ const APP = {
   '(tabs)/index': HomeScreen,
   '(tabs)/search': SearchScreen,
   '(tabs)/library': LibraryScreen,
+  '(tabs)/studio': StudioScreen,
   '(tabs)/account': AccountScreen,
   'works/[workId]': WorkScreen,
+  'studio/new': NewWorkScreen,
+  'studio/[workId]': EditWorkScreen,
   // The reader has its own tests; here only the way to it matters.
   'read/[episodeId]': () => null,
   '(auth)/_layout': AuthLayout,
@@ -75,6 +83,8 @@ beforeEach(() => {
   jest.mocked(catalogueListWorks).mockReturnValue(ok(page([work({ id: 'lantern' })])));
   jest.mocked(catalogueGetWork).mockReturnValue(ok(workDetail({ id: 'lantern' })));
   jest.mocked(catalogueListEpisodes).mockReturnValue(ok([episode(1)]));
+  jest.mocked(authorListWorks).mockReturnValue(ok([authorWork({ id: 'lantern' })]));
+  jest.mocked(authorListWufPresets).mockReturnValue(ok(WUF_PRESETS));
 });
 
 test('a guest lands on the catalogue without signing in', async () => {
@@ -166,4 +176,26 @@ test('an author is not asked to become one', async () => {
 
   expect(screen.getByText('Author')).toBeOnTheScreen();
   expect(screen.queryByRole('button', { name: 'Become an author' })).toBeNull();
+});
+
+test('FR-NV-01: an author has a studio tab and reaches the new work form from it', async () => {
+  signedInAs({ ...READER, roles: ['reader', 'author'] });
+  const router = await openRouter(APP, '/');
+
+  await fireEvent.press(screen.getByRole('button', { name: /Studio/ }));
+  await fireEvent.press(await screen.findByRole('button', { name: 'New work' }));
+
+  expect(router.pathname()).toBe('/studio/new');
+  expect(await screen.findByLabelText('Title')).toBeOnTheScreen();
+});
+
+test('a reader has no studio tab and cannot open the studio forms', async () => {
+  signedInAs(READER);
+  await openRouter(APP, '/');
+
+  expect(screen.queryByRole('button', { name: /Studio/ })).toBeNull();
+
+  const router = await openRouter(APP, '/studio/new');
+  expect(router.pathname()).not.toBe('/studio/new');
+  expect(screen.queryByRole('button', { name: 'Create work' })).toBeNull();
 });

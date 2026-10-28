@@ -187,10 +187,10 @@ Where the schema differs from the spec's data model:
 - [x] Client tests with jest-expo, run by CI (`cd app && npm test`)
 - [x] Novel reader: font, size, light/dark theme. `/read/[episodeId]`; the paragraphs are HTML (D13), so on web they go straight into the DOM, cleaned again with DOMPurify (`novel-view.web.tsx`), and on Android a react-native-webview shows a page built by `novel-page.ts` that copies only allowlisted tags (`novel-view.tsx`). Expo DOM components failed in Expo Go on a real phone, so they are not used. Settings are kept per device in AsyncStorage.
 - [x] Restore reading position by paragraph. Opens at the saved `position`; the position is saved 1.5 s after scrolling stops, and at once on leaving the episode or the app going to the background. Guests save nothing.
-- [ ] Library screen
+- [x] Library screen: reading (opens the episode read last) and favourites, loaded again each time the tab is shown. The work page reads on from where the reader stopped and adds or removes the work as a favourite.
 
 ### 1.8 Client: author studio
-- [ ] Works list, create/edit work
+- [x] Works list, create/edit work. A Studio tab that only authors have; `/studio/*` is a `Stack.Protected` group. Editing sends only the fields that changed, because the API checks each field it is sent (a retired WUF preset would refuse a title change).
 - [ ] Rich-text (HTML) editor with autosave (D13)
 - [ ] Version history view
 - [ ] Glossary editor

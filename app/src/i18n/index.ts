@@ -55,6 +55,16 @@ export function formatDate(iso: string): string {
   return new Intl.DateTimeFormat(currentLocale(), { dateStyle: 'medium' }).format(new Date(iso));
 }
 
+const HOUR = 3_600;
+const DAY = 24 * HOUR;
+
+/** A wait-until-free period, in whole days when it is some, otherwise in hours. */
+export function formatPeriod(seconds: number): string {
+  return seconds % DAY === 0
+    ? i18n.t('studio.duration.days', { count: seconds / DAY })
+    : i18n.t('studio.duration.hours', { count: Math.round(seconds / HOUR) });
+}
+
 void i18n.init({
   resources,
   lng: deviceLocale(),

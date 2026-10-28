@@ -1,5 +1,4 @@
-import { Link, useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useRef, useState } from 'react';
+import { Link, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -18,6 +17,7 @@ import { ThemedText } from '@/components/themed-text';
 import { WorkCard } from '@/components/work-card';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useVisit } from '@/hooks/use-visit';
 import { formatDate } from '@/i18n';
 
 const SEPARATOR = ' · ';
@@ -43,17 +43,8 @@ export default function LibraryScreen() {
 function SignedInLibrary({ user }: { user: UserResponse }) {
   const { t } = useTranslation();
   // Each return to the tab asks again: the reader may have read on in the
-  // meantime, here or on another device. The first visit is the first load.
-  const [visit, setVisit] = useState(0);
-  const focusedBefore = useRef(false);
-  useFocusEffect(
-    useCallback(() => {
-      if (focusedBefore.current) {
-        setVisit((count) => count + 1);
-      }
-      focusedBefore.current = true;
-    }, []),
-  );
+  // meantime, here or on another device.
+  const visit = useVisit();
   const library = useLoad(`library:${user.id}:${visit}`, () => readerGetLibrary());
 
   const body = () => {
