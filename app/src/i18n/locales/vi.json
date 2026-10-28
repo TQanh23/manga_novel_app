@@ -13,7 +13,8 @@
     "home": "Trang chủ",
     "search": "Tìm kiếm",
     "library": "Tủ truyện",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "studio": "Sáng tác"
   },
   "library": {
     "title": "Tủ truyện",
@@ -23,6 +24,42 @@
     "emptyFavourites": "Truyện bạn thêm vào yêu thích sẽ hiện ở đây.",
     "readOn": "Đọc ngày {{date}}",
     "guestHint": "Đăng nhập để lưu vị trí đang đọc và xây tủ truyện của riêng bạn."
+  },
+  "studio": {
+    "title": "Sáng tác",
+    "newWork": "Tác phẩm mới",
+    "empty": "Bạn chưa có tác phẩm nào. Hãy tạo một tác phẩm để đăng chương đầu tiên.",
+    "notAuthor": "Khu sáng tác dành cho tác giả. Bạn có thể trở thành tác giả ở tab Tài khoản.",
+    "sample": "Mẫu",
+    "newTitle": "Tác phẩm mới",
+    "editTitle": "Sửa tác phẩm",
+    "notFound": "Tác phẩm này không tồn tại hoặc không phải của bạn.",
+    "form": {
+      "type": "Định dạng",
+      "typeHint": "Không thể đổi định dạng sau khi tạo.",
+      "title": "Tiêu đề",
+      "synopsis": "Tóm tắt",
+      "language": "Ngôn ngữ của truyện",
+      "status": "Trạng thái",
+      "genres": "Thể loại (tối đa 3)",
+      "tags": "Tag",
+      "tagsHint": "Tối đa 10 tag, cách nhau bằng dấu phẩy.",
+      "wuf": "Chờ miễn phí",
+      "wufHint": "Độc giả chờ bao lâu thì chương tiếp theo được mở miễn phí.",
+      "wufOff": "Tắt",
+      "create": "Tạo tác phẩm",
+      "save": "Lưu thay đổi",
+      "saved": "Đã lưu.",
+      "titleRequired": "Hãy đặt tiêu đề cho tác phẩm.",
+      "tooManyTags": "Một tác phẩm có tối đa 10 tag.",
+      "tagTooLong": "Mỗi tag dài tối đa 30 ký tự."
+    },
+    "duration": {
+      "hours_one": "{{count}} giờ",
+      "hours_other": "{{count}} giờ",
+      "days_one": "{{count}} ngày",
+      "days_other": "{{count}} ngày"
+    }
   },
   "auth": {
     "signInTitle": "Đăng nhập",
@@ -75,6 +112,12 @@
   "workStatus": {
     "ongoing": "Đang ra",
     "completed": "Hoàn thành"
+  },
+  "contentLanguage": {
+    "ko": "Tiếng Hàn",
+    "ja": "Tiếng Nhật",
+    "en": "Tiếng Anh",
+    "vi": "Tiếng Việt"
   },
   "genres": {
     "action": "Hành động",
@@ -142,6 +185,9 @@
     "account_locked": "Tài khoản này đã bị khóa.",
     "rate_limited": "Bạn thử quá nhiều lần. Hãy đợi một lát rồi thử lại.",
     "validation_error": "Hãy kiểm tra lại các ô và thử lại.",
+    "invalid_wuf_preset": "Thời gian chờ miễn phí này không còn được cung cấp. Hãy chọn thời gian khác.",
+    "unknown_genre": "Hãy chọn thể loại trong danh sách.",
+    "too_many_genres": "Một tác phẩm có tối đa ba thể loại.",
     "network_error": "Không kết nối được máy chủ. Hãy kiểm tra mạng.",
     "unknown": "Đã có lỗi xảy ra. Hãy thử lại."
   }

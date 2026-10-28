@@ -16,6 +16,8 @@ import type {
   WorkCard,
   WorkDetail,
   WorkPage,
+  WorkResponse,
+  WufPresetResponse,
 } from '@/api/generated';
 
 /** What a generated client call resolves to when the API answered with `data`. */
@@ -125,6 +127,44 @@ export const READER: UserResponse = {
   status: 'active',
   roles: ['reader'],
 };
+
+export const AUTHOR: UserResponse = {
+  id: '01a00000-0000-7000-8000-0000000000aa',
+  email: 'author@example.com',
+  display_name: 'Nguyễn Tác Giả',
+  locale: 'vi',
+  status: 'active',
+  roles: ['reader', 'author'],
+};
+
+/** A work as its author sees it in the studio. */
+export function authorWork(overrides: Partial<WorkResponse> = {}): WorkResponse {
+  return {
+    id: '01a00000-0000-7000-8000-000000000001',
+    type: 'novel',
+    title: 'Người Giữ Đèn Bến Sương',
+    synopsis: 'Một ngọn đèn ánh lam dẫn thuyền qua sương.',
+    language: 'vi',
+    status: 'ongoing',
+    wuf_preset_id: null,
+    revenue_share_preset_id: null,
+    is_sample: false,
+    ai_opt_in_training: false,
+    genres: ['fantasy'],
+    tags: ['Bến sông'],
+    created_at: '2026-10-01T02:00:00Z',
+    updated_at: '2026-10-13T04:30:00Z',
+    ...overrides,
+  };
+}
+
+/** The wait-until-free periods the migration offers: 3 hours, 12 hours, 1 day, 3 days. */
+export const WUF_PRESETS: WufPresetResponse[] = [
+  { id: 'wuf-3d', seconds: 259_200 },
+  { id: 'wuf-3h', seconds: 10_800 },
+  { id: 'wuf-1d', seconds: 86_400 },
+  { id: 'wuf-12h', seconds: 43_200 },
+];
 
 export const GENRES: GenreResponse[] = [
   { slug: 'action', name: 'Action' },
