@@ -12,7 +12,17 @@
   "tabs": {
     "home": "Home",
     "search": "Search",
+    "library": "Library",
     "account": "Account"
+  },
+  "library": {
+    "title": "Library",
+    "reading": "Reading",
+    "favourites": "Favourites",
+    "emptyReading": "Stories you start reading show up here.",
+    "emptyFavourites": "Works you add to your favourites show up here.",
+    "readOn": "Read {{date}}",
+    "guestHint": "Sign in to keep your place in a story and build your library."
   },
   "auth": {
     "signInTitle": "Sign in",
@@ -96,6 +106,10 @@
     "coins_one": "{{count}} coin",
     "coins_other": "{{count}} coins",
     "waitUntilFree": "Wait until free",
+    "start": "Start reading",
+    "continue": "Continue: episode {{number}}",
+    "favourite": "Add to favourites",
+    "unfavourite": "Remove from favourites",
     "notFound": "This work does not exist or has nothing published yet."
   },
   "reader": {
