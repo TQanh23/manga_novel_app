@@ -97,9 +97,7 @@ function Reader({ episode, signedIn }: { episode: EpisodeContentResponse; signed
           paragraphs={episode.paragraphs}
           initialPosition={start}
           appearance={appearance}
-          onPosition={async (position) => savePosition(position)}
-          // Expo Go ships react-native-webview but not @expo/dom-webview's native view.
-          dom={{ style: styles.text, useExpoDOMWebView: false }}
+          onPosition={savePosition}
         />
       </View>
       {showSettings ? <SettingsPanel /> : null}
