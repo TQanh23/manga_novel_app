@@ -163,7 +163,7 @@ Where the schema differs from the spec's data model:
 ### 1.4 Glossary (FR-NV-03)
 - [x] `GET` / `POST` / `PATCH /v1/author/works/{id}/glossary` (`PATCH` is on `.../glossary/{entry_id}`)
 - [x] Tests with KR, JP and VI names and aliases
-- [ ] **(gap)** Deleting a glossary entry: the spec lists `GET`, `POST` and `PATCH` only, and `app_rw` has no `DELETE` on the table. Decide whether authors need it.
+- [x] **(gap)** Deleting a glossary entry: the spec lists `GET`, `POST` and `PATCH` only. Decided on 2026-10-28: authors need it. `DELETE /v1/author/works/{id}/glossary/{entry_id}`; migration `0008` grants `app_rw` `DELETE` on the table. Nothing references an entry. Update the spec (FR-NV-03) to match.
 
 ### 1.5 Catalogue API (FR-RD-01, FR-RD-02, FR-RD-06)
 - [x] `GET /v1/works` for home, with filters: type, genre, completion status. A work is in the catalogue while it has at least one published episode; that rule is written once, in `_visible_works` in `api/catalogue/repository.py`.
@@ -193,7 +193,7 @@ Where the schema differs from the spec's data model:
 - [x] Works list, create/edit work. A Studio tab that only authors have; `/studio/*` is a `Stack.Protected` group. Editing sends only the fields that changed, because the API checks each field it is sent (a retired WUF preset would refuse a title change).
 - [x] Rich-text (HTML) editor with autosave (D13). No editor library: one page (`studio/editor-page.ts`) with a contenteditable and its own toolbar runs in a WebView on Android and in a sandboxed iframe on web, so both behave alike and work in Expo Go. It hands out only the stored tags; pasted text comes in as plain text. The episode list sits on the studio work page. The text is saved 2 s after typing stops and at once on leaving or backgrounding, one save at a time; a failed save is retried after 10 s.
 - [x] Version history view, inside the editor screen rather than a route of its own: what was typed is saved before it opens, and a restore becomes the editor's saved text, so an autosave from an editor left underneath can never write over a restore. Versions newest first, 50 at a time; one is shown read-only in the reader's view and can be restored.
-- [x] Glossary editor: `/studio/glossary/[workId]`, entries by kind, a form for kind, name, other names, the name in the other three content languages, and facts. A fact the author does not touch keeps its JSON type; one typed as a plain number is stored as a number (as the seed's ages are). Edits send only what changed. No delete, pending the 1.4 gap.
+- [x] Glossary editor: `/studio/glossary/[workId]`, entries by kind, a form for kind, name, other names, the name in the other three content languages, and facts. A fact the author does not touch keeps its JSON type; one typed as a plain number is stored as a number (as the seed's ages are). Edits send only what changed. Delete takes two presses (no `Alert`, which react-native-web does not show).
 - [ ] Publish now and schedule
 
 ### 1.9 Seed

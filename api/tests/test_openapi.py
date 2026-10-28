@@ -39,6 +39,10 @@ EXPECTED_OPERATIONS = {
         "patch",
         "/v1/author/works/{work_id}/glossary/{entry_id}",
     ): "author_update_glossary_entry",
+    (
+        "delete",
+        "/v1/author/works/{work_id}/glossary/{entry_id}",
+    ): "author_delete_glossary_entry",
     ("get", "/v1/works"): "catalogue_list_works",
     ("get", "/v1/works/{work_id}"): "catalogue_get_work",
     ("get", "/v1/works/{work_id}/episodes"): "catalogue_list_episodes",
