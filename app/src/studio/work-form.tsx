@@ -25,8 +25,8 @@ const MAX_SYNOPSIS = 5_000;
 const MAX_GENRES = 3;
 const MAX_TAGS = 10;
 const MAX_TAG_LENGTH = 30;
-// Tags are split on the comma of each content language, not on spaces.
-const TAG_SEPARATORS = /[,，、]/;
+// Lists are split on the comma of each content language, not on spaces.
+const LIST_SEPARATORS = /[,，、]/;
 const LANGUAGES: readonly ContentLanguage[] = ['ko', 'ja', 'en', 'vi'];
 // Chips need a string for "no wait-until-free"; no preset id is empty.
 const OFF = '';
@@ -77,13 +77,13 @@ export function changedFields(before: WorkFormValues, after: WorkFormValues): Wo
   return changes;
 }
 
-/** The tags in what the author typed, each once, in the order typed. */
-export function parseTags(text: string): string[] {
-  const tags = text
-    .split(TAG_SEPARATORS)
-    .map((tag) => tag.trim())
-    .filter((tag) => tag.length > 0);
-  return [...new Set(tags)];
+/** The items of a list the author typed (tags, other names), each once, in the order typed. */
+export function parseList(text: string): string[] {
+  const items = text
+    .split(LIST_SEPARATORS)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+  return [...new Set(items)];
 }
 
 type WorkFormProps = {
@@ -127,7 +127,7 @@ export function WorkForm({ initial, mode, onSubmit }: WorkFormProps) {
   };
 
   const submit = async () => {
-    const tags = parseTags(tagText);
+    const tags = parseList(tagText);
     const invalid = !values.title.trim()
       ? t('studio.form.titleRequired')
       : tags.length > MAX_TAGS

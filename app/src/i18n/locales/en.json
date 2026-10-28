@@ -80,6 +80,48 @@
       "restore": "Restore this version",
       "restoreHint": "Restoring adds a new version with this text. Nothing in the history is deleted."
     },
+    "glossary": {
+      "open": "Glossary",
+      "title": "Glossary",
+      "hint": "Characters, places and terms of this work. The consistency check compares your chapters with what you note here.",
+      "newEntry": "New entry",
+      "empty": "Nothing noted yet.",
+      "kind": {
+        "character": "Character",
+        "place": "Place",
+        "term": "Term"
+      },
+      "section": {
+        "character": "Characters",
+        "place": "Places",
+        "term": "Terms"
+      },
+      "facts_one": "{{count}} fact",
+      "facts_other": "{{count}} facts",
+      "form": {
+        "kind": "Kind",
+        "name": "Name",
+        "aliases": "Other names",
+        "aliasesHint": "Up to 20, separated by commas.",
+        "translations": "Name in other languages",
+        "attributes": "Facts",
+        "attributesHint": "What is true of it: eye colour, age, who is whose sister.",
+        "attributeKey": "Fact",
+        "attributeValue": "Value",
+        "addAttribute": "Add a fact",
+        "removeAttribute": "Remove this fact",
+        "create": "Add entry",
+        "save": "Save entry",
+        "cancel": "Cancel",
+        "nameRequired": "Give the entry a name.",
+        "tooManyAliases": "An entry has at most 20 other names.",
+        "aliasTooLong": "A name has at most 100 characters.",
+        "tooManyAttributes": "An entry has at most 30 facts.",
+        "attributeKeyRequired": "Every fact with a value needs a name.",
+        "attributeKeyTooLong": "The name of a fact has at most 50 characters.",
+        "duplicateKey": "Two facts are called “{{key}}”."
+      }
+    },
     "form": {
       "type": "Format",
       "typeHint": "The format cannot be changed later.",
@@ -236,6 +278,8 @@
     "too_many_genres": "A work has at most three genres.",
     "episode_removed": "This episode has been removed.",
     "version_not_found": "This version does not exist.",
+    "glossary_entry_exists": "This work already has an entry of that kind with that name.",
+    "glossary_entry_not_found": "This entry does not exist.",
     "network_error": "Could not reach the server. Check your connection.",
     "unknown": "Something went wrong. Try again."
   }

@@ -80,6 +80,48 @@
       "restore": "Khôi phục phiên bản này",
       "restoreHint": "Khôi phục sẽ thêm một phiên bản mới với nội dung này. Không phiên bản nào trong lịch sử bị xoá."
     },
+    "glossary": {
+      "open": "Bảng thuật ngữ",
+      "title": "Bảng thuật ngữ",
+      "hint": "Nhân vật, địa danh và thuật ngữ của tác phẩm. Bước kiểm tra tính nhất quán so các chương với những gì bạn ghi ở đây.",
+      "newEntry": "Mục mới",
+      "empty": "Chưa ghi mục nào.",
+      "kind": {
+        "character": "Nhân vật",
+        "place": "Địa danh",
+        "term": "Thuật ngữ"
+      },
+      "section": {
+        "character": "Nhân vật",
+        "place": "Địa danh",
+        "term": "Thuật ngữ"
+      },
+      "facts_one": "{{count}} chi tiết",
+      "facts_other": "{{count}} chi tiết",
+      "form": {
+        "kind": "Loại",
+        "name": "Tên",
+        "aliases": "Tên gọi khác",
+        "aliasesHint": "Tối đa 20 tên, cách nhau bằng dấu phẩy.",
+        "translations": "Tên trong ngôn ngữ khác",
+        "attributes": "Chi tiết",
+        "attributesHint": "Những điều đúng về mục này: màu mắt, tuổi, ai là chị của ai.",
+        "attributeKey": "Chi tiết",
+        "attributeValue": "Giá trị",
+        "addAttribute": "Thêm chi tiết",
+        "removeAttribute": "Xoá chi tiết này",
+        "create": "Thêm mục",
+        "save": "Lưu mục",
+        "cancel": "Huỷ",
+        "nameRequired": "Hãy đặt tên cho mục này.",
+        "tooManyAliases": "Một mục có tối đa 20 tên gọi khác.",
+        "aliasTooLong": "Mỗi tên dài tối đa 100 ký tự.",
+        "tooManyAttributes": "Một mục có tối đa 30 chi tiết.",
+        "attributeKeyRequired": "Chi tiết nào có giá trị cũng cần có tên.",
+        "attributeKeyTooLong": "Tên của một chi tiết dài tối đa 50 ký tự.",
+        "duplicateKey": "Có hai chi tiết cùng tên “{{key}}”."
+      }
+    },
     "form": {
       "type": "Định dạng",
       "typeHint": "Không thể đổi định dạng sau khi tạo.",
@@ -236,6 +278,8 @@
     "too_many_genres": "Một tác phẩm có tối đa ba thể loại.",
     "episode_removed": "Chương này đã bị gỡ.",
     "version_not_found": "Phiên bản này không tồn tại.",
+    "glossary_entry_exists": "Tác phẩm đã có một mục cùng loại và cùng tên.",
+    "glossary_entry_not_found": "Mục này không tồn tại.",
     "network_error": "Không kết nối được máy chủ. Hãy kiểm tra mạng.",
     "unknown": "Đã có lỗi xảy ra. Hãy thử lại."
   }
