@@ -65,14 +65,14 @@
       "DraftSave": {
         "additionalProperties": false,
         "properties": {
-          "body_md": {
-            "maxLength": 200000,
-            "title": "Body Md",
+          "body_html": {
+            "maxLength": 300000,
+            "title": "Body Html",
             "type": "string"
           }
         },
         "required": [
-          "body_md"
+          "body_html"
         ],
         "title": "DraftSave",
         "type": "object"
@@ -179,8 +179,8 @@
       "EpisodeDraft": {
         "description": "The newest save of an episode. All empty when nothing was saved yet.",
         "properties": {
-          "body_md": {
-            "title": "Body Md",
+          "body_html": {
+            "title": "Body Html",
             "type": "string"
           },
           "saved_at": {
@@ -210,7 +210,7 @@
         },
         "required": [
           "version_id",
-          "body_md",
+          "body_html",
           "saved_at"
         ],
         "title": "EpisodeDraft",
@@ -405,8 +405,8 @@
       },
       "EpisodeVersionDetail": {
         "properties": {
-          "body_md": {
-            "title": "Body Md",
+          "body_html": {
+            "title": "Body Html",
             "type": "string"
           },
           "created_at": {
@@ -428,7 +428,7 @@
           "id",
           "created_at",
           "is_published",
-          "body_md"
+          "body_html"
         ],
         "title": "EpisodeVersionDetail",
         "type": "object"

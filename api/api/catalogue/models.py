@@ -168,7 +168,7 @@ class EpisodeVersion(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     episode_id: Mapped[UUID] = mapped_column(index=True)
     author_id: Mapped[UUID]
-    body_md: Mapped[str] = mapped_column(Text)
+    body_html: Mapped[str] = mapped_column(Text)
     created_by: Mapped[UUID | None] = mapped_column(
         ForeignKey("core.users.id", ondelete="SET NULL")
     )

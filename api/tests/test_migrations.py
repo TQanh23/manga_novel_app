@@ -9,6 +9,7 @@ from sqlalchemy import Row, make_url, text
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from api.core.config import Settings
+from api.core.ids import uuid7
 
 SCRATCH_DATABASE = "migration_round_trip"
 APP_SCHEMAS = ["ai", "analytics", "billing", "core"]
@@ -78,3 +79,39 @@ def test_migrations_round_trip(
         " WHERE rolname IN ('app_rw', 'app_public') ORDER BY 1",
     )
     assert [tuple(row) for row in roles] == [("app_public", False), ("app_rw", True)]
+
+
+def test_0007_turns_stored_markdown_paragraphs_into_html(
+    scratch_database_url: str, alembic_config: Callable[..., Config]
+) -> None:
+    config = alembic_config(scratch_database_url)
+    command.upgrade(config, "0006")
+    ids = {name: str(uuid7()) for name in ("user", "work", "episode", "version")}
+    for statement in (
+        "INSERT INTO core.users (id, email, password_hash, display_name)"
+        " VALUES (CAST(:user AS uuid), 'a@example.com', 'x', 'A')",
+        "INSERT INTO core.works (id, author_id, type, title, language)"
+        " VALUES (CAST(:work AS uuid), CAST(:user AS uuid), 'novel', 'W', 'vi')",
+        "INSERT INTO core.episodes (id, work_id, author_id, number, title)"
+        " VALUES (CAST(:episode AS uuid), CAST(:work AS uuid), CAST(:user AS uuid), 1, 'E')",
+        "INSERT INTO core.episode_versions (id, episode_id, author_id, body_md)"
+        " VALUES (CAST(:version AS uuid), CAST(:episode AS uuid), CAST(:user AS uuid), :body)",
+    ):
+        run_sql(
+            scratch_database_url,
+            statement,
+            {**ids, "body": "# Đầu\n\nMột <b>&</b> hai\ndòng ba\n\n\n月の下で"},
+        )
+
+    command.upgrade(config, "0007")
+
+    # The table forces row-level security; the update must still have reached the row.
+    rows = run_sql(scratch_database_url, "SELECT body_html FROM core.episode_versions")
+    assert [row.body_html for row in rows] == [
+        "<p># Đầu</p>\n<p>Một &lt;b&gt;&amp;&lt;/b&gt; hai<br>dòng ba</p>\n<p>月の下で</p>"
+    ]
+    forced = run_sql(
+        scratch_database_url,
+        "SELECT relforcerowsecurity FROM pg_class WHERE oid = 'core.episode_versions'::regclass",
+    )
+    assert forced[0].relforcerowsecurity is True

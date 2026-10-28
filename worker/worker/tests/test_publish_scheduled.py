@@ -51,7 +51,9 @@ async def make_episode(
         session.add(episode)
         await session.flush()
         await set_author_context(session, author.id)
-        version = EpisodeVersion(episode_id=episode.id, author_id=author.id, body_md="예약된 원고")
+        version = EpisodeVersion(
+            episode_id=episode.id, author_id=author.id, body_html="<p>예약된 원고</p>"
+        )
         session.add(version)
         await session.flush()
         if status != "draft":

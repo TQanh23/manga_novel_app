@@ -212,7 +212,7 @@ async def test_fr_nv_01_an_author_renames_an_episode_and_readers_see_it_at_once(
     assert [episode["title"] for episode in listed] == ["Chương 2: Ánh trăng"]
     assert (content["title"], content["paragraphs"]) == (
         "Chương 2: Ánh trăng",
-        ["The text stays as it is."],
+        ["<p>The text stays as it is.</p>"],
     )
 
 

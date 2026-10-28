@@ -35,6 +35,7 @@ from api.auth.models import Role, User
 from api.author import repository as author_repository
 from api.catalogue.labels import tag_name, tag_slug
 from api.catalogue.models import ContentLanguage, Episode, EpisodeVersion, Work, WorkType
+from api.catalogue.text import sanitize_html
 from api.core.config import Settings, get_settings
 from api.core.db import get_engine, get_session, get_sessionmaker
 from api.core.logging import build_handler, configure_logging
@@ -318,11 +319,17 @@ def make_episode(db_session: AsyncSession) -> MakeEpisode:
 
 @pytest.fixture
 def publish_text(db_session: AsyncSession) -> PublishText:
-    """Saves text as a new version of an episode and publishes it, as its author would."""
+    """Saves text as a new version of an episode and publishes it, as its author would.
 
-    async def publish(episode: Episode, body_md: str) -> EpisodeVersion:
+        The text is sanitized first, as a save through the API does, so a test may
+        pass plain text: "One.
+
+    Two." is stored as two <p> blocks.
+    """
+
+    async def publish(episode: Episode, body_html: str) -> EpisodeVersion:
         version = await author_repository.add_version(
-            db_session, episode.id, body_md, author_id=episode.author_id
+            db_session, episode.id, sanitize_html(body_html), author_id=episode.author_id
         )
         episode.status = "published"
         episode.publish_at = episode.publish_at or datetime.now(UTC)

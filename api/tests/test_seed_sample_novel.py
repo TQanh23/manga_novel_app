@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import repository as auth_repository
-from api.catalogue.text import split_paragraphs
+from api.catalogue.text import sanitize_html, split_blocks
 from api.core.config import Settings
 from api.scripts.seed import (
     SAMPLE_NOVEL_AUTHOR,
@@ -45,10 +45,12 @@ async def counts(session: AsyncSession) -> tuple[int, int, int, int]:
 def test_the_sample_novel_has_five_chapters_long_enough_to_chunk(novel: SampleNovel) -> None:
     assert len(novel.episodes) == 5
     for episode in novel.episodes:
-        paragraphs = split_paragraphs(episode.body_md)
+        paragraphs = split_blocks(episode.body_html)
         assert len(paragraphs) >= 8, episode.title
         # Enough text for more than one chunk when it is indexed.
-        assert len(episode.body_md) >= 2_000, episode.title
+        assert len(episode.body_html) >= 2_000, episode.title
+        # Written as the API stores it, so what a reader gets matches the files.
+        assert sanitize_html(episode.body_html) == episode.body_html.rstrip("\n"), episode.title
     assert (novel.work.language, novel.work.genres) == ("vi", ["fantasy", "mystery"])
 
 
@@ -56,7 +58,7 @@ def test_the_glossary_has_every_kind_and_each_entry_is_in_at_least_two_chapters(
     novel: SampleNovel,
 ) -> None:
     # A fact stated in two places is what a planted contradiction needs later.
-    chapters = [episode.body_md.casefold() for episode in novel.episodes]
+    chapters = [episode.body_html.casefold() for episode in novel.episodes]
 
     for entry in novel.glossary:
         spellings = [entry.name, *entry.aliases]
@@ -126,12 +128,12 @@ async def test_a_guest_finds_the_sample_novel_without_diacritics_and_reads_it(
     assert (card["genres"], card["episode_count"]) == (["fantasy", "mystery"], 5)
     assert [episode["title"] for episode in episodes] == [e.title for e in novel.episodes]
     assert first.status_code == 200
-    assert first.json()["paragraphs"] == split_paragraphs(novel.episodes[0].body_md)
+    assert first.json()["paragraphs"] == split_blocks(novel.episodes[0].body_html)
     assert (first.json()["previous_episode_id"], first.json()["next_episode_id"]) == (
         None,
         episodes[1]["id"],
     )
-    assert last.json()["paragraphs"][-1].startswith("An Nhiên mười bảy tuổi")
+    assert last.json()["paragraphs"][-1].startswith("<p>An Nhiên mười bảy tuổi")
 
 
 async def test_the_seeded_author_sees_the_glossary_through_the_api(

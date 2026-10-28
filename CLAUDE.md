@@ -88,7 +88,8 @@ Each commitment below has a mechanism and a test. Do not weaken the mechanism, a
 ## AI features
 
 - Lint and consistency checks ask the LLM for output matching a fixed JSON schema. Validate it; discard findings that lack evidence. Consistency findings must cite `evidence_chunk_ids`.
-- Chunking: by paragraph, roughly 300 to 500 tokens, keeping original offsets for citations. Re-indexing deletes the old version's chunks.
+- Novel text is sanitized HTML (`body_html`). Only `sanitize_html` in `api/catalogue/text.py` decides what may be stored, and `split_blocks` what a paragraph is; never parse episode HTML anywhere else.
+- Chunking: by paragraph (`split_blocks`, text from `plain_text`), roughly 300 to 500 tokens, keeping original offsets for citations. Re-indexing deletes the old version's chunks.
 - Author verdicts on findings feed the eval set, never training.
 - Per-author AI quota and rate limit are checked before a job is enqueued.
 - Changing a prompt, model, chunking or retrieval parameter means running the eval and reporting precision, recall and cost against the previous run. Eval targets to start: recall at least 80%, precision at least 70%.

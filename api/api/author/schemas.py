@@ -56,8 +56,9 @@ Attributes = Annotated[
 # The name in the other content languages, keyed by language code.
 Translations = dict[ContentLanguage, GlossaryName]
 MAX_ATTRIBUTES_CHARS = 4_000
-# Far above a long chapter; the bound keeps one request from holding megabytes.
-BodyMd = Annotated[str, StringConstraints(max_length=200_000)]
+# Far above a long chapter, with room for markup; the bound keeps one request
+# from holding megabytes. It applies before sanitizing.
+BodyHtml = Annotated[str, StringConstraints(max_length=300_000)]
 
 
 class AuthorRequest(BaseModel):
@@ -106,7 +107,7 @@ class EpisodeUpdate(AuthorRequest):
 
 
 class DraftSave(AuthorRequest):
-    body_md: BodyMd
+    body_html: BodyHtml
 
 
 class EpisodeSchedule(AuthorRequest):
@@ -192,14 +193,14 @@ class EpisodeDraft(BaseModel):
     """The newest save of an episode. All empty when nothing was saved yet."""
 
     version_id: UUID | None
-    body_md: str
+    body_html: str
     saved_at: datetime | None
 
     @classmethod
     def from_version(cls, version: EpisodeVersion | None) -> "EpisodeDraft":
         if version is None:
-            return cls(version_id=None, body_md="", saved_at=None)
-        return cls(version_id=version.id, body_md=version.body_md, saved_at=version.created_at)
+            return cls(version_id=None, body_html="", saved_at=None)
+        return cls(version_id=version.id, body_html=version.body_html, saved_at=version.created_at)
 
 
 class EpisodeVersionSummary(BaseModel):
@@ -219,7 +220,7 @@ class EpisodeVersionSummary(BaseModel):
 
 
 class EpisodeVersionDetail(EpisodeVersionSummary):
-    body_md: str
+    body_html: str
 
     @classmethod
     def from_version(cls, version: EpisodeVersion, episode: Episode) -> "EpisodeVersionDetail":
@@ -227,7 +228,7 @@ class EpisodeVersionDetail(EpisodeVersionSummary):
             id=version.id,
             created_at=version.created_at,
             is_published=version.id == episode.published_version_id,
-            body_md=version.body_md,
+            body_html=version.body_html,
         )
 
 

@@ -226,7 +226,7 @@ async def test_fr_rd_05_devices_saving_at_the_same_moment_leave_one_position(
     )
     episode_id = episode.json()["id"]
     await client.put(
-        f"/v1/author/episodes/{episode_id}/draft", json={"body_md": "Text."}, headers=author
+        f"/v1/author/episodes/{episode_id}/draft", json={"body_html": "Text."}, headers=author
     )
     await client.post(f"/v1/author/episodes/{episode_id}/publish", headers=author)
     reader = await sign_up(client, "reader@example.com")

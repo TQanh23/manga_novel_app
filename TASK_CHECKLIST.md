@@ -42,6 +42,7 @@ Each one blocks the tasks listed next to it. The plan's default is in brackets; 
 - [ ] **D10. (gap)** What happens to an author's works when the account is deleted (`FR-AUTH-05`). The spec does not say. Blocks 3.8.
 - [ ] **D11. (gap)** `design/ai-architecture.md` is referenced by the plan but is not in the repo. Add it before Phase 4 starts.
 - [x] **D12. (gap)** How a Reader becomes an Author. The spec does not say. Decided: self-serve. Registration always creates a Reader; `POST /v1/me/roles/author` adds the Author role. Update the spec to match.
+- [x] **D13.** Novel text format. Decided on 2026-10-28: HTML, not Markdown. Authors write in a rich-text editor; the API stores only sanitized HTML (`sanitize_html` in `api/catalogue/text.py`: `p, br, strong, b, em, i, u, s, h2, h3, blockquote, hr`, no attributes), one top-level block per line. A paragraph is a top-level block (`split_blocks`), and reading positions index into those. Migration `0007` renamed `episode_versions.body_md` to `body_html` and converted stored text. Update the spec (FR-NV-01, data model) to match.
 
 ## Phase 0: Foundation
 
@@ -174,7 +175,7 @@ Where the schema differs from the spec's data model:
 - [x] Test: drafts and scheduled episodes never appear in catalogue or search
 
 ### 1.6 Reader API (FR-RD-03, FR-RD-05)
-- [x] `GET /v1/episodes/{id}/content` for novels; guests can read free episodes. The text comes back as `paragraphs`, split by `split_paragraphs` in `api/catalogue/text.py`; a signed-in reader also gets their saved `position`.
+- [x] `GET /v1/episodes/{id}/content` for novels; guests can read free episodes. The text comes back as `paragraphs`, split by `split_blocks` in `api/catalogue/text.py` (each one an HTML block, per D13); a signed-in reader also gets their saved `position`.
 - [x] `PUT /v1/progress/{episode_id}` at paragraph granularity. The position is an index into `paragraphs`.
 - [x] `GET /v1/library`: reading and favourites
 - [x] Favourite / unfavourite a work: `PUT` and `DELETE /v1/favourites/{work_id}`
@@ -190,7 +191,7 @@ Where the schema differs from the spec's data model:
 
 ### 1.8 Client: author studio
 - [ ] Works list, create/edit work
-- [ ] Markdown editor with autosave
+- [ ] Rich-text (HTML) editor with autosave (D13)
 - [ ] Version history view
 - [ ] Glossary editor
 - [ ] Publish now and schedule

@@ -66,7 +66,7 @@ async def test_deleting_a_work_removes_everything_that_belonged_to_it(
         session.add_all(episodes)
         await session.flush()
         versions = [
-            EpisodeVersion(episode_id=episode.id, author_id=author.id, body_md="Text")
+            EpisodeVersion(episode_id=episode.id, author_id=author.id, body_html="Text")
             for episode in episodes
             for _ in range(2)
         ]

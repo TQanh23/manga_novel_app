@@ -52,7 +52,7 @@ async def test_nfr_06_one_authors_drafts_are_out_of_every_other_authors_reach(
     episode = await start_episode(client, alice)
     base = f"/v1/author/episodes/{episode['id']}"
     saved = [
-        (await client.put(f"{base}/draft", json={"body_md": body}, headers=alice)).json()["id"]
+        (await client.put(f"{base}/draft", json={"body_html": body}, headers=alice)).json()["id"]
         for body in ("초안 하나", "下書き二", "Bản nháp ba")
     ]
 
@@ -61,7 +61,7 @@ async def test_nfr_06_one_authors_drafts_are_out_of_every_other_authors_reach(
         await client.get(f"/v1/author/works/{episode['work_id']}/episodes", headers=bob),
         await client.get(base, headers=bob),
         await client.get(f"{base}/draft", headers=bob),
-        await client.put(f"{base}/draft", json={"body_md": "Bob was here"}, headers=bob),
+        await client.put(f"{base}/draft", json={"body_html": "Bob was here"}, headers=bob),
         await client.get(f"{base}/versions", headers=bob),
         await client.get(f"{base}/versions/{saved[0]}", headers=bob),
         await client.post(f"{base}/versions/{saved[0]}/restore", headers=bob),
@@ -75,7 +75,7 @@ async def test_nfr_06_one_authors_drafts_are_out_of_every_other_authors_reach(
     # her requests ran on the same pool.
     bobs_episode = await start_episode(client, bob)
     bobs_base = f"/v1/author/episodes/{bobs_episode['id']}"
-    bobs_save = await client.put(f"{bobs_base}/draft", json={"body_md": "Của Bob"}, headers=bob)
+    bobs_save = await client.put(f"{bobs_base}/draft", json={"body_html": "Của Bob"}, headers=bob)
     bobs_history = (await client.get(f"{bobs_base}/versions", headers=bob)).json()
     alices_history = (await client.get(f"{base}/versions", headers=alice)).json()
 

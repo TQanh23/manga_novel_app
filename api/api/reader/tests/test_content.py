@@ -38,10 +38,10 @@ async def work(author: User, make_work: MakeWork) -> Work:
 
 
 async def save_draft(
-    client: AsyncClient, headers: dict[str, str], episode: Episode, body_md: str
+    client: AsyncClient, headers: dict[str, str], episode: Episode, body_html: str
 ) -> None:
     response = await client.put(
-        f"/v1/author/episodes/{episode.id}/draft", json={"body_md": body_md}, headers=headers
+        f"/v1/author/episodes/{episode.id}/draft", json={"body_html": body_html}, headers=headers
     )
     assert response.status_code == 200, response.text
 
@@ -52,8 +52,9 @@ async def test_fr_rd_03_a_guest_reads_a_free_episode_paragraph_by_paragraph(
     episode = await make_episode(work, title="제1화: 귀환")
     await publish_text(
         episode,
-        "# 귀환\n\n그날 밤, 비가 내렸다.\n\n"
-        "月の下で、剣士は立ち止まった。\n\n\nĐêm ấy **trời mưa**.\n",
+        "<h2>귀환</h2><p>그날 밤, 비가 내렸다.</p>"
+        "<p>月の下で、剣士は立ち止まった。</p>\n\n"
+        "<blockquote><p>Đêm ấy <strong>trời mưa</strong>.</p></blockquote>",
     )
 
     response = await client.get(content_url(episode))
@@ -61,10 +62,10 @@ async def test_fr_rd_03_a_guest_reads_a_free_episode_paragraph_by_paragraph(
     assert response.status_code == 200
     content = response.json()
     assert content["paragraphs"] == [
-        "# 귀환",
-        "그날 밤, 비가 내렸다.",
-        "月の下で、剣士は立ち止まった。",
-        "Đêm ấy **trời mưa**.",
+        "<h2>귀환</h2>",
+        "<p>그날 밤, 비가 내렸다.</p>",
+        "<p>月の下で、剣士は立ち止まった。</p>",
+        "<blockquote><p>Đêm ấy <strong>trời mưa</strong>.</p></blockquote>",
     ]
     assert (content["id"], content["work_id"]) == (str(episode.id), str(work.id))
     assert (content["number"], content["title"]) == (1, "제1화: 귀환")
@@ -153,7 +154,7 @@ async def test_fr_rd_03_readers_keep_seeing_the_published_text_while_the_author_
 
     response = await client.get(content_url(episode))
 
-    assert response.json()["paragraphs"] == ["The published edition."]
+    assert response.json()["paragraphs"] == ["<p>The published edition.</p>"]
     assert "chưa ai được đọc" not in response.text
 
 
@@ -183,7 +184,7 @@ async def test_fr_nv_02_a_scheduled_episode_becomes_readable_when_its_time_has_c
     assert before.status_code == 404
     assert after.status_code == 200
     # The text that was scheduled, not what was saved afterwards.
-    assert after.json()["paragraphs"] == ["예약된 원고.", "둘째 문단."]
+    assert after.json()["paragraphs"] == ["<p>예약된 원고.</p>", "<p>둘째 문단.</p>"]
     assert datetime.fromisoformat(after.json()["publish_at"]) == publish_at
 
 
@@ -253,7 +254,7 @@ async def test_fr_rd_03_a_signed_in_reader_gets_their_own_position_with_the_text
     guest = await client.get(content_url(episode))
 
     assert [r.json()["position"] for r in (mine, theirs, guest)] == [2, None, None]
-    assert mine.json()["paragraphs"] == ["One.", "Two.", "Three."]
+    assert mine.json()["paragraphs"] == ["<p>One.</p>", "<p>Two.</p>", "<p>Three.</p>"]
 
 
 async def test_fr_rd_03_a_token_that_is_sent_has_to_be_valid(
