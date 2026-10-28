@@ -339,7 +339,7 @@ async def test_fr_ad_04_a_preset_refuses_values_that_make_no_sense(
         "DELETE FROM core.works",
         "DELETE FROM core.episodes",
         "DELETE FROM core.episode_versions",
-        "UPDATE core.episode_versions SET body_md = ''",
+        "UPDATE core.episode_versions SET body_html = ''",
     ],
 )
 async def test_the_api_role_cannot_change_presets_delete_works_or_rewrite_a_saved_version(

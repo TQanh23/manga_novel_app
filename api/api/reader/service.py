@@ -9,7 +9,7 @@ from api.auth.models import User
 from api.catalogue import service as catalogue_service
 from api.catalogue.models import Episode, WorkType
 from api.catalogue.service import CatalogueWork
-from api.catalogue.text import split_paragraphs
+from api.catalogue.text import split_blocks
 from api.core.errors import AppError
 from api.reader import repository
 from api.reader.repository import LastRead
@@ -71,12 +71,12 @@ async def get_content(
 ) -> EpisodeContent:
     """What a reader sees of an episode (FR-RD-03). Guests may read free episodes."""
     episode = await _readable_episode(session, episode_id)
-    body_md = (
+    body_html = (
         await repository.get_published_text(session, episode.published_version_id)
         if episode.published_version_id is not None
         else None
     )
-    if body_md is None:
+    if body_html is None:
         raise _episode_not_found()
 
     previous_id, next_id = await repository.neighbours(session, episode)
@@ -85,7 +85,7 @@ async def get_content(
         if reader is not None
         else None
     )
-    return EpisodeContent(episode, split_paragraphs(body_md), previous_id, next_id, position)
+    return EpisodeContent(episode, split_blocks(body_html), previous_id, next_id, position)
 
 
 async def save_progress(

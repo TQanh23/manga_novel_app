@@ -55,7 +55,7 @@ SAMPLE_NOVEL_DIRECTORY = "sample_novel"
 @dataclass(frozen=True)
 class SampleEpisode:
     title: str
-    body_md: str
+    body_html: str
 
 
 @dataclass(frozen=True)
@@ -84,7 +84,7 @@ def load_sample_novel(directory: Path) -> SampleNovel:
             tags=data["tags"],
         ),
         episodes=tuple(
-            SampleEpisode(title, (directory / f"{number:02d}.md").read_text(encoding="utf-8"))
+            SampleEpisode(title, (directory / f"{number:02d}.html").read_text(encoding="utf-8"))
             for number, title in enumerate(data["episodes"], start=1)
         ),
         glossary=tuple(GlossaryEntryCreate.model_validate(entry) for entry in data["glossary"]),
@@ -156,7 +156,7 @@ async def seed_sample_novel(session: AsyncSession) -> bool:
             session, author=author, work_id=state.work.id, title=episode.title
         )
         await author_service.save_draft(
-            session, author=author, episode_id=created.episode.id, body_md=episode.body_md
+            session, author=author, episode_id=created.episode.id, body_html=episode.body_html
         )
         await author_service.publish_episode(session, author=author, episode_id=created.episode.id)
     return True

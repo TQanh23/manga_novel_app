@@ -22,6 +22,7 @@ from api.catalogue.models import (
     Work,
     WorkType,
 )
+from api.catalogue.text import plain_text, sanitize_html
 from api.core.errors import AppError
 from api.core.presets import ConfigPreset, PresetKind
 
@@ -302,21 +303,23 @@ async def update_episode(
 
 
 async def save_draft(
-    session: AsyncSession, *, author: User, episode_id: UUID, body_md: str
+    session: AsyncSession, *, author: User, episode_id: UUID, body_html: str
 ) -> tuple[EpisodeVersion, Episode]:
     """Save the episode's text as a new version.
 
-    Saving what is already the newest version adds nothing, so an editor may
-    autosave as often as it likes.
+    Only the sanitized HTML is stored. Saving what is already the newest
+    version, once sanitized, adds nothing, so an editor may autosave as often
+    as it likes.
     """
+    stored = sanitize_html(body_html)
     # The lock orders concurrent saves, so "same as the newest" is decided once.
     episode = await _own_novel_episode(session, author, episode_id, for_update=True)
     latest = await repository.latest_version(session, episode.id, author_id=author.id)
-    if latest is not None and latest.body_md == body_md:
+    if latest is not None and latest.body_html == stored:
         await session.commit()
         return latest, episode
 
-    version = await repository.add_version(session, episode.id, body_md, author_id=author.id)
+    version = await repository.add_version(session, episode.id, stored, author_id=author.id)
     await session.commit()
     logger.info(
         "draft_saved",
@@ -367,7 +370,9 @@ async def restore_version(
     if source is None:
         raise _version_not_found()
 
-    version = await repository.add_version(session, episode.id, source.body_md, author_id=author.id)
+    version = await repository.add_version(
+        session, episode.id, source.body_html, author_id=author.id
+    )
     await session.commit()
     logger.info(
         "version_restored",
@@ -389,7 +394,7 @@ async def _version_to_publish(
     # Always this episode's own newest version, so the pointer cannot name
     # another episode's text.
     latest = await repository.latest_version(session, episode.id, author_id=author.id)
-    if latest is None or not latest.body_md.strip():
+    if latest is None or not plain_text(latest.body_html):
         raise AppError("nothing_to_publish", "Save some text before publishing", status_code=409)
     return latest
 

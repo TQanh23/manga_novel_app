@@ -231,11 +231,11 @@ async def get_version(
 
 
 async def add_version(
-    session: AsyncSession, episode_id: UUID, body_md: str, *, author_id: UUID
+    session: AsyncSession, episode_id: UUID, body_html: str, *, author_id: UUID
 ) -> EpisodeVersion:
     await set_author_context(session, author_id)
     version = EpisodeVersion(
-        episode_id=episode_id, author_id=author_id, body_md=body_md, created_by=author_id
+        episode_id=episode_id, author_id=author_id, body_html=body_html, created_by=author_id
     )
     session.add(version)
     # Written and read back here, while the author context is set.

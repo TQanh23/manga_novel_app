@@ -14,10 +14,10 @@ from api.testing import AuthHeaders, MakeEpisode, MakeUser, MakeWork
 
 
 async def save(
-    client: AsyncClient, headers: dict[str, str], episode: Episode, body_md: str
+    client: AsyncClient, headers: dict[str, str], episode: Episode, body_html: str
 ) -> dict[str, Any]:
     response = await client.put(
-        f"/v1/author/episodes/{episode.id}/draft", json={"body_md": body_md}, headers=headers
+        f"/v1/author/episodes/{episode.id}/draft", json={"body_html": body_html}, headers=headers
     )
     assert response.status_code == 200, response.text
     saved: dict[str, Any] = response.json()
@@ -102,17 +102,17 @@ async def test_fr_nv_01_publishing_now_overrides_a_later_schedule(
     assert datetime.fromisoformat(response.json()["publish_at"]) <= datetime.now(UTC)
 
 
-@pytest.mark.parametrize("body_md", [None, "", "  \n\t\n"])
+@pytest.mark.parametrize("body_html", [None, "", "  \n\t\n"])
 async def test_fr_nv_01_an_episode_with_no_text_cannot_be_published(
     client: AsyncClient,
     auth_headers: AuthHeaders,
     author: User,
     episode: Episode,
-    body_md: str | None,
+    body_html: str | None,
 ) -> None:
     headers = auth_headers(author)
-    if body_md is not None:
-        await save(client, headers, episode, body_md)
+    if body_html is not None:
+        await save(client, headers, episode, body_html)
 
     response = await client.post(f"/v1/author/episodes/{episode.id}/publish", headers=headers)
 

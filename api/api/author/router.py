@@ -133,7 +133,7 @@ async def save_draft(
     episode_id: UUID, payload: DraftSave, author: Author, session: Session
 ) -> EpisodeVersionSummary:
     version, episode = await service.save_draft(
-        session, author=author, episode_id=episode_id, body_md=payload.body_md
+        session, author=author, episode_id=episode_id, body_html=payload.body_html
     )
     return EpisodeVersionSummary.from_version(version, episode)
 

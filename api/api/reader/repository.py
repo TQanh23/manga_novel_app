@@ -52,7 +52,7 @@ async def get_published_episode(
 async def get_published_text(session: AsyncSession, version_id: UUID) -> str | None:
     # No author is named in a reader's transaction, so row-level security lets
     # this see a version only if an episode has published it.
-    statement = select(EpisodeVersion.body_md).where(EpisodeVersion.id == version_id)
+    statement = select(EpisodeVersion.body_html).where(EpisodeVersion.id == version_id)
     return (await session.execute(statement)).scalar_one_or_none()
 
 

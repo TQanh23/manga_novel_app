@@ -41,9 +41,9 @@ export type ContentLanguage = 'ko' | 'ja' | 'en' | 'vi';
  */
 export type DraftSave = {
     /**
-     * Body Md
+     * Body Html
      */
-    body_md: string;
+    body_html: string;
 };
 
 /**
@@ -107,9 +107,9 @@ export type EpisodeCreate = {
  */
 export type EpisodeDraft = {
     /**
-     * Body Md
+     * Body Html
      */
-    body_md: string;
+    body_html: string;
     /**
      * Saved At
      */
@@ -239,9 +239,9 @@ export type EpisodeUpdate = {
  */
 export type EpisodeVersionDetail = {
     /**
-     * Body Md
+     * Body Html
      */
-    body_md: string;
+    body_html: string;
     /**
      * Created At
      */

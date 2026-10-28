@@ -16,7 +16,8 @@ class EpisodeContentResponse(BaseModel):
     number: int
     title: str
     publish_at: datetime
-    # In reading order, each one Markdown. A reading position is an index into this list.
+    # In reading order, each one sanitized HTML block (a <p>, <h2>, <blockquote>...).
+    # A reading position is an index into this list.
     paragraphs: list[str]
     # The published episodes around this one, for moving on without the list.
     previous_episode_id: UUID | None

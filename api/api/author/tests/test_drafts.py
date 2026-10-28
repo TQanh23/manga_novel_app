@@ -18,10 +18,10 @@ LogLines = Callable[[], list[dict[str, Any]]]
 
 
 async def save(
-    client: AsyncClient, headers: dict[str, str], episode: Episode, body_md: str
+    client: AsyncClient, headers: dict[str, str], episode: Episode, body_html: str
 ) -> dict[str, Any]:
     response = await client.put(
-        f"/v1/author/episodes/{episode.id}/draft", json={"body_md": body_md}, headers=headers
+        f"/v1/author/episodes/{episode.id}/draft", json={"body_html": body_html}, headers=headers
     )
     assert response.status_code == 200, response.text
     saved: dict[str, Any] = response.json()
@@ -32,7 +32,7 @@ async def stored_versions(session: AsyncSession, author: User, episode: Episode)
     await set_author_context(session, author.id)
     rows = await session.execute(
         text(
-            "SELECT id, author_id, created_by, body_md FROM core.episode_versions"
+            "SELECT id, author_id, created_by, body_html FROM core.episode_versions"
             " WHERE episode_id = :episode_id ORDER BY id"
         ),
         {"episode_id": episode.id},
@@ -57,13 +57,13 @@ async def test_fr_nv_01_saving_a_draft_adds_a_version_owned_by_the_author(
     author: User,
     episode: Episode,
 ) -> None:
-    saved = await save(client, auth_headers(author), episode, "그날 밤, 비가 내렸다.")
+    saved = await save(client, auth_headers(author), episode, "<p>그날 밤, 비가 내렸다.</p>")
 
     assert saved["is_published"] is False
-    assert "body_md" not in saved
+    assert "body_html" not in saved
     rows = await stored_versions(db_session, author, episode)
-    assert [(str(row.id), row.author_id, row.created_by, row.body_md) for row in rows] == [
-        (saved["id"], author.id, author.id, "그날 밤, 비가 내렸다.")
+    assert [(str(row.id), row.author_id, row.created_by, row.body_html) for row in rows] == [
+        (saved["id"], author.id, author.id, "<p>그날 밤, 비가 내렸다.</p>")
     ]
 
 
@@ -86,6 +86,33 @@ async def test_fr_nv_01_saving_the_same_text_again_adds_nothing(
     assert len(await stored_versions(db_session, author, episode)) == 3
 
 
+async def test_fr_nv_01_a_draft_is_stored_as_sanitized_html(
+    client: AsyncClient,
+    auth_headers: AuthHeaders,
+    db_session: AsyncSession,
+    author: User,
+    episode: Episode,
+) -> None:
+    headers = auth_headers(author)
+
+    saved = await save(
+        client,
+        headers,
+        episode,
+        '<p onclick="steal()">Đêm ấy <strong>mưa</strong>.</p><script>steal()</script>'
+        '<img src="x" onerror="steal()"><p><a href="javascript:steal()">Hết.</a></p>',
+    )
+    # The same text with only markup the sanitizer drops anyway is not a new version.
+    again = await save(
+        client, headers, episode, '<p class="x">Đêm ấy <strong>mưa</strong>.</p>\n\n<p>Hết.</p>'
+    )
+    draft = await client.get(f"/v1/author/episodes/{episode.id}/draft", headers=headers)
+
+    assert draft.json()["body_html"] == "<p>Đêm ấy <strong>mưa</strong>.</p>\n<p>Hết.</p>"
+    assert again["id"] == saved["id"]
+    assert len(await stored_versions(db_session, author, episode)) == 1
+
+
 async def test_fr_nv_01_the_draft_is_the_newest_save(
     client: AsyncClient, auth_headers: AuthHeaders, author: User, episode: Episode
 ) -> None:
@@ -93,14 +120,14 @@ async def test_fr_nv_01_the_draft_is_the_newest_save(
 
     empty = await client.get(f"/v1/author/episodes/{episode.id}/draft", headers=headers)
     await save(client, headers, episode, "最初の下書き")
-    latest = await save(client, headers, episode, "二番目の下書き\n\n改行も残る。")
+    latest = await save(client, headers, episode, "<p>二番目の下書き</p><p>改行も残る。</p>")
     draft = await client.get(f"/v1/author/episodes/{episode.id}/draft", headers=headers)
     state = await client.get(f"/v1/author/episodes/{episode.id}", headers=headers)
 
     assert empty.status_code == 200
-    assert empty.json() == {"version_id": None, "body_md": "", "saved_at": None}
+    assert empty.json() == {"version_id": None, "body_html": "", "saved_at": None}
     assert draft.json()["version_id"] == latest["id"]
-    assert draft.json()["body_md"] == "二番目の下書き\n\n改行も残る。"
+    assert draft.json()["body_html"] == "<p>二番目の下書き</p>\n<p>改行も残る。</p>"
     assert draft.json()["saved_at"] == latest["created_at"]
     assert state.json()["latest_version_id"] == latest["id"]
     assert state.json()["has_unpublished_changes"] is True
@@ -145,7 +172,7 @@ async def test_fr_nv_01_an_old_version_can_be_read_and_restored_as_a_new_one(
     client: AsyncClient, auth_headers: AuthHeaders, author: User, episode: Episode
 ) -> None:
     headers = auth_headers(author)
-    old = await save(client, headers, episode, "The first telling.")
+    old = await save(client, headers, episode, "<p>The first telling.</p>")
     newer = await save(client, headers, episode, "The second telling.")
     versions = f"/v1/author/episodes/{episode.id}/versions"
 
@@ -155,11 +182,11 @@ async def test_fr_nv_01_an_old_version_can_be_read_and_restored_as_a_new_one(
     history = await client.get(versions, headers=headers)
 
     assert read.status_code == 200
-    assert read.json()["body_md"] == "The first telling."
+    assert read.json()["body_html"] == "<p>The first telling.</p>"
     assert restored.status_code == 201
     assert restored.json()["id"] not in (old["id"], newer["id"])
     assert draft.json()["version_id"] == restored.json()["id"]
-    assert draft.json()["body_md"] == "The first telling."
+    assert draft.json()["body_html"] == "<p>The first telling.</p>"
     # Nothing is lost: what was saved in between is still there.
     assert [version["id"] for version in history.json()] == [
         restored.json()["id"],
@@ -206,7 +233,7 @@ async def test_fr_nv_01_a_manga_episode_has_no_text_draft(
     base = f"/v1/author/episodes/{manga_episode.id}"
 
     responses = [
-        await client.put(f"{base}/draft", json={"body_md": "Text"}, headers=headers),
+        await client.put(f"{base}/draft", json={"body_html": "Text"}, headers=headers),
         await client.get(f"{base}/draft", headers=headers),
         await client.get(f"{base}/versions", headers=headers),
         await client.post(f"{base}/publish", headers=headers),
@@ -224,19 +251,19 @@ async def test_fr_nv_01_a_draft_that_is_too_long_is_rejected_without_echoing_it(
     episode: Episode,
 ) -> None:
     headers = auth_headers(author)
-    at_the_limit = "가" * 200_000
+    at_the_limit = "가" * 300_000
 
     accepted = await client.put(
-        f"/v1/author/episodes/{episode.id}/draft", json={"body_md": at_the_limit}, headers=headers
+        f"/v1/author/episodes/{episode.id}/draft", json={"body_html": at_the_limit}, headers=headers
     )
     rejected = await client.put(
         f"/v1/author/episodes/{episode.id}/draft",
-        json={"body_md": at_the_limit + "나"},
+        json={"body_html": at_the_limit + "나"},
         headers=headers,
     )
     unknown_field = await client.put(
         f"/v1/author/episodes/{episode.id}/draft",
-        json={"body_md": "Text", "author_id": str(uuid4())},
+        json={"body_html": "Text", "author_id": str(uuid4())},
         headers=headers,
     )
 
@@ -255,13 +282,13 @@ async def test_nfr_06_another_author_cannot_read_save_or_restore_a_draft(
     author: User,
     episode: Episode,
 ) -> None:
-    version = await save(client, auth_headers(author), episode, "Chỉ tác giả được đọc.")
+    version = await save(client, auth_headers(author), episode, "<p>Chỉ tác giả được đọc.</p>")
     intruder = auth_headers(await make_user(Role.AUTHOR))
     base = f"/v1/author/episodes/{episode.id}"
 
     responses = [
         await client.get(f"{base}/draft", headers=intruder),
-        await client.put(f"{base}/draft", json={"body_md": "Overwritten"}, headers=intruder),
+        await client.put(f"{base}/draft", json={"body_html": "Overwritten"}, headers=intruder),
         await client.get(f"{base}/versions", headers=intruder),
         await client.get(f"{base}/versions/{version['id']}", headers=intruder),
         await client.post(f"{base}/versions/{version['id']}/restore", headers=intruder),
@@ -274,8 +301,8 @@ async def test_nfr_06_another_author_cannot_read_save_or_restore_a_draft(
         )
         assert "Chỉ tác giả" not in response.text
     rows = await stored_versions(db_session, author, episode)
-    assert [(UUID(version["id"]), "Chỉ tác giả được đọc.")] == [
-        (row.id, row.body_md) for row in rows
+    assert [(UUID(version["id"]), "<p>Chỉ tác giả được đọc.</p>")] == [
+        (row.id, row.body_html) for row in rows
     ]
 
 
@@ -292,7 +319,7 @@ async def test_fr_auth_03_draft_routes_are_for_authors_only(
     for headers, expected in ((auth_headers(await make_user(Role.ADMIN)), 403), (None, 401)):
         responses = [
             await client.get(f"{base}/draft", headers=headers),
-            await client.put(f"{base}/draft", json={"body_md": "X"}, headers=headers),
+            await client.put(f"{base}/draft", json={"body_html": "X"}, headers=headers),
             await client.get(f"{base}/versions", headers=headers),
         ]
 

@@ -21,7 +21,7 @@ from api.testing import TEST_PASSWORD, MakeUser, MakeWork
 
 ALL_VERSIONS = "SELECT id FROM core.episode_versions"
 INSERT_VERSION = (
-    "INSERT INTO core.episode_versions (id, episode_id, author_id, body_md)"
+    "INSERT INTO core.episode_versions (id, episode_id, author_id, body_html)"
     " VALUES (:id, :episode_id, :author_id, 'x')"
 )
 
@@ -56,7 +56,7 @@ async def drafts(db_session: AsyncSession, make_user: MakeUser, make_work: MakeW
     await set_author_context(db_session, author.id)
     versions = [
         EpisodeVersion(
-            episode_id=episode.id, author_id=author.id, body_md=body, created_by=author.id
+            episode_id=episode.id, author_id=author.id, body_html=body, created_by=author.id
         )
         for body in ("첫 번째 초안", "第二稿", "Bản nháp thứ ba")
     ]
@@ -201,7 +201,9 @@ async def test_nfr_06_the_author_context_ends_with_its_transaction(
         session.add(episode)
         await session.flush()
         await set_author_context(session, author.id)
-        session.add(EpisodeVersion(episode_id=episode.id, author_id=author.id, body_md="Bản nháp"))
+        session.add(
+            EpisodeVersion(episode_id=episode.id, author_id=author.id, body_html="Bản nháp")
+        )
         await session.commit()
 
     for _ in range(3):

@@ -11,7 +11,9 @@ REDACTED = "[redacted]"
 # Keys whose values may carry manuscript text, prompts or model output. They are
 # masked wherever they appear in a log event, at any depth (AI data policy: no
 # prompt or output logging).
-CONTENT_FIELDS = frozenset({"text", "content", "messages", "input", "prompt", "output", "body_md"})
+CONTENT_FIELDS = frozenset(
+    {"text", "content", "messages", "input", "prompt", "output", "body_md", "body_html"}
+)
 
 _handler: logging.Handler | None = None
 
