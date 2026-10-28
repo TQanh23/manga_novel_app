@@ -193,7 +193,7 @@ Where the schema differs from the spec's data model:
 - [x] Works list, create/edit work. A Studio tab that only authors have; `/studio/*` is a `Stack.Protected` group. Editing sends only the fields that changed, because the API checks each field it is sent (a retired WUF preset would refuse a title change).
 - [x] Rich-text (HTML) editor with autosave (D13). No editor library: one page (`studio/editor-page.ts`) with a contenteditable and its own toolbar runs in a WebView on Android and in a sandboxed iframe on web, so both behave alike and work in Expo Go. It hands out only the stored tags; pasted text comes in as plain text. The episode list sits on the studio work page. The text is saved 2 s after typing stops and at once on leaving or backgrounding, one save at a time; a failed save is retried after 10 s.
 - [x] Version history view, inside the editor screen rather than a route of its own: what was typed is saved before it opens, and a restore becomes the editor's saved text, so an autosave from an editor left underneath can never write over a restore. Versions newest first, 50 at a time; one is shown read-only in the reader's view and can be restored.
-- [ ] Glossary editor
+- [x] Glossary editor: `/studio/glossary/[workId]`, entries by kind, a form for kind, name, other names, the name in the other three content languages, and facts. A fact the author does not touch keeps its JSON type; one typed as a plain number is stored as a number (as the seed's ages are). Edits send only what changed. No delete, pending the 1.4 gap.
 - [ ] Publish now and schedule
 
 ### 1.9 Seed

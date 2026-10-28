@@ -60,6 +60,7 @@ const APP = {
   'studio/[workId]': EditWorkScreen,
   // The editor has its own tests; here only the way to it matters.
   'studio/episodes/[episodeId]': () => null,
+  'studio/glossary/[workId]': () => null,
   // The reader has its own tests; here only the way to it matters.
   'read/[episodeId]': () => null,
   '(auth)/_layout': AuthLayout,

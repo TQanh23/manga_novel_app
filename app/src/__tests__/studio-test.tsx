@@ -78,6 +78,7 @@ function openStudio(url: string) {
       'studio/new': NewWorkScreen,
       'studio/[workId]': EditWorkScreen,
       'studio/episodes/[episodeId]': () => null,
+      'studio/glossary/[workId]': () => null,
     },
     url,
   );
@@ -317,4 +318,12 @@ test('FR-NV-01: a work with no episodes says so', async () => {
   await openStudio('/studio/lantern');
 
   expect(await screen.findByText('No episodes yet.')).toBeOnTheScreen();
+});
+
+test('FR-NV-03: the work page leads to the work’s glossary', async () => {
+  const router = await openStudio('/studio/lantern');
+
+  await fireEvent.press(await screen.findByRole('button', { name: 'Glossary' }));
+
+  expect(router.pathname()).toBe('/studio/glossary/lantern');
 });

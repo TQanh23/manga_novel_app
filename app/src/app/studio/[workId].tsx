@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { errorCode } from '@/api/client';
 import { authorGetWork, authorUpdateWork, type WorkResponse } from '@/api/generated';
 import { useLoad } from '@/api/hooks';
+import { Button } from '@/components/form';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
@@ -16,6 +17,7 @@ import { changedFields, formValues, WorkForm, type WorkFormValues } from '@/stud
 /** A work in the studio: its episodes, then its details (FR-NV-01). */
 export default function EditWorkScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { workId } = useLocalSearchParams<{ workId: string }>();
   const work = useLoad(`author-work:${workId}`, () => authorGetWork({ path: { work_id: workId } }));
   // The work as last saved here; the form compares against it.
@@ -55,6 +57,21 @@ export default function EditWorkScreen() {
     return (
       <View style={styles.sections}>
         <EpisodeList workId={workId} />
+        <View style={styles.section}>
+          <ThemedText type="smallBold" accessibilityRole="header">
+            {t('studio.glossary.title')}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {t('studio.glossary.hint')}
+          </ThemedText>
+          <Button
+            label={t('studio.glossary.open')}
+            variant="secondary"
+            onPress={() =>
+              router.push({ pathname: '/studio/glossary/[workId]', params: { workId } })
+            }
+          />
+        </View>
         <View style={styles.section}>
           <ThemedText type="smallBold" accessibilityRole="header">
             {t('studio.details')}

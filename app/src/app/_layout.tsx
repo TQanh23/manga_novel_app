@@ -51,6 +51,10 @@ function RootNavigator() {
           name="studio/episodes/[episodeId]"
           options={{ headerShown: true, title: t('studio.episode.text') }}
         />
+        <Stack.Screen
+          name="studio/glossary/[workId]"
+          options={{ headerShown: true, title: t('studio.glossary.title') }}
+        />
       </Stack.Protected>
       <Stack.Protected guard={user === null}>
         <Stack.Screen name="(auth)" />
