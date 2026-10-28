@@ -143,3 +143,45 @@ test('an episode never saved before says so', async () => {
 
   expect(result.current.status).toEqual({ kind: 'saved', savedAt: null });
 });
+
+test('settling saves what is pending and waits for the save to end', async () => {
+  const save = deferred<EpisodeVersionSummary>();
+  saveDraft.mockReturnValueOnce(save.promise);
+  const { result } = await open();
+  let settled = false;
+
+  await act(async () => result.current.change('<p>Hai</p>'));
+  await act(async () => {
+    void result.current.settle().then(() => (settled = true));
+  });
+  expect(sentTexts()).toEqual(['<p>Hai</p>']);
+  expect(settled).toBe(false);
+
+  await act(async () => save.resolve(version()));
+
+  expect(settled).toBe(true);
+  expect(result.current.status).toEqual({ kind: 'saved', savedAt: SAVED_AT });
+});
+
+test('settling with nothing to save ends at once', async () => {
+  const { result } = await open();
+
+  await expect(result.current.settle()).resolves.toBeUndefined();
+  expect(saveDraft).not.toHaveBeenCalled();
+});
+
+test('a version the API made itself counts as saved', async () => {
+  const { result } = await open();
+
+  await act(async () => result.current.change('<p>Đang gõ</p>'));
+  await act(async () => result.current.reset('<p>Khôi phục</p>', '2026-10-28T08:00:00Z'));
+  await wait(AUTOSAVE_DELAY_MS * 2);
+
+  // The text typed before the restore is not sent over it.
+  expect(saveDraft).not.toHaveBeenCalled();
+  expect(result.current.status).toEqual({ kind: 'saved', savedAt: '2026-10-28T08:00:00Z' });
+
+  await act(async () => result.current.change('<p>Khôi phục</p>'));
+  await wait(AUTOSAVE_DELAY_MS);
+  expect(saveDraft).not.toHaveBeenCalled();
+});

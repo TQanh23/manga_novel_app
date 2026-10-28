@@ -69,6 +69,17 @@
       "unsaved": "Có thay đổi chưa lưu",
       "failed": "Chưa lưu được: {{reason}} Sẽ thử lại sau ít giây."
     },
+    "history": {
+      "open": "Lịch sử phiên bản",
+      "close": "Quay lại viết",
+      "title": "Lịch sử phiên bản",
+      "empty": "Chưa có bản lưu nào.",
+      "current": "Hiện tại",
+      "published": "Đã đăng",
+      "allVersions": "Tất cả phiên bản",
+      "restore": "Khôi phục phiên bản này",
+      "restoreHint": "Khôi phục sẽ thêm một phiên bản mới với nội dung này. Không phiên bản nào trong lịch sử bị xoá."
+    },
     "form": {
       "type": "Định dạng",
       "typeHint": "Không thể đổi định dạng sau khi tạo.",
@@ -224,6 +235,7 @@
     "unknown_genre": "Hãy chọn thể loại trong danh sách.",
     "too_many_genres": "Một tác phẩm có tối đa ba thể loại.",
     "episode_removed": "Chương này đã bị gỡ.",
+    "version_not_found": "Phiên bản này không tồn tại.",
     "network_error": "Không kết nối được máy chủ. Hãy kiểm tra mạng.",
     "unknown": "Đã có lỗi xảy ra. Hãy thử lại."
   }
