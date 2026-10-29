@@ -109,7 +109,7 @@ Each commitment below has a mechanism and a test. Do not weaken the mechanism, a
 - Domain logic (coins, WUF, permissions) needs at least 80% coverage (`NFR-12`).
 - Tests that hit the database use a real Postgres with pgvector (Testcontainers or the Compose service), not SQLite, because RLS and vector queries are part of what is tested.
 - AI tests use a fake `LLMProvider` with fixed responses. Only the eval job calls a real model.
-- A module's tests live in `api/api/<module>/tests/`; cross-cutting ones in `api/tests/`. Shared fixtures (`client`, `db_session`, `make_user`, `make_work`, `make_episode`, `publish_text`, `make_published_work`, `auth_headers`, `committing_client` for tests that need concurrent transactions, `owner_connection` for what the API's database role may not do) come from the `api.testing` plugin.
+- A module's tests live in `api/api/<module>/tests/`; cross-cutting ones in `api/tests/`. Shared fixtures (`client`, `db_session`, `make_user`, `make_work`, `make_episode`, `publish_text`, `make_published_work`, `auth_headers`, `committing_client` for tests that need concurrent transactions, `owner_connection` for what the API's database role may not do, `storage` for an S3 store on moto) come from the `api.testing` plugin.
 - Every policy commitment above keeps its test green.
 - Claude Code cloud sessions have no Docker daemon. `.claude/hooks/session-start.sh` starts a native Postgres 16 + pgvector and Redis and sets `TEST_DATABASE_URL` / `TEST_REDIS_URL`, so `uv run pytest` works there as it does in CI.
 

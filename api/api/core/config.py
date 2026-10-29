@@ -9,6 +9,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[3]
 
 # Long enough for HS256, and obviously not a real secret.
 _DEV_JWT_SECRET = "local-development-jwt-secret-do-not-use-elsewhere"  # noqa: S105
+# MinIO's own default root password, which the Compose stack keeps.
+_DEV_S3_SECRET = "minioadmin"  # noqa: S105
 
 
 class Settings(BaseSettings):
@@ -78,6 +80,25 @@ class Settings(BaseSettings):
     # every few paragraphs.
     rate_limit_reader_writes_per_user: int = 240
 
+    # --- Object storage (NFR-09) ---
+    storage_backend: Literal["s3"] = "s3"
+    # Where the API and the worker reach the store.
+    s3_endpoint_url: str = "http://127.0.0.1:9000"
+    # Where browsers and phones reach it. URLs handed to clients are signed for
+    # this host: the signature covers the host, so a URL signed for the
+    # internal one (minio:9000 in Compose) would not work from outside.
+    s3_public_endpoint_url: str = "http://127.0.0.1:9000"
+    s3_region: str = "us-east-1"
+    s3_access_key: str = "minioadmin"
+    s3_secret_key: SecretStr = SecretStr(_DEV_S3_SECRET)
+    # Bucket names are global on S3, so the real names are configurable.
+    s3_bucket_raw: str = "raw"
+    s3_bucket_tiles: str = "tiles"
+    # Signed read URLs expire after five minutes (NFR-05).
+    signed_url_ttl_seconds: int = 5 * 60
+    # Long enough to upload a large strip on a slow phone connection.
+    upload_url_ttl_seconds: int = 15 * 60
+
     @property
     def cookie_secure(self) -> bool:
         return self.environment != "local"
@@ -86,6 +107,8 @@ class Settings(BaseSettings):
     def _refuse_dev_secrets_outside_local(self) -> Self:
         if self.environment != "local" and self.jwt_secret.get_secret_value() == _DEV_JWT_SECRET:
             raise ValueError("JWT_SECRET must be set when ENVIRONMENT is not 'local'")
+        if self.environment != "local" and self.s3_secret_key.get_secret_value() == _DEV_S3_SECRET:
+            raise ValueError("S3_SECRET_KEY must be set when ENVIRONMENT is not 'local'")
         return self
 
 

@@ -85,8 +85,17 @@ def test_dev_jwt_secret_is_refused_outside_local() -> None:
         Settings(environment="production")
 
 
+def test_dev_s3_secret_is_refused_outside_local() -> None:
+    with pytest.raises(ValidationError, match="S3_SECRET_KEY must be set"):
+        Settings(environment="production", jwt_secret=SecretStr("k" * 48))
+
+
 def test_production_settings_turn_on_secure_cookies() -> None:
-    production = Settings(environment="production", jwt_secret=SecretStr("k" * 48))
+    production = Settings(
+        environment="production",
+        jwt_secret=SecretStr("k" * 48),
+        s3_secret_key=SecretStr("s" * 40),
+    )
 
     assert production.cookie_secure
     assert not Settings(environment="local").cookie_secure
