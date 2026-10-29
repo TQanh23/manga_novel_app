@@ -148,26 +148,40 @@ test('settling saves what is pending and waits for the save to end', async () =>
   const save = deferred<EpisodeVersionSummary>();
   saveDraft.mockReturnValueOnce(save.promise);
   const { result } = await open();
-  let settled = false;
+  let saved: boolean | null = null;
 
   await act(async () => result.current.change('<p>Hai</p>'));
   await act(async () => {
-    void result.current.settle().then(() => (settled = true));
+    void result.current.settle().then((outcome) => (saved = outcome));
   });
   expect(sentTexts()).toEqual(['<p>Hai</p>']);
-  expect(settled).toBe(false);
+  expect(saved).toBeNull();
 
   await act(async () => save.resolve(version()));
 
-  expect(settled).toBe(true);
+  expect(saved).toBe(true);
   expect(result.current.status).toEqual({ kind: 'saved', savedAt: SAVED_AT });
 });
 
 test('settling with nothing to save ends at once', async () => {
   const { result } = await open();
 
-  await expect(result.current.settle()).resolves.toBeUndefined();
+  await expect(result.current.settle()).resolves.toBe(true);
   expect(saveDraft).not.toHaveBeenCalled();
+});
+
+test('settling says so when the save failed', async () => {
+  saveDraft.mockReturnValueOnce(fails('rate_limited'));
+  const { result } = await open();
+
+  await act(async () => result.current.change('<p>Hai</p>'));
+  let saved: boolean | null = null;
+  await act(async () => {
+    saved = await result.current.settle();
+  });
+
+  expect(saved).toBe(false);
+  expect(result.current.status).toEqual({ kind: 'failed', error: 'rate_limited' });
 });
 
 test('a version the API made itself counts as saved', async () => {

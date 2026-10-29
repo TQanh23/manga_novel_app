@@ -46,6 +46,22 @@
       "removed": "Removed"
     },
     "unpublishedChanges": "Unpublished changes",
+    "publish": {
+      "now": "Publish now",
+      "changes": "Publish changes",
+      "schedule": "Schedule",
+      "reschedule": "Change time",
+      "unschedule": "Cancel schedule",
+      "back": "Back",
+      "confirm": "Publish",
+      "confirmNow": "Publish this episode now? Readers can open it straight away.",
+      "confirmChanges": "Publish your changes? Readers will see the newest save straight away.",
+      "confirmUnschedule": "Cancel the schedule? The episode goes back to being a draft.",
+      "when": "Goes live at",
+      "pickTime": "Choose a date and time",
+      "scheduleFor": "Schedule for {{date}}",
+      "scheduledChanges": "Changes saved after scheduling go live only if you schedule again or publish now."
+    },
     "episode": {
       "title": "Title",
       "text": "Text",
@@ -284,6 +300,11 @@
     "version_not_found": "This version does not exist.",
     "glossary_entry_exists": "This work already has an entry of that kind with that name.",
     "glossary_entry_not_found": "This entry does not exist.",
+    "nothing_to_publish": "Write some text before publishing.",
+    "already_published": "This episode is already published.",
+    "publish_at_in_past": "Choose a time in the future.",
+    "not_scheduled": "This episode is not scheduled.",
+    "draft_not_saved": "Your latest text is not saved yet, so nothing was published. Try again in a moment.",
     "network_error": "Could not reach the server. Check your connection.",
     "unknown": "Something went wrong. Try again."
   }

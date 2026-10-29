@@ -19,13 +19,17 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Danger, Spacing } from '@/constants/theme';
 import { errorMessageKey, formatTime } from '@/i18n';
+import { PublishPanel } from '@/studio/publish-panel';
 import RichTextEditor from '@/studio/rich-text-editor';
 import { type DraftStatus, useDraftSaver } from '@/studio/use-draft-saver';
 import { VersionHistory } from '@/studio/version-history';
 
 const MAX_TITLE = 200;
 
-/** Write an episode: its title, its text with autosave, and its versions (FR-NV-01, D13). */
+/**
+ * Write an episode: its title, its text with autosave, its versions, and
+ * publishing it now or later (FR-NV-01, FR-NV-02, D13).
+ */
 export default function EpisodeEditorScreen() {
   const { t } = useTranslation();
   const { episodeId } = useLocalSearchParams<{ episodeId: string }>();
@@ -86,9 +90,12 @@ function EpisodeEditor({ episode, draft }: { episode: EpisodeResponse; draft: Ep
   // The text as the author left it. The editor reopens on it after the history.
   const [html, setHtml] = useState(draft.body_html);
   const [mode, setMode] = useState<'write' | 'opening' | 'history'>('write');
+  // Each one may be a change readers have not seen yet.
+  const [edits, setEdits] = useState(0);
 
   const write = (next: string) => {
     setHtml(next);
+    setEdits((count) => count + 1);
     change(next);
   };
 
@@ -102,6 +109,7 @@ function EpisodeEditor({ episode, draft }: { episode: EpisodeResponse; draft: Ep
   const restored = (text: string, version: EpisodeVersionSummary) => {
     reset(text, version.created_at);
     setHtml(text);
+    setEdits((count) => count + 1);
     setMode('write');
   };
 
@@ -109,6 +117,7 @@ function EpisodeEditor({ episode, draft }: { episode: EpisodeResponse; draft: Ep
     <View style={styles.fill}>
       <View style={styles.header}>
         <EpisodeTitle episode={episode} />
+        <PublishPanel episode={episode} edits={edits} settle={settle} />
         <View style={styles.statusRow}>
           <View style={styles.status}>
             <SaveStatus status={status} />
