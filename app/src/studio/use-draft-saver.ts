@@ -35,8 +35,11 @@ type Options = {
 export function useDraftSaver({ episodeId, savedHtml, savedAt }: Options): {
   status: DraftStatus;
   change: (html: string) => void;
-  /** Saves what is pending now, and resolves once no save is in flight. */
-  settle: () => Promise<void>;
+  /**
+   * Saves what is pending now, and resolves once no save is in flight: true
+   * when everything typed is saved, false when a save failed.
+   */
+  settle: () => Promise<boolean>;
   /** Takes `html` as saved at `savedAt`: a version the API made itself, such as a restore. */
   reset: (html: string, savedAt: string) => void;
 } {
@@ -145,12 +148,13 @@ export function useDraftSaver({ episodeId, savedHtml, savedAt }: Options): {
     [flush, report],
   );
 
-  const settle = useCallback(() => {
+  const settle = useCallback(async () => {
     flush();
-    if (!state.current.inFlight) {
-      return Promise.resolve();
+    if (state.current.inFlight) {
+      await new Promise<void>((resume) => waiting.current.push(resume));
     }
-    return new Promise<void>((resume) => waiting.current.push(resume));
+    // A failed save leaves its text pending, for the retry.
+    return state.current.pending === null;
   }, [flush]);
 
   const reset = useCallback(

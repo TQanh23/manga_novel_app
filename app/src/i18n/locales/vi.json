@@ -46,6 +46,22 @@
       "removed": "Đã gỡ"
     },
     "unpublishedChanges": "Có thay đổi chưa đăng",
+    "publish": {
+      "now": "Đăng ngay",
+      "changes": "Đăng thay đổi",
+      "schedule": "Hẹn giờ đăng",
+      "reschedule": "Đổi giờ",
+      "unschedule": "Huỷ hẹn giờ",
+      "back": "Quay lại",
+      "confirm": "Đăng",
+      "confirmNow": "Đăng tập này ngay? Độc giả có thể đọc ngay lập tức.",
+      "confirmChanges": "Đăng các thay đổi? Độc giả sẽ thấy bản lưu mới nhất ngay lập tức.",
+      "confirmUnschedule": "Huỷ hẹn giờ? Tập này sẽ trở lại thành bản nháp.",
+      "when": "Thời điểm đăng",
+      "pickTime": "Chọn ngày và giờ",
+      "scheduleFor": "Hẹn đăng lúc {{date}}",
+      "scheduledChanges": "Những gì lưu sau khi hẹn giờ chỉ được đăng nếu bạn hẹn giờ lại hoặc đăng ngay."
+    },
     "episode": {
       "title": "Tiêu đề",
       "text": "Nội dung",
@@ -284,6 +300,11 @@
     "version_not_found": "Phiên bản này không tồn tại.",
     "glossary_entry_exists": "Tác phẩm đã có một mục cùng loại và cùng tên.",
     "glossary_entry_not_found": "Mục này không tồn tại.",
+    "nothing_to_publish": "Hãy viết nội dung trước khi đăng.",
+    "already_published": "Tập này đã được đăng.",
+    "publish_at_in_past": "Hãy chọn một thời điểm trong tương lai.",
+    "not_scheduled": "Tập này chưa được hẹn giờ.",
+    "draft_not_saved": "Nội dung mới nhất chưa được lưu nên chưa có gì được đăng. Hãy thử lại sau giây lát.",
     "network_error": "Không kết nối được máy chủ. Hãy kiểm tra mạng.",
     "unknown": "Đã có lỗi xảy ra. Hãy thử lại."
   }
