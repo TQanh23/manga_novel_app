@@ -124,6 +124,13 @@ jobs:
           [ "$paragraphs" -ge 8 ]
       - name: Buckets exist
         run: docker compose run -T --rm --entrypoint mc minio-init stat local/raw local/tiles
+      # NFR-09: a real MinIO accepts the URLs the API signs (the tests run on moto,
+      # which checks no signatures). Signed for MinIO's in-network name, which is
+      # what the api container reaches.
+      - name: Presigned upload, signed read and delete work against MinIO
+        run: >-
+          docker compose exec -T -e S3_PUBLIC_ENDPOINT_URL=http://minio:9000 api
+          python -m api.scripts.storage_check
       - name: API connects as app_rw
         run: |
           docker compose exec -T api python - <<'PY'

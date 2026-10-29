@@ -20,6 +20,7 @@ from alembic import command
 from alembic.config import Config
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from pydantic import SecretStr
 from redis.asyncio import Redis
 from sqlalchemy import make_url, text
 from sqlalchemy.ext.asyncio import (
@@ -42,9 +43,12 @@ from api.core.logging import build_handler, configure_logging
 from api.core.queue import close_arq_pool
 from api.core.redis import get_redis
 from api.core.security import create_access_token
+from api.core.storage import Storage
 
 API_DIR = Path(__file__).resolve().parents[1]
 POSTGRES_IMAGE = "pgvector/pgvector:pg16"
+# Where signed URLs point in tests. Nothing listens there; signing never connects.
+PUBLIC_STORAGE_URL = "http://media.test:9000"
 REDIS_IMAGE = "redis:7-alpine"
 APP_SCHEMAS = ("core", "billing", "ai", "analytics")
 # Filled by migrations, not by tests, so cleaning up after a test leaves them alone.
@@ -193,6 +197,33 @@ async def redis(redis_client: Redis, settings: Settings) -> AsyncIterator[Redis]
     keys = [key async for key in redis_client.scan_iter(match=f"{settings.redis_key_prefix}*")]
     if keys:
         await redis_client.delete(*keys)
+
+
+@pytest.fixture
+def storage() -> Iterator[Storage]:
+    """The S3 storage, on moto's in-memory S3 with both buckets made and empty.
+
+    Needs no database or Docker. moto does not check signatures; the Compose
+    job in CI runs the same calls against a real MinIO.
+    """
+    import boto3
+    from moto import mock_aws
+
+    from api.core.storage_s3 import S3Storage
+
+    config = Settings(
+        s3_endpoint_url="https://s3.amazonaws.com",
+        s3_public_endpoint_url=PUBLIC_STORAGE_URL,
+        s3_access_key="testing",
+        s3_secret_key=SecretStr("testing"),
+        s3_bucket_raw="test-raw",
+        s3_bucket_tiles="test-tiles",
+    )
+    with mock_aws():
+        s3 = boto3.client("s3", endpoint_url=config.s3_endpoint_url, region_name=config.s3_region)
+        for name in (config.s3_bucket_raw, config.s3_bucket_tiles):
+            s3.create_bucket(Bucket=name)
+        yield S3Storage(config)
 
 
 @pytest.fixture

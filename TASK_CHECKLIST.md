@@ -18,8 +18,8 @@ Working checklist for the whole project. It breaks [`IMPLEMENTATION_PLAN.md`](IM
 | Phase | Theme | Status |
 |---|---|---|
 | 0 | Foundation | Done |
-| 1 | Catalogue and novel reader | In progress |
-| 2 | Manga upload and reader | Not started |
+| 1 | Catalogue and novel reader | Done |
+| 2 | Manga upload and reader | In progress |
 | 3 | Billing | Not started |
 | 4 | AI core | Not started |
 | 5 | Analytics, hardening, demo | Not started |
@@ -201,19 +201,19 @@ Where the schema differs from the spec's data model:
 
 ### Exit check
 - [x] An episode scheduled one minute ahead becomes readable on its own
-- [ ] Progress set on Android shows on web after refresh
+- [x] Progress set on Android shows on web after refresh
 - [x] Search finds a title typed without diacritics
 - [x] Draft-visibility test (1.5) green
-- [ ] Both targets (Android, web) run every screen in this phase
+- [x] Both targets (Android, web) run every screen in this phase
 
 ## Phase 2: Manga upload and reader
 
 Requirements: FR-MG-01, FR-MG-02, FR-RD-04, NFR-02, NFR-03, NFR-05 (signed URL expiry), NFR-09 (`Storage`).
 
 ### 2.1 Storage interface (NFR-09)
-- [ ] `Storage` protocol: presigned PUT, signed GET, delete by prefix
-- [ ] MinIO/S3 implementation selected by config; no vendor SDK import outside it
-- [ ] Signed GET URLs expire after 5 minutes (test)
+- [x] `Storage` protocol: presigned PUT, signed GET, delete by prefix. In `api/core/storage.py`, with `put_object` / `get_object` for the worker; `StorageDep` for routes. A presigned PUT signs the Content-Type, so a client that sends another type is refused (403 from MinIO). An empty prefix is refused.
+- [x] MinIO/S3 implementation selected by config; no vendor SDK import outside it. `S3Storage` in `api/core/storage_s3.py` on boto3, chosen by `STORAGE_BACKEND`. It signs client URLs for `S3_PUBLIC_ENDPOINT_URL` and talks to `S3_ENDPOINT_URL`, because the signature covers the host. `tests/test_vendor_imports.py` keeps boto3 in that one file. Tests run on moto (fixture `storage`); the CI Compose job runs `python -m api.scripts.storage_check` against the real MinIO.
+- [x] Signed GET URLs expire after 5 minutes (test)
 
 ### 2.2 Upload flow (FR-MG-01)
 - [ ] `episode_pages`, `page_tiles` models and migration

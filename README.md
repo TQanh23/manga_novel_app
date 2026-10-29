@@ -250,6 +250,16 @@ EXPO_PUBLIC_API_URL=http://192.168.1.20:8000
 That is what a physical phone needs: your machine's LAN address, with the phone on the same
 network.
 
+Manga pages do not go through the API: the client uploads them to MinIO and reads them from it
+with signed URLs, signed for `S3_PUBLIC_ENDPOINT_URL` (default `http://127.0.0.1:9000`). One
+address serves every client, so to use a phone, set both of these in `.env` to your LAN address
+and run `docker compose up -d`:
+
+```
+S3_PUBLIC_ENDPOINT_URL=http://192.168.1.20:9000
+MINIO_BIND=0.0.0.0
+```
+
 UI copy lives in `app/src/i18n/locales/` (English and Vietnamese). ESLint rejects literal text in
 JSX, so add a key to both files instead.
 
@@ -288,6 +298,7 @@ adds it to the stack.
 | The web app reports a network error although the API is up | The API only allows the origin `http://localhost:8081`. Open the app at that exact address (not `127.0.0.1`, not another port), or set `CORS_ORIGINS` in `.env` and run `docker compose up -d api`. |
 | Sign-in answers "Too many attempts" | Auth routes are rate limited: 5 sign-in attempts per account and 30 requests per IP per minute. Wait a minute. |
 | A phone cannot reach the API | Set `EXPO_PUBLIC_API_URL` to your machine's LAN address and let port 8000 through the firewall. |
+| A phone cannot upload or show manga pages | Set `S3_PUBLIC_ENDPOINT_URL` to your machine's LAN address and `MINIO_BIND=0.0.0.0` (see [Working on the client](#working-on-the-client)), and let port 9000 through the firewall. |
 | CI fails on "Generated API client is up to date" | Run `npm run gen:api` in `app/` and commit `openapi.json` and `src/api/generated/`. |
 
 To start over with empty data:
