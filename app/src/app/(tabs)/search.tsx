@@ -25,7 +25,7 @@ export default function SearchScreen() {
   );
 
   return (
-    <Page>
+    <Page wide>
       <WorkList
         works={works}
         emptyMessage={query ? t('search.empty', { query }) : t('search.hint')}

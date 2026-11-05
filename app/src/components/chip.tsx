@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Radius, Spacing } from '@/constants/theme';
+import { useLayout } from '@/hooks/use-layout';
 import { useTheme } from '@/hooks/use-theme';
 
 type ChipProps = {
@@ -60,23 +61,32 @@ type ChipGroupProps<T extends string> = {
   onChange: (value: T) => void;
 };
 
-/** One row of chips of which exactly one is selected. Scrolls sideways when it does not fit. */
+/**
+ * One row of chips of which exactly one is selected. On a phone it scrolls
+ * sideways when it does not fit; on a wide window it wraps, as a mouse has no swipe.
+ */
 export function ChipGroup<T extends string>({ label, options, value, onChange }: ChipGroupProps<T>) {
+  const { isWide } = useLayout();
+  const chips = options.map((option) => (
+    <Chip
+      key={option.value}
+      label={option.label}
+      selected={option.value === value}
+      onPress={() => onChange(option.value)}
+    />
+  ));
   return (
     <View style={styles.group} accessibilityRole="radiogroup" accessibilityLabel={label}>
       <ThemedText type="small" themeColor="textSecondary">
         {label}
       </ThemedText>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-        {options.map((option) => (
-          <Chip
-            key={option.value}
-            label={option.label}
-            selected={option.value === value}
-            onPress={() => onChange(option.value)}
-          />
-        ))}
-      </ScrollView>
+      {isWide ? (
+        <View style={styles.wrap}>{chips}</View>
+      ) : (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+          {chips}
+        </ScrollView>
+      )}
     </View>
   );
 }

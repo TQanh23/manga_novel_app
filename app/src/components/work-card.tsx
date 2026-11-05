@@ -22,8 +22,8 @@ export function WorkCard({ work }: { work: Work }) {
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={work.title}
-        style={({ pressed }) => pressed && styles.pressed}>
-        {/* The card's look sits on a View: under <Link asChild> a style function's result is lost on web. */}
+        style={styles.fill}>
+        {/* The card's look sits on a View: on web, <Link asChild> drops a Pressable's style function. */}
         <View style={[styles.card, card]}>
           <View style={[styles.kind, { backgroundColor: theme.highlight }]}>
             <ThemedText type="smallBold" themeColor="textSecondary">
@@ -54,7 +54,11 @@ export function WorkCard({ work }: { work: Work }) {
 }
 
 const styles = StyleSheet.create({
+  fill: {
+    flex: 1,
+  },
   card: {
+    flex: 1,
     padding: Spacing.three,
     gap: Spacing.one,
   },

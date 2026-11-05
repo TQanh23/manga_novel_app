@@ -5,6 +5,7 @@ import type { ColorValue } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { useSession } from '@/auth/session';
+import { useLayout } from '@/hooks/use-layout';
 import { useTheme } from '@/hooks/use-theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -20,6 +21,7 @@ export default function TabsLayout() {
   const { t } = useTranslation();
   const { user } = useSession();
   const theme = useTheme();
+  const { isWide } = useLayout();
   const isAuthor = user?.roles.includes('author') ?? false;
   return (
     <Tabs
@@ -27,8 +29,24 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: theme.accent,
         tabBarInactiveTintColor: theme.textSecondary,
-        tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border },
         tabBarLabelStyle: { fontWeight: 600 },
+        // A bottom bar on phones; on a wide window, a sidebar with labels beside the icons.
+        ...(isWide
+          ? {
+              tabBarPosition: 'left',
+              tabBarVariant: 'material',
+              tabBarLabelPosition: 'beside-icon',
+              tabBarActiveBackgroundColor: theme.backgroundSelected,
+              tabBarStyle: {
+                backgroundColor: theme.surface,
+                borderRightColor: theme.border,
+                minWidth: 220,
+                paddingTop: 24,
+              },
+            }
+          : {
+              tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border },
+            }),
       }}>
       <Tabs.Screen name="index" options={{ title: t('tabs.home'), tabBarIcon: icon('home-outline') }} />
       <Tabs.Screen

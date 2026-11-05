@@ -30,7 +30,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <Page>
+    <Page wide>
       <WorkList
         works={works}
         emptyMessage={t('catalogue.empty')}

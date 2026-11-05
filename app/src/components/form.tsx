@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useState } from 'react';
+import { createContext, type PropsWithChildren, use, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -14,9 +14,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Radius, Spacing } from '@/constants/theme';
+import { useLayout } from '@/hooks/use-layout';
 import { useTheme } from '@/hooks/use-theme';
 
 const FORM_WIDTH = 420;
+
+/** Inside a narrow form column, buttons span it whatever the window's width. */
+const InFormColumn = createContext(false);
 
 /** Full-height, scrollable page with its content in a centred column. */
 export function Screen({ children }: PropsWithChildren) {
@@ -24,7 +28,9 @@ export function Screen({ children }: PropsWithChildren) {
     <ThemedView style={styles.screen}>
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.column}>{children}</View>
+          <View style={styles.column}>
+            <InFormColumn value={true}>{children}</InFormColumn>
+          </View>
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -78,6 +84,8 @@ type ButtonProps = Omit<PressableProps, 'children'> & {
 
 export function Button({ label, variant = 'primary', busy = false, disabled, ...rest }: ButtonProps) {
   const theme = useTheme();
+  const { isWide } = useLayout();
+  const inForm = use(InFormColumn);
   const primary = variant === 'primary';
   return (
     <Pressable
@@ -87,6 +95,8 @@ export function Button({ label, variant = 'primary', busy = false, disabled, ...
       disabled={disabled ?? busy}
       style={({ pressed }) => [
         styles.button,
+        // On a wide window a button is as wide as its label, not the whole page.
+        isWide && !inForm && styles.natural,
         primary
           ? { backgroundColor: theme.accent }
           : { backgroundColor: theme.backgroundElement, borderColor: theme.border, borderWidth: 1 },
@@ -143,6 +153,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  natural: {
+    alignSelf: 'flex-start',
+    minWidth: 200,
+    paddingHorizontal: Spacing.five,
   },
   dimmed: {
     opacity: 0.7,
