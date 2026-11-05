@@ -56,7 +56,8 @@ export default function ReadScreen() {
     ? t('reader.heading', { number: content.data.number, title: content.data.title })
     : t('reader.title');
   return (
-    <Page>
+    // Full width: the text sets its own measure, and the bar runs edge to edge.
+    <Page full>
       <Stack.Screen options={{ title }} />
       {body()}
     </Page>
@@ -113,10 +114,15 @@ function Reader({ episode, signedIn }: { episode: EpisodeContentResponse; signed
           />
         )}
       </View>
-      {panel === 'settings' ? <SettingsPanel /> : null}
-      {panel === 'contents' ? (
-        <ContentsSheet workId={episode.work_id} workTitle={workTitle} currentId={episode.id} />
-      ) : null}
+      {panel === 'none' ? null : (
+        // Panels keep to the text's column, centred, now that the reader spans the window.
+        <View style={styles.panels}>
+          {panel === 'settings' ? <SettingsPanel /> : null}
+          {panel === 'contents' ? (
+            <ContentsSheet workId={episode.work_id} workTitle={workTitle} currentId={episode.id} />
+          ) : null}
+        </View>
+      )}
       <ReaderBar
         number={episode.number}
         percent={percent}
@@ -156,5 +162,9 @@ const styles = StyleSheet.create({
   message: {
     alignItems: 'center',
     gap: Spacing.three,
+  },
+  panels: {
+    alignItems: 'center',
+    padding: Spacing.two,
   },
 });

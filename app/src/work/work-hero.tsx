@@ -144,7 +144,6 @@ type ReaderActionsProps = {
 function ReaderActions({ workId, episodes, library, reading, signedIn }: ReaderActionsProps) {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isWide } = useLayout();
   // What the reader set here; until they do, what their library says.
   const [chosen, setChosen] = useState<boolean | null>(null);
   const [busy, setBusy] = useState(false);
@@ -176,14 +175,16 @@ function ReaderActions({ workId, episodes, library, reading, signedIn }: ReaderA
 
   return (
     <View style={styles.actionsBlock}>
-      <View style={[styles.actions, isWide && styles.actionsWide]}>
+      {/* One row on any width: the two buttons share it equally. */}
+      <View style={styles.actions}>
         {reading ? (
           <Button
             label={t('work.continue', { number: reading.episode_number })}
             onPress={() => read(reading.episode_id)}
+            fill
           />
         ) : first ? (
-          <Button label={t('work.start')} onPress={() => read(first.id)} />
+          <Button label={t('work.start')} onPress={() => read(first.id)} fill />
         ) : null}
         {signedIn ? (
           <Button
@@ -194,6 +195,7 @@ function ReaderActions({ workId, episodes, library, reading, signedIn }: ReaderA
             // Without its library (still loading, or it failed) the button waits.
             disabled={busy || library === null}
             onPress={() => void toggleFavourite()}
+            fill
           />
         ) : null}
       </View>
@@ -276,10 +278,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.one,
   },
   actions: {
-    gap: Spacing.two,
-  },
-  actionsWide: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    gap: Spacing.two,
   },
 });

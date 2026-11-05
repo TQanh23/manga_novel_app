@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Spacing } from '@/constants/theme';
+import { Fonts, MaxContentWidth, Spacing } from '@/constants/theme';
 
 export type ReaderPanel = 'none' | 'contents' | 'settings';
 
@@ -32,11 +32,13 @@ export function ReaderBar({ number, percent, colors, panel, onPanel, onPrevious,
 
   return (
     <View style={[styles.bar, { backgroundColor: colors.bar, borderTopColor: colors.ornament, paddingBottom: insets.bottom }]}>
+      {/* The bar and its gold line span the window; the controls keep to the text's column. */}
       <View
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
         style={[styles.progress, { width: `${percent}%`, backgroundColor: colors.ornament }]}
       />
+      <View style={styles.controls}>
       <BarButton label={t('reader.previous')} onPress={onPrevious}>
         <Glyph color={colors.text}>‹</Glyph>
       </BarButton>
@@ -54,6 +56,7 @@ export function ReaderBar({ number, percent, colors, panel, onPanel, onPrevious,
       <BarButton label={t('reader.next')} onPress={onNext}>
         <Glyph color={colors.text}>›</Glyph>
       </BarButton>
+      </View>
     </View>
   );
 }
@@ -101,9 +104,15 @@ function Icon({
 
 const styles = StyleSheet.create({
   bar: {
+    width: '100%',
+    borderTopWidth: 1,
+  },
+  controls: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: 1,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
     paddingHorizontal: Spacing.one,
   },
   progress: {

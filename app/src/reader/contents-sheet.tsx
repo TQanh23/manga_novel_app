@@ -7,7 +7,7 @@ import { useLoad } from '@/api/hooks';
 import { OrnateFrame, SectionTitle } from '@/components/ornaments';
 import { ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Spacing } from '@/constants/theme';
+import { Fonts, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ContentsSheetProps = {
@@ -62,8 +62,10 @@ export function ContentsSheet({ workId, workTitle, currentId }: ContentsSheetPro
 }
 
 const styles = StyleSheet.create({
+  // Centred in the text's column, now that the reader spans the window.
   sheet: {
-    margin: Spacing.two,
+    width: '100%',
+    maxWidth: MaxContentWidth,
   },
   frame: {
     padding: Spacing.three,
