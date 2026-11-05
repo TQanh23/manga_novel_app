@@ -16,6 +16,27 @@ export type Filters = {
 
 export const NO_FILTERS: Filters = { type: null, status: null, genre: null, sort: 'newest' };
 
+const TYPES: readonly WorkType[] = ['novel', 'manga'];
+const STATUSES: readonly WorkStatus[] = ['ongoing', 'completed'];
+const SORTS: readonly WorkSort[] = ['newest', 'popular'];
+
+export type FilterParams = { type?: string; status?: string; genre?: string; sort?: string };
+
+function oneOf<T extends string>(options: readonly T[], value: string | undefined): T | null {
+  return options.find((option) => option === value) ?? null;
+}
+
+/** The filters a link asked for (the homepage's "See all" and genre tiles); anything unknown is ignored. */
+export function filtersFrom(params: FilterParams): Filters {
+  return {
+    type: oneOf(TYPES, params.type),
+    status: oneOf(STATUSES, params.status),
+    genre: params.genre?.trim() || null,
+    sort: oneOf(SORTS, params.sort) ?? NO_FILTERS.sort,
+  };
+}
+
+
 // Chips need a string for "no filter"; no genre, type or status is called this.
 const ALL = '';
 

@@ -71,6 +71,7 @@ function RootNavigator() {
         headerTitleStyle: { fontFamily: DISPLAY_FONT, fontWeight: 'normal' },
       }}>
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="browse" options={{ headerShown: true, title: t('catalogue.title') }} />
       <Stack.Screen name="works/[workId]" options={{ headerShown: true, title: t('work.title') }} />
       <Stack.Screen name="read/[episodeId]" options={{ headerShown: true, title: t('reader.title') }} />
       <Stack.Protected guard={user?.roles.includes('author') ?? false}>

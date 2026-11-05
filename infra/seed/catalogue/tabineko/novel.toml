@@ -1,0 +1,15 @@
+# A sample work for the catalogue, written for this project (is_sample).
+# It gives the reader's homepage and browse filters content to show.
+
+title = "月夜の旅猫"
+synopsis = "満月の夜だけ人の言葉を話せる黒猫・ヨルは、亡き飼い主の最後の願いを叶えるため、日本列島を北へ旅する。行く先々で出会う人々の小さな悩みを、猫らしい気まぐれで解決していく、心温まる旅物語。"
+language = "ja"
+status = "ongoing"
+genres = ["adventure", "fantasy", "slice-of-life"]
+tags = ["猫", "旅", "癒し"]
+
+# One per chapter file, in order: 01.html, 02.html, ...
+episodes = [
+    "満月の夜に",
+    "駅のホームの少年",
+]

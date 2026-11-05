@@ -183,6 +183,7 @@ Where the schema differs from the spec's data model:
 
 ### 1.7 Client: reader
 - [x] Home, browse with filters, search. Guests browse without signing in: only the sign-in screens are guarded, and from the signed-out side.
+- [x] Reader homepage on `/` (featured, continue reading, popular ranking, new releases, genre tiles) with the filters moved to `/browse`, which links open with a filter set. Covers are drawn on the client (`WorkCover`) until works have cover images. Six more `is_sample` works in `infra/seed/catalogue` give it content.
 - [x] Work page with episode list. Rows open the reader once it exists.
 - [x] Client tests with jest-expo, run by CI (`cd app && npm test`)
 - [x] Novel reader: font, size, light/dark theme. `/read/[episodeId]`; the paragraphs are HTML (D13), so on web they go straight into the DOM, cleaned again with DOMPurify (`novel-view.web.tsx`), and on Android a react-native-webview shows a page built by `novel-page.ts` that copies only allowlisted tags (`novel-view.tsx`). Expo DOM components failed in Expo Go on a real phone, so they are not used. Settings are kept per device in AsyncStorage.

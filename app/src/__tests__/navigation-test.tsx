@@ -17,6 +17,7 @@ import TabsLayout from '@/app/(tabs)/_layout';
 import AccountScreen from '@/app/(tabs)/account';
 import LibraryScreen from '@/app/(tabs)/library';
 import HomeScreen from '@/app/(tabs)/index';
+import BrowseScreen from '@/app/browse';
 import SearchScreen from '@/app/(tabs)/search';
 import StudioScreen from '@/app/(tabs)/studio';
 import RootLayout from '@/app/_layout';
@@ -55,6 +56,7 @@ const APP = {
   '(tabs)/library': LibraryScreen,
   '(tabs)/studio': StudioScreen,
   '(tabs)/account': AccountScreen,
+  browse: BrowseScreen,
   'works/[workId]': WorkScreen,
   'studio/new': NewWorkScreen,
   'studio/[workId]': EditWorkScreen,

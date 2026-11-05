@@ -6,11 +6,13 @@ import type { WorkCard as Work } from '@/api/generated';
 import { Chip } from '@/components/chip';
 import { OrnateFrame } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
+import { WorkCover } from '@/components/work-cover';
 import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDate, genreName } from '@/i18n';
 
 const SEPARATOR = ' · ';
+const COVER_WIDTH = 84;
 
 /** A work in a list. Opens the work's page. */
 export function WorkCard({ work }: { work: Work }) {
@@ -25,6 +27,8 @@ export function WorkCard({ work }: { work: Work }) {
         style={styles.fill}>
         {/* The frame sits inside: on web, <Link asChild> drops a Pressable's style function. */}
         <OrnateFrame style={styles.card} frameStyle={styles.fill}>
+          <WorkCover work={work} width={COVER_WIDTH} />
+          <View style={styles.text}>
           <View style={[styles.kind, { backgroundColor: theme.highlight }]}>
             <ThemedText type="eyebrow" themeColor="textSecondary">
               {[t(`workType.${work.type}`), t(`workStatus.${work.status}`)].join(SEPARATOR)}
@@ -47,6 +51,7 @@ export function WorkCard({ work }: { work: Work }) {
               t('catalogue.updated', { date: formatDate(work.last_published_at) }),
             ].join(SEPARATOR)}
           </ThemedText>
+          </View>
         </OrnateFrame>
       </Pressable>
     </Link>
@@ -59,7 +64,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   card: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     padding: Spacing.three,
+    gap: Spacing.three,
+  },
+  text: {
+    flex: 1,
     gap: Spacing.one,
   },
   kind: {

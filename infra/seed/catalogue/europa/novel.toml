@@ -1,0 +1,15 @@
+# A sample work for the catalogue, written for this project (is_sample).
+# It gives the reader's homepage and browse filters content to show.
+
+title = "The Last Lighthouse on Europa"
+synopsis = "Under the ice of Jupiter's moon, a lone keeper tends the beacon that guides cargo submarines through a lightless ocean. When an unregistered vessel answers her signal with a message in a language no human speaks, Ines Okafor has to decide who she is keeping the light on for."
+language = "en"
+status = "ongoing"
+genres = ["sci-fi", "mystery"]
+tags = ["Space", "Ocean", "Lonely"]
+
+# One per chapter file, in order: 01.html, 02.html, ...
+episodes = [
+    "Forty Kilometres of Ice",
+    "The Answer in the Dark",
+]

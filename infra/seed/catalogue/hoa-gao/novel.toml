@@ -1,0 +1,15 @@
+# A sample work for the catalogue, written for this project (is_sample).
+# It gives the reader's homepage and browse filters content to show.
+
+title = "Mùa Hoa Gạo Năm Ấy"
+synopsis = "Tháng ba, cây gạo đầu làng lại đỏ rực. Minh Thư về quê dạy học sau mười năm ở thành phố và gặp lại Quân, cậu bạn ngày xưa từng hứa sẽ đợi cô dưới gốc gạo. Một câu chuyện nhẹ nhàng về những lời hứa trẻ con và lòng can đảm để bắt đầu lại."
+language = "vi"
+status = "completed"
+genres = ["romance", "slice-of-life"]
+tags = ["Làng quê", "Thanh xuân", "Chữa lành"]
+
+# One per chapter file, in order: 01.html, 02.html, ...
+episodes = [
+    "Cây gạo đầu làng",
+    "Lời hứa dưới gốc cây",
+]

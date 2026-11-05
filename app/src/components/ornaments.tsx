@@ -7,7 +7,7 @@ import { Radius, Spacing } from '@/constants/theme';
 import { useCardStyle, useTheme } from '@/hooks/use-theme';
 
 // Ornaments are decoration: hidden from screen readers and from taps.
-const decorative = {
+export const decorative = {
   accessibilityElementsHidden: true,
   importantForAccessibility: 'no-hide-descendants',
   'aria-hidden': true,
@@ -51,11 +51,19 @@ export function Flourish({ style }: { style?: StyleProp<ViewStyle> }) {
 const CORNER = 20;
 const ROTATIONS = { topLeft: '0deg', topRight: '90deg', bottomRight: '180deg', bottomLeft: '270deg' } as const;
 
-/** One corner scroll, drawn for the top left and turned for the others. */
-function Corner({ at, color }: { at: keyof typeof ROTATIONS; color: string }) {
+export type CornerPosition = keyof typeof ROTATIONS;
+export const CORNER_POSITIONS = Object.keys(ROTATIONS) as CornerPosition[];
+
+/** One corner scroll, drawn for the top left and turned for the others. Place it in a relative parent. */
+export function Corner({ at, color, size = CORNER }: { at: CornerPosition; color: string; size?: number }) {
   return (
-    <View style={[styles.corner, styles[at], { transform: [{ rotate: ROTATIONS[at] }] }]}>
-      <Svg width={CORNER} height={CORNER} viewBox="0 0 40 40">
+    <View
+      style={[
+        styles.corner,
+        styles[at],
+        { width: size, height: size, transform: [{ rotate: ROTATIONS[at] }] },
+      ]}>
+      <Svg width={size} height={size} viewBox="0 0 40 40">
         <Path d="M3 37 V12 Q3 3 12 3 H37" stroke={color} strokeWidth={2.4} fill="none" />
         <Path d="M10 26 C10 16 16 10 26 10" stroke={color} strokeWidth={2.4} fill="none" />
         <Path d="M26 10 C31 10 33 14 30 17 C28 19 25 17 26 15" stroke={color} strokeWidth={2.4} fill="none" />
@@ -81,7 +89,7 @@ export function OrnateFrame({ children, style, frameStyle }: OrnateFrameProps) {
     <View style={[card, styles.frame, frameStyle]}>
       <View style={[styles.inner, { borderColor: theme.border }, style]}>{children}</View>
       <View style={StyleSheet.absoluteFill} {...decorative}>
-        {(Object.keys(ROTATIONS) as (keyof typeof ROTATIONS)[]).map((at) => (
+        {CORNER_POSITIONS.map((at) => (
           <Corner key={at} at={at} color={theme.ornament} />
         ))}
       </View>
