@@ -5,7 +5,7 @@ import type { ColorValue } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { useSession } from '@/auth/session';
-import { Accent } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -19,9 +19,17 @@ function icon(name: IconName) {
 export default function TabsLayout() {
   const { t } = useTranslation();
   const { user } = useSession();
+  const theme = useTheme();
   const isAuthor = user?.roles.includes('author') ?? false;
   return (
-    <Tabs screenOptions={{ headerShown: false, tabBarActiveTintColor: Accent }}>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: theme.accent,
+        tabBarInactiveTintColor: theme.textSecondary,
+        tabBarStyle: { backgroundColor: theme.surface, borderTopColor: theme.border },
+        tabBarLabelStyle: { fontWeight: 600 },
+      }}>
       <Tabs.Screen name="index" options={{ title: t('tabs.home'), tabBarIcon: icon('home-outline') }} />
       <Tabs.Screen
         name="search"

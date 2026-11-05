@@ -17,7 +17,7 @@ import { Button, ErrorText, TextField } from '@/components/form';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
-import { Danger, Spacing } from '@/constants/theme';
+import { Spacing } from '@/constants/theme';
 import { errorMessageKey, formatTime } from '@/i18n';
 import { PublishPanel } from '@/studio/publish-panel';
 import RichTextEditor from '@/studio/rich-text-editor';
@@ -207,9 +207,8 @@ function SaveStatus({ status }: { status: DraftStatus }) {
   return (
     <ThemedText
       type="small"
-      themeColor="textSecondary"
-      accessibilityLiveRegion="polite"
-      style={status.kind === 'failed' ? styles.failed : undefined}>
+      themeColor={status.kind === 'failed' ? 'danger' : 'textSecondary'}
+      accessibilityLiveRegion="polite">
       {text}
     </ThemedText>
   );
@@ -230,8 +229,5 @@ const styles = StyleSheet.create({
   },
   status: {
     flex: 1,
-  },
-  failed: {
-    color: Danger,
   },
 });

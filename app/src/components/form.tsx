@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from 'react';
+import { type PropsWithChildren, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -13,7 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Accent, Danger, Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 const FORM_WIDTH = 420;
@@ -33,8 +33,9 @@ export function Screen({ children }: PropsWithChildren) {
 
 type TextFieldProps = TextInputProps & { label: string; hint?: string };
 
-export function TextField({ label, hint, style, ...input }: TextFieldProps) {
+export function TextField({ label, hint, style, onFocus, onBlur, ...input }: TextFieldProps) {
   const theme = useTheme();
+  const [focused, setFocused] = useState(false);
   return (
     <View style={styles.field}>
       <ThemedText type="smallBold">{label}</ThemedText>
@@ -43,9 +44,21 @@ export function TextField({ label, hint, style, ...input }: TextFieldProps) {
         placeholderTextColor={theme.textSecondary}
         style={[
           styles.input,
-          { color: theme.text, backgroundColor: theme.backgroundElement },
+          {
+            color: theme.text,
+            backgroundColor: theme.surface,
+            borderColor: focused ? theme.accent : theme.border,
+          },
           style,
         ]}
+        onFocus={(event) => {
+          setFocused(true);
+          onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          onBlur?.(event);
+        }}
         {...input}
       />
       {hint ? (
@@ -74,14 +87,16 @@ export function Button({ label, variant = 'primary', busy = false, disabled, ...
       disabled={disabled ?? busy}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: primary ? Accent : theme.backgroundElement },
+        primary
+          ? { backgroundColor: theme.accent }
+          : { backgroundColor: theme.backgroundElement, borderColor: theme.border, borderWidth: 1 },
         (pressed || busy) && styles.dimmed,
       ]}
       {...rest}>
       {busy ? (
-        <ActivityIndicator color={primary ? '#ffffff' : theme.text} />
+        <ActivityIndicator color={primary ? theme.onAccent : theme.text} />
       ) : (
-        <ThemedText type="smallBold" style={primary ? styles.onAccent : undefined}>
+        <ThemedText type="smallBold" style={{ color: primary ? theme.onAccent : theme.text }}>
           {label}
         </ThemedText>
       )}
@@ -91,7 +106,7 @@ export function Button({ label, variant = 'primary', busy = false, disabled, ...
 
 export function ErrorText({ children }: PropsWithChildren) {
   return (
-    <ThemedText type="small" accessibilityRole="alert" style={styles.error}>
+    <ThemedText type="small" accessibilityRole="alert" themeColor="danger">
       {children}
     </ThemedText>
   );
@@ -116,25 +131,20 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
   },
   input: {
-    borderRadius: Spacing.two,
+    borderWidth: 1,
+    borderRadius: Radius.md,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
     fontSize: 16,
   },
   button: {
     minHeight: 48,
-    borderRadius: Spacing.two,
+    borderRadius: Radius.md,
     paddingHorizontal: Spacing.three,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dimmed: {
     opacity: 0.7,
-  },
-  onAccent: {
-    color: '#ffffff',
-  },
-  error: {
-    color: Danger,
   },
 });

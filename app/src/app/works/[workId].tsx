@@ -22,7 +22,7 @@ import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useCardStyle } from '@/hooks/use-theme';
 import { errorMessageKey, formatDate, genreName } from '@/i18n';
 
 const SEPARATOR = ' · ';
@@ -214,7 +214,7 @@ function ReaderActions({ workId, episodes, library, signedIn }: ReaderActionsPro
 /** An episode in the list. Opens the reader. */
 function EpisodeRow({ episode }: { episode: EpisodeSummary }) {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const card = useCardStyle();
   const price =
     episode.price_coins === 0 ? t('work.free') : t('work.coins', { count: episode.price_coins });
   const terms = episode.wuf_eligible ? [price, t('work.waitUntilFree')] : [price];
@@ -224,21 +224,20 @@ function EpisodeRow({ episode }: { episode: EpisodeSummary }) {
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={episode.title}
-        style={({ pressed }) => [
-          styles.episode,
-          { backgroundColor: theme.backgroundElement },
-          pressed && styles.pressed,
-        ]}>
-        <ThemedText type="small" themeColor="textSecondary">
-          {[
-            t('work.episodeNumber', { number: episode.number }),
-            formatDate(episode.publish_at),
-          ].join(SEPARATOR)}
-        </ThemedText>
-        <ThemedText>{episode.title}</ThemedText>
-        <ThemedText type="smallBold" themeColor="textSecondary">
-          {terms.join(SEPARATOR)}
-        </ThemedText>
+        style={({ pressed }) => pressed && styles.pressed}>
+        {/* The card's look sits on a View: under <Link asChild> a style function's result is lost on web. */}
+        <View style={[styles.episode, card]}>
+          <ThemedText type="small" themeColor="textSecondary">
+            {[
+              t('work.episodeNumber', { number: episode.number }),
+              formatDate(episode.publish_at),
+            ].join(SEPARATOR)}
+          </ThemedText>
+          <ThemedText>{episode.title}</ThemedText>
+          <ThemedText type="smallBold" themeColor="textSecondary">
+            {terms.join(SEPARATOR)}
+          </ThemedText>
+        </View>
       </Pressable>
     </Link>
   );
@@ -261,7 +260,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   episode: {
-    borderRadius: Spacing.two,
     padding: Spacing.three,
     gap: Spacing.half,
   },

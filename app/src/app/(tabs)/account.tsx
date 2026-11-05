@@ -8,7 +8,7 @@ import { Button, ErrorText, Screen } from '@/components/form';
 import { LanguageSwitch } from '@/components/language-switch';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { errorMessageKey } from '@/i18n';
 
 /** Who you are and which roles you hold, or the way in for a guest. */
@@ -56,7 +56,7 @@ export default function AccountScreen() {
         </ThemedText>
         <View style={styles.roles}>
           {user.roles.map((role) => (
-            <ThemedView key={role} type="backgroundElement" style={styles.role}>
+            <ThemedView key={role} type="highlight" style={styles.role}>
               <ThemedText type="smallBold">{t(`roles.${role}`)}</ThemedText>
             </ThemedView>
           ))}
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   role: {
-    borderRadius: Spacing.two,
+    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.one,
   },

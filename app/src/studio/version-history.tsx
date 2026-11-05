@@ -14,7 +14,7 @@ import { Button, ErrorText } from '@/components/form';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useCardStyle, useTheme } from '@/hooks/use-theme';
 import { errorMessageKey, formatDateTime } from '@/i18n';
 import NovelView from '@/reader/novel-view';
 
@@ -139,7 +139,7 @@ function VersionRow({
   onPress: () => void;
 }) {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const card = useCardStyle();
   const when = formatDateTime(version.created_at);
   const marks = badges(t, isNewest, version.is_published);
   return (
@@ -149,7 +149,7 @@ function VersionRow({
       onPress={onPress}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: theme.backgroundElement },
+        card,
         pressed && styles.pressed,
       ]}>
       <ThemedText>{when}</ThemedText>
@@ -263,7 +263,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   row: {
-    borderRadius: Spacing.two,
     padding: Spacing.three,
     gap: Spacing.half,
   },

@@ -6,6 +6,7 @@ import type { ComponentProps } from 'react';
 import { readerGetEpisodeContent, readerSaveProgress, type UserResponse } from '@/api/generated';
 import ReadScreen from '@/app/read/[episodeId]';
 import { useSession } from '@/auth/session';
+import { Colors } from '@/constants/theme';
 import type NovelView from '@/reader/novel-view';
 import { ReaderSettingsProvider } from '@/reader/settings';
 import { SAVE_DELAY_MS } from '@/reader/use-progress-saver';
@@ -191,8 +192,8 @@ test('FR-RD-03: changing the text settings restyles the page', async () => {
   expect(view().appearance).toMatchObject({
     font: 'sans',
     fontSize: 22,
-    background: '#000000',
-    text: '#ffffff',
+    background: Colors.dark.background,
+    text: Colors.dark.text,
   });
 });
 

@@ -1,10 +1,11 @@
 import '@/i18n';
 
 import { DarkTheme, DefaultTheme, SplashScreen, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { SessionProvider, useSession } from '@/auth/session';
+import { Colors } from '@/constants/theme';
+import { useScheme } from '@/hooks/use-theme';
 import { ReaderSettingsProvider } from '@/reader/settings';
 
 // Held until the silent sign-in has finished, so a signed-in user never sees
@@ -12,9 +13,24 @@ import { ReaderSettingsProvider } from '@/reader/settings';
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const scheme = useScheme();
+  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const colors = Colors[scheme];
+  // Headers, the stack's background and the tab bar's defaults follow the palette.
+  const navigationTheme = {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: colors.accent,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.border,
+      notification: colors.accent,
+    },
+  };
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={navigationTheme}>
       <SessionProvider>
         <ReaderSettingsProvider>
           <RootNavigator />

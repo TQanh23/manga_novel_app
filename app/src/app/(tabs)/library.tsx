@@ -16,7 +16,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { WorkCard } from '@/components/work-card';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useCardStyle } from '@/hooks/use-theme';
 import { useVisit } from '@/hooks/use-visit';
 import { formatDate } from '@/i18n';
 
@@ -98,26 +98,25 @@ function Shelves({ library }: { library: LibraryResponse }) {
 /** A work the reader is in. Opens the episode they read last, where they stopped. */
 function ReadingRow({ entry }: { entry: ReadingEntryResponse }) {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const card = useCardStyle();
   return (
     <Link href={{ pathname: '/read/[episodeId]', params: { episodeId: entry.episode_id } }} asChild>
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={entry.work.title}
-        style={({ pressed }) => [
-          styles.row,
-          { backgroundColor: theme.backgroundElement },
-          pressed && styles.pressed,
-        ]}>
-        <ThemedText style={styles.title}>{entry.work.title}</ThemedText>
-        <ThemedText type="small">
-          {[t('work.episodeNumber', { number: entry.episode_number }), entry.episode_title].join(
-            SEPARATOR,
-          )}
-        </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {t('library.readOn', { date: formatDate(entry.read_at) })}
-        </ThemedText>
+        style={({ pressed }) => pressed && styles.pressed}>
+        {/* The card's look sits on a View: under <Link asChild> a style function's result is lost on web. */}
+        <View style={[styles.row, card]}>
+          <ThemedText style={styles.title}>{entry.work.title}</ThemedText>
+          <ThemedText type="small">
+            {[t('work.episodeNumber', { number: entry.episode_number }), entry.episode_title].join(
+              SEPARATOR,
+            )}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {t('library.readOn', { date: formatDate(entry.read_at) })}
+          </ThemedText>
+        </View>
       </Pressable>
     </Link>
   );
@@ -133,7 +132,6 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   row: {
-    borderRadius: Spacing.two,
     padding: Spacing.three,
     gap: Spacing.half,
   },

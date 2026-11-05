@@ -11,7 +11,7 @@ import type {
 import { ChipGroup } from '@/components/chip';
 import { Button, ErrorText, TextField } from '@/components/form';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { errorMessageKey } from '@/i18n';
 
@@ -363,7 +363,7 @@ function FactFields({
   const theme = useTheme();
   const keyLabel = `${t('studio.glossary.form.attributeKey')} ${number}`;
   return (
-    <View style={[styles.fact, { borderColor: theme.backgroundElement }]}>
+    <View style={[styles.fact, { borderColor: theme.border }]}>
       <TextField
         label={keyLabel}
         value={row.key}
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   fact: {
     borderWidth: 1,
-    borderRadius: Spacing.two,
+    borderRadius: Radius.lg,
     padding: Spacing.three,
     gap: Spacing.two,
   },

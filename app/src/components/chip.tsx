@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Accent, Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ChipProps = {
@@ -24,11 +24,13 @@ export function Chip({
   const theme = useTheme();
   const style = [
     styles.chip,
-    { backgroundColor: selected ? Accent : theme.backgroundElement },
+    selected
+      ? { backgroundColor: theme.backgroundSelected, borderColor: theme.accent }
+      : { backgroundColor: theme.backgroundElement, borderColor: 'transparent' },
     disabled && styles.disabled,
   ];
   const text = (
-    <ThemedText type={selected ? 'smallBold' : 'small'} style={selected ? styles.onAccent : undefined}>
+    <ThemedText type={selected ? 'smallBold' : 'small'} style={selected ? { color: theme.accent } : undefined}>
       {label}
     </ThemedText>
   );
@@ -134,12 +136,10 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   chip: {
-    borderRadius: Spacing.three,
+    borderWidth: 1,
+    borderRadius: Radius.pill,
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
-  },
-  onAccent: {
-    color: '#ffffff',
+    paddingVertical: Spacing.one + Spacing.half,
   },
   disabled: {
     opacity: 0.5,

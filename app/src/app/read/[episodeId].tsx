@@ -136,7 +136,7 @@ function useAppearance(settings: ReaderSettings): NovelAppearance & { bar: strin
     text: colors.text,
     background: colors.background,
     muted: colors.textSecondary,
-    bar: colors.backgroundElement,
+    bar: colors.surface,
   };
 }
 
@@ -145,7 +145,7 @@ function SettingsPanel() {
   const { settings, update } = useReaderSettings();
   return (
     // The panel keeps the app's colours, so its controls read the same whatever the text's theme.
-    <ThemedView type="backgroundElement" style={styles.panel}>
+    <ThemedView type="surface" style={styles.panel}>
       <ChipGroup
         label={t('reader.font')}
         options={READER_FONTS.map((font) => ({ value: font, label: t(`reader.fonts.${font}`) }))}

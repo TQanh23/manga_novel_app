@@ -18,7 +18,7 @@ import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+import { useCardStyle } from '@/hooks/use-theme';
 import {
   GLOSSARY_KINDS,
   type GlossaryEntryFields,
@@ -149,7 +149,7 @@ function Entries({
 
 function EntryRow({ entry, onPress }: { entry: GlossaryEntryResponse; onPress: () => void }) {
   const { t } = useTranslation();
-  const theme = useTheme();
+  const card = useCardStyle();
   const facts = Object.keys(entry.attributes).length;
   return (
     <Pressable
@@ -158,7 +158,7 @@ function EntryRow({ entry, onPress }: { entry: GlossaryEntryResponse; onPress: (
       onPress={onPress}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: theme.backgroundElement },
+        card,
         pressed && styles.pressed,
       ]}>
       <ThemedText style={styles.name}>{entry.name}</ThemedText>
@@ -186,7 +186,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   row: {
-    borderRadius: Spacing.two,
     padding: Spacing.three,
     gap: Spacing.half,
   },
