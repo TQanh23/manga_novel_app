@@ -1,6 +1,6 @@
 import { JSDOM } from 'jsdom';
 
-import { type NovelAppearance, novelPage } from '@/reader/novel-page';
+import { type NovelAppearance, type NovelHeading, novelPage } from '@/reader/novel-page';
 
 const APPEARANCE: NovelAppearance = {
   font: 'serif',
@@ -8,11 +8,12 @@ const APPEARANCE: NovelAppearance = {
   text: '#000000',
   background: '#ffffff',
   muted: '#60646C',
+  ornament: '#8E6A24',
 };
 
 /** The page as the Android WebView runs it: its own scripts on, nothing else. */
-function load(paragraphs: string[]) {
-  const page = new JSDOM(novelPage({ paragraphs, position: 0, appearance: APPEARANCE }), {
+function load(paragraphs: string[], heading?: NovelHeading) {
+  const page = new JSDOM(novelPage({ paragraphs, position: 0, appearance: APPEARANCE, heading }), {
     runScripts: 'dangerously',
     pretendToBeVisual: true,
     // jsdom lays nothing out, so it cannot scroll.
@@ -23,6 +24,7 @@ function load(paragraphs: string[]) {
   const { document } = page.window;
   return {
     window: page.window,
+    document,
     blocks: Array.from(document.querySelectorAll('#text > [data-i]')).map((block) => block.innerHTML),
   };
 }
@@ -85,4 +87,28 @@ test('the reader changes how the page looks without reloading it', () => {
   expect(style.getPropertyValue('--size')).toBe('24px');
   expect(style.getPropertyValue('--background')).toBe('#000000');
   expect(style.getPropertyValue('--font')).toContain('system-ui');
+});
+
+test('FR-RD-03: the chapter heading and end mark are text, whatever the titles hold', () => {
+  const { document, window, blocks } = load(['<p>Một.</p>', '<p>Hai.</p>'], {
+    eyebrow: 'Người Giữ Đèn · Episode 1',
+    title: '<b>Bold</b><img src=x onerror="window.stolen = 1">',
+    end: 'End of episode 1',
+  });
+
+  expect(document.getElementById('eyebrow')?.textContent).toBe('Người Giữ Đèn · Episode 1');
+  expect(document.getElementById('title')?.textContent).toBe('<b>Bold</b><img src=x onerror="window.stolen = 1">');
+  expect(document.querySelector('#title b, #title img')).toBeNull();
+  expect(document.getElementById('end-text')?.textContent).toBe('End of episode 1');
+  expect((window as unknown as { stolen?: number }).stolen).toBeUndefined();
+  // Outside the article: paragraph indexes, and so saved positions, are as before.
+  expect(blocks).toEqual(['<p>Một.</p>', '<p>Hai.</p>']);
+  expect(document.querySelectorAll('#text > *')).toHaveLength(2);
+});
+
+test('FR-RD-03: without a heading the page has none', () => {
+  const { document } = load(['<p>Một.</p>']);
+
+  expect(document.getElementById('heading')).toBeNull();
+  expect(document.getElementById('end')).toBeNull();
 });

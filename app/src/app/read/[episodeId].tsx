@@ -1,27 +1,20 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, StyleSheet, useColorScheme, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, useColorScheme, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { type EpisodeContentResponse, readerGetEpisodeContent } from '@/api/generated';
+import { catalogueGetWork, type EpisodeContentResponse, readerGetEpisodeContent } from '@/api/generated';
 import { useLoad } from '@/api/hooks';
 import { useSession } from '@/auth/session';
-import { ChipGroup } from '@/components/chip';
 import { Button } from '@/components/form';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Colors, Spacing } from '@/constants/theme';
 import NovelView, { type NovelAppearance } from '@/reader/novel-view';
-import {
-  FONT_SIZES,
-  READER_FONTS,
-  READER_THEMES,
-  type ReaderSettings,
-  useReaderSettings,
-} from '@/reader/settings';
+import { ContentsSheet } from '@/reader/contents-sheet';
+import { type ReaderPanel, ReaderBar } from '@/reader/reader-bar';
+import { FONT_SIZES, type ReaderSettings, useReaderSettings } from '@/reader/settings';
+import { SettingsPanel } from '@/reader/settings-panel';
 import { useProgressSaver } from '@/reader/use-progress-saver';
 
 /** A novel episode, read paragraph by paragraph, opening where the reader left off (FR-RD-03). */
@@ -74,53 +67,65 @@ function Reader({ episode, signedIn }: { episode: EpisodeContentResponse; signed
   const { t } = useTranslation();
   const router = useRouter();
   const { settings } = useReaderSettings();
-  const [showSettings, setShowSettings] = useState(false);
-  const insets = useSafeAreaInsets();
+  const [panel, setPanel] = useState<ReaderPanel>('none');
   const appearance = useAppearance(settings);
   const savePosition = useProgressSaver({
     episodeId: episode.id,
     saved: episode.position,
     enabled: signedIn,
   });
+  // The work's name heads the chapter. The text waits for it (or for its
+  // failure), because the page is built once and a heading added later
+  // would move the reader's place.
+  const work = useLoad(`work:${episode.work_id}`, () =>
+    catalogueGetWork({ path: { work_id: episode.work_id } }),
+  );
+  // The author may have published a shorter text since the position was saved.
+  const start = Math.min(episode.position ?? 0, Math.max(0, episode.paragraphs.length - 1));
+  // How far down the text the reader is, for the bar; the view reports it as they scroll.
+  const [percent, setPercent] = useState(0);
 
   if (episode.paragraphs.length === 0) {
     return <EmptyState message={t('reader.empty')} />;
   }
-  // The author may have published a shorter text since the position was saved.
-  const start = Math.min(episode.position ?? 0, episode.paragraphs.length - 1);
   const open = (id: string) => router.replace({ pathname: '/read/[episodeId]', params: { episodeId: id } });
+  const workTitle = work.data?.title ?? null;
+  const episodeLabel = t('work.episodeNumber', { number: episode.number });
 
   return (
     <View style={[styles.reader, { backgroundColor: appearance.background }]}>
+      {workTitle ? <Stack.Screen options={{ title: workTitle }} /> : null}
       <View style={styles.text}>
-        <NovelView
-          paragraphs={episode.paragraphs}
-          initialPosition={start}
-          appearance={appearance}
-          onPosition={savePosition}
-        />
+        {work.isLoading ? (
+          <LoadingState />
+        ) : (
+          <NovelView
+            paragraphs={episode.paragraphs}
+            initialPosition={start}
+            appearance={appearance}
+            onPosition={savePosition}
+            onProgress={setPercent}
+            heading={{
+              eyebrow: workTitle ? `${workTitle} · ${episodeLabel}` : episodeLabel,
+              title: episode.title,
+              end: t('reader.endOfEpisode', { number: episode.number }),
+            }}
+          />
+        )}
       </View>
-      {showSettings ? <SettingsPanel /> : null}
-      <View style={[styles.bar, { backgroundColor: appearance.bar, paddingBottom: insets.bottom }]}>
-        <BarButton
-          label={t('reader.previous')}
-          color={appearance.text}
-          disabled={episode.previous_episode_id === null}
-          onPress={() => episode.previous_episode_id && open(episode.previous_episode_id)}
-        />
-        <BarButton
-          label={t('reader.settings')}
-          color={appearance.text}
-          selected={showSettings}
-          onPress={() => setShowSettings((shown) => !shown)}
-        />
-        <BarButton
-          label={t('reader.next')}
-          color={appearance.text}
-          disabled={episode.next_episode_id === null}
-          onPress={() => episode.next_episode_id && open(episode.next_episode_id)}
-        />
-      </View>
+      {panel === 'settings' ? <SettingsPanel /> : null}
+      {panel === 'contents' ? (
+        <ContentsSheet workId={episode.work_id} workTitle={workTitle} currentId={episode.id} />
+      ) : null}
+      <ReaderBar
+        number={episode.number}
+        percent={percent}
+        colors={appearance}
+        panel={panel}
+        onPanel={setPanel}
+        onPrevious={episode.previous_episode_id ? () => open(episode.previous_episode_id as string) : null}
+        onNext={episode.next_episode_id ? () => open(episode.next_episode_id as string) : null}
+      />
     </View>
   );
 }
@@ -136,60 +141,9 @@ function useAppearance(settings: ReaderSettings): NovelAppearance & { bar: strin
     text: colors.text,
     background: colors.background,
     muted: colors.textSecondary,
+    ornament: colors.ornament,
     bar: colors.surface,
   };
-}
-
-function SettingsPanel() {
-  const { t } = useTranslation();
-  const { settings, update } = useReaderSettings();
-  return (
-    // The panel keeps the app's colours, so its controls read the same whatever the text's theme.
-    <ThemedView type="surface" style={styles.panel}>
-      <ChipGroup
-        label={t('reader.font')}
-        options={READER_FONTS.map((font) => ({ value: font, label: t(`reader.fonts.${font}`) }))}
-        value={settings.font}
-        onChange={(font) => update({ font })}
-      />
-      <ChipGroup
-        label={t('reader.size')}
-        options={FONT_SIZES.map((size, index) => ({ value: String(index), label: String(size) }))}
-        value={String(settings.size)}
-        onChange={(size) => update({ size: Number(size) })}
-      />
-      <ChipGroup
-        label={t('reader.theme')}
-        options={READER_THEMES.map((theme) => ({ value: theme, label: t(`reader.themes.${theme}`) }))}
-        value={settings.theme}
-        onChange={(theme) => update({ theme })}
-      />
-    </ThemedView>
-  );
-}
-
-type BarButtonProps = {
-  label: string;
-  color: string;
-  onPress: () => void;
-  disabled?: boolean;
-  selected?: boolean;
-};
-
-function BarButton({ label, color, onPress, disabled = false, selected = false }: BarButtonProps) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ disabled, selected }}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [styles.barButton, (pressed || disabled) && styles.dimmed]}>
-      <ThemedText type={selected ? 'smallBold' : 'small'} style={{ color }}>
-        {label}
-      </ThemedText>
-    </Pressable>
-  );
 }
 
 const styles = StyleSheet.create({
@@ -202,22 +156,5 @@ const styles = StyleSheet.create({
   message: {
     alignItems: 'center',
     gap: Spacing.three,
-  },
-  panel: {
-    gap: Spacing.two,
-    padding: Spacing.three,
-  },
-  bar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.two,
-  },
-  barButton: {
-    minHeight: 48,
-    paddingHorizontal: Spacing.three,
-    justifyContent: 'center',
-  },
-  dimmed: {
-    opacity: 0.4,
   },
 });

@@ -1,16 +1,22 @@
-import { act, fireEvent } from '@testing-library/react-native';
+import { act, fireEvent, waitFor } from '@testing-library/react-native';
 import { Stack } from 'expo-router';
 import { screen } from 'expo-router/testing-library';
 import type { ComponentProps } from 'react';
 
-import { readerGetEpisodeContent, readerSaveProgress, type UserResponse } from '@/api/generated';
+import {
+  catalogueGetWork,
+  catalogueListEpisodes,
+  readerGetEpisodeContent,
+  readerSaveProgress,
+  type UserResponse,
+} from '@/api/generated';
 import ReadScreen from '@/app/read/[episodeId]';
 import { useSession } from '@/auth/session';
 import { Colors } from '@/constants/theme';
 import type NovelView from '@/reader/novel-view';
 import { ReaderSettingsProvider } from '@/reader/settings';
 import { SAVE_DELAY_MS } from '@/reader/use-progress-saver';
-import { episodeContent, fails, ok } from '@/testing/api';
+import { episode, episodeContent, fails, ok, workDetail } from '@/testing/api';
 import { openRouter } from '@/testing/router';
 
 jest.mock('@/api/generated');
@@ -23,6 +29,8 @@ jest.mock('@/reader/novel-view', () => ({
 }));
 
 const getContent = jest.mocked(readerGetEpisodeContent);
+const getWork = jest.mocked(catalogueGetWork);
+const listEpisodes = jest.mocked(catalogueListEpisodes);
 const saveProgress = jest.mocked(readerSaveProgress);
 const session = jest.mocked(useSession);
 
@@ -52,6 +60,14 @@ beforeEach(() => {
   signedIn(READER);
   getContent.mockImplementation(({ path }) =>
     ok(path.episode_id === CHAPTER_3.id ? CHAPTER_3 : CHAPTER_2),
+  );
+  getWork.mockReturnValue(ok(workDetail({ id: CHAPTER_2.work_id })));
+  listEpisodes.mockReturnValue(
+    ok([
+      episode(1),
+      episode(2, { id: CHAPTER_2.id, title: CHAPTER_2.title }),
+      episode(3, { id: CHAPTER_3.id, title: CHAPTER_3.title }),
+    ]),
   );
   saveProgress.mockImplementation(({ body }) =>
     ok({ episode_id: CHAPTER_2.id, position: body.position, saved_at: '2026-10-28T07:00:00Z' }),
@@ -215,4 +231,59 @@ test('FR-RD-03: a paid episode shows that it is locked, and no text', async () =
     await screen.findByText('This episode has to be unlocked before you can read it.'),
   ).toBeOnTheScreen();
   expect(mockNovelView).not.toHaveBeenCalled();
+});
+
+test('FR-RD-03: the chapter opens with the work and episode and closes with an end mark', async () => {
+  await openEpisode();
+
+  await waitFor(() =>
+    expect(view().heading).toEqual({
+      eyebrow: `Người Giữ Đèn Bến Sương · Episode ${CHAPTER_2.number}`,
+      title: CHAPTER_2.title,
+      end: `End of episode ${CHAPTER_2.number}`,
+    }),
+  );
+  expect(getWork).toHaveBeenCalledWith({ path: { work_id: CHAPTER_2.work_id } });
+});
+
+test('FR-RD-03: without the work, the chapter still opens, headed by its number alone', async () => {
+  getWork.mockReturnValue(fails('rate_limited'));
+  await openEpisode();
+
+  await waitFor(() => expect(view().heading?.eyebrow).toBe(`Episode ${CHAPTER_2.number}`));
+});
+
+test('FR-RD-05: the bar shows how far into the episode the reader has scrolled', async () => {
+  await openEpisode();
+  expect(screen.getByText('Episode 2 · 0%')).toBeOnTheScreen();
+
+  await act(async () => {
+    view().onProgress?.(100);
+  });
+
+  expect(screen.getByText('Episode 2 · 100%')).toBeOnTheScreen();
+});
+
+test('FR-RD-03: contents lists the episodes and opens the one chosen', async () => {
+  const router = await openEpisode();
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Contents' }));
+  expect(await screen.findByRole('button', { name: `2. ${CHAPTER_2.title}` })).toBeSelected();
+  await fireEvent.press(screen.getByRole('button', { name: `3. ${CHAPTER_3.title}` }));
+
+  await waitFor(() => expect(router.pathname()).toBe(`/read/${CHAPTER_3.id}`));
+});
+
+test('FR-RD-03: contents and text settings never show at once', async () => {
+  await openEpisode();
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Contents' }));
+  expect(await screen.findByRole('button', { name: `1. ${episode(1).title}` })).toBeOnTheScreen();
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Text' }));
+  expect(screen.getByLabelText('Font')).toBeOnTheScreen();
+  expect(screen.queryByRole('button', { name: `1. ${episode(1).title}` })).toBeNull();
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Text' }));
+  expect(screen.queryByLabelText('Font')).toBeNull();
 });

@@ -229,6 +229,7 @@ function VersionPreview({
               text: theme.text,
               background: theme.background,
               muted: theme.textSecondary,
+              ornament: theme.ornament,
             }}
             onPosition={() => {}}
           />
