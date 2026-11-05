@@ -65,13 +65,17 @@ export const Radius = {
 } as const;
 
 /**
- * The two baroque faces, loaded in the root layout under these names. Both
- * cover Vietnamese. Playfair Display is for headings; Cormorant Garamond, set
- * in capitals, for the small engraved labels. Body text stays sans: Cormorant
- * is too thin to read at paragraph sizes.
+ * One typeface for the whole app: EB Garamond, a Garamond revival that covers
+ * Vietnamese. Each weight is loaded under its own name in the root layout,
+ * because Android picks a face by name, not by fontWeight.
  */
-export const DISPLAY_FONT = 'PlayfairDisplay_700Bold';
-export const ENGRAVED_FONT = 'CormorantGaramond_700Bold';
+export const BODY_FONT = 'EBGaramond_500Medium';
+/** Small engraved capitals: kinds, statuses, field labels, buttons, tabs. */
+export const ENGRAVED_FONT = 'EBGaramond_600SemiBold';
+/** Headings and anything bold. */
+export const DISPLAY_FONT = 'EBGaramond_700Bold';
+/** The family name the reader and editor pages declare with @font-face. */
+export const TEXT_FAMILY = 'EB Garamond';
 
 export const Fonts = Platform.select({
   ios: {
@@ -85,6 +89,7 @@ export const Fonts = Platform.select({
     mono: 'ui-monospace',
     display: DISPLAY_FONT,
     engraved: ENGRAVED_FONT,
+    body: BODY_FONT,
   },
   default: {
     sans: 'normal',
@@ -93,6 +98,7 @@ export const Fonts = Platform.select({
     mono: 'monospace',
     display: DISPLAY_FONT,
     engraved: ENGRAVED_FONT,
+    body: BODY_FONT,
   },
   web: {
     sans: 'var(--font-display)',
@@ -101,6 +107,7 @@ export const Fonts = Platform.select({
     mono: 'var(--font-mono)',
     display: `${DISPLAY_FONT}, Georgia, serif`,
     engraved: `${ENGRAVED_FONT}, Georgia, serif`,
+    body: `${BODY_FONT}, Georgia, serif`,
   },
 });
 

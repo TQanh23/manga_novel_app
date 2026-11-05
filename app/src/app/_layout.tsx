@@ -1,13 +1,14 @@
 import '@/i18n';
 
-import { CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond/700Bold';
-import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display/700Bold';
+import { EBGaramond_500Medium } from '@expo-google-fonts/eb-garamond/500Medium';
+import { EBGaramond_600SemiBold } from '@expo-google-fonts/eb-garamond/600SemiBold';
+import { EBGaramond_700Bold } from '@expo-google-fonts/eb-garamond/700Bold';
 import { DarkTheme, DefaultTheme, SplashScreen, Stack, ThemeProvider } from 'expo-router';
 import { useFonts } from 'expo-font';
 import { useTranslation } from 'react-i18next';
 
 import { SessionProvider, useSession } from '@/auth/session';
-import { Colors, DISPLAY_FONT, ENGRAVED_FONT } from '@/constants/theme';
+import { BODY_FONT, Colors, DISPLAY_FONT, ENGRAVED_FONT } from '@/constants/theme';
 import { useScheme } from '@/hooks/use-theme';
 import { ReaderSettingsProvider } from '@/reader/settings';
 
@@ -48,10 +49,11 @@ function RootNavigator() {
   const { user, isLoading } = useSession();
   // Held for the fonts too, so headings never jump from a fallback face.
   // A font that fails to load is not worth blocking the app for: the
-  // fallback serif takes its place.
+  // platform's default face takes its place.
   const [fontsLoaded, fontError] = useFonts({
-    [DISPLAY_FONT]: PlayfairDisplay_700Bold,
-    [ENGRAVED_FONT]: CormorantGaramond_700Bold,
+    [BODY_FONT]: EBGaramond_500Medium,
+    [ENGRAVED_FONT]: EBGaramond_600SemiBold,
+    [DISPLAY_FONT]: EBGaramond_700Bold,
   });
 
   if (isLoading || (!fontsLoaded && !fontError)) {

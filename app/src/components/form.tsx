@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { OrnateFrame } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Radius, Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useLayout } from '@/hooks/use-layout';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -153,11 +153,12 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
   },
   input: {
+    fontFamily: Fonts.body,
     borderWidth: 1,
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
-    fontSize: 16,
+    fontSize: 17,
   },
   button: {
     minHeight: 48,
@@ -177,7 +178,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.sm,
   },
   label: {
-    fontSize: 16,
+    fontSize: 15,
   },
   natural: {
     alignSelf: 'flex-start',

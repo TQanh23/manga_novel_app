@@ -1,4 +1,4 @@
-import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
+import { Platform, StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
 
 import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -17,12 +17,26 @@ export type ThemedTextProps = TextProps & {
   themeColor?: ThemeColor;
 };
 
+const BOLD = new Set<TextStyle['fontWeight']>(['600', '700', '800', '900', 600, 700, 800, 900, 'bold']);
+
+/**
+ * Each weight of the typeface is its own font, and Android fakes a bolder face
+ * when asked for a fontWeight. So a caller's bold becomes the bold face.
+ */
+function withFace(style: TextProps['style']): TextStyle {
+  const flat = StyleSheet.flatten(style) ?? {};
+  if (!BOLD.has(flat.fontWeight) || (flat.fontFamily && flat.fontFamily !== Fonts.body)) {
+    return flat;
+  }
+  return { ...flat, fontFamily: Fonts.display, fontWeight: 'normal' };
+}
+
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
   const theme = useTheme();
 
   return (
     <Text
-      style={[
+      style={withFace([
         { color: theme[themeColor ?? 'text'] },
         type === 'default' && styles.default,
         type === 'title' && styles.title,
@@ -34,59 +48,57 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         type === 'linkPrimary' && [styles.linkPrimary, { color: theme.accent }],
         type === 'code' && styles.code,
         style,
-      ]}
+      ])}
       {...rest}
     />
   );
 }
 
+// Garamond's letters are small for their size, so it is set a point larger
+// than the sans it replaces.
 const styles = StyleSheet.create({
   small: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: 500,
+    fontFamily: Fonts.body,
+    fontSize: 15,
+    lineHeight: 21,
   },
   smallBold: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: 700,
+    fontFamily: Fonts.display,
+    fontSize: 15,
+    lineHeight: 21,
   },
   default: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: 500,
+    fontFamily: Fonts.body,
+    fontSize: 17,
+    lineHeight: 25,
   },
-  // The faces are loaded at one weight each; a fontWeight on top would make
-  // Android fake a bolder one.
   title: {
     fontFamily: Fonts.display,
-    fontSize: 40,
-    fontWeight: 'normal',
+    fontSize: 42,
     lineHeight: 52,
   },
   subtitle: {
     fontFamily: Fonts.display,
-    fontSize: 30,
-    fontWeight: 'normal',
+    fontSize: 32,
     lineHeight: 40,
   },
   /** Small capitals, as if engraved: kinds, statuses, field labels. */
   eyebrow: {
     fontFamily: Fonts.engraved,
-    fontSize: 15,
-    fontWeight: 'normal',
+    fontSize: 14,
     lineHeight: 20,
-    letterSpacing: 1.2,
+    letterSpacing: 1.4,
     textTransform: 'uppercase',
   },
   link: {
+    fontFamily: Fonts.body,
     lineHeight: 30,
-    fontSize: 14,
+    fontSize: 15,
   },
   linkPrimary: {
+    fontFamily: Fonts.display,
     lineHeight: 30,
-    fontSize: 14,
-    fontWeight: 700,
+    fontSize: 15,
   },
   code: {
     fontFamily: Fonts.mono,
@@ -94,3 +106,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+

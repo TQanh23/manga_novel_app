@@ -35,8 +35,8 @@ export default function TabsLayout() {
         tabBarLabelStyle: {
           fontFamily: ENGRAVED_FONT,
           fontWeight: 'normal',
-          fontSize: isWide ? 17 : 13,
-          // Cormorant's accents rise high; without room the bottom bar clips them.
+          fontSize: isWide ? 16 : 12,
+          // Engraved capitals with Vietnamese accents need the room; a tight bar clips them.
           lineHeight: isWide ? 22 : 18,
           letterSpacing: 1,
           textTransform: 'uppercase',
