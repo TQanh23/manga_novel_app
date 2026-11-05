@@ -109,7 +109,12 @@ chapters in Vietnamese with a glossary of fourteen characters, places and terms.
 written for this project. To see it, open http://localhost:8000/v1/search?q=nguoi+giu+den (search
 matches without diacritics).
 
-The seed creates the novel once and then leaves it alone, edits included. To get the files'
+Six shorter works sit beside it, so the reader's homepage and the browse filters have something to
+show: two chapters each, two in Vietnamese, two in English, one in Korean and one in Japanese,
+some marked completed. Their text is in [infra/seed/catalogue/](infra/seed/catalogue/), and they
+are marked `is_sample` too.
+
+The seed creates each work once and then leaves it alone, edits included. To get the files'
 current text into a database that already has it, start over with `docker compose down -v`.
 
 ## Working on the backend

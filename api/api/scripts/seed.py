@@ -1,4 +1,4 @@
-"""Create the development data: four accounts and a sample novel.
+"""Create the development data: four accounts, a sample novel and a shelf of sample works.
 
     uv run python -m api.scripts.seed
 
@@ -7,9 +7,11 @@ that already exists is left exactly as it is. The accounts share a password
 that is in the repository, so this refuses to run anywhere but a local
 environment.
 
-The novel's text and glossary live in infra/seed/sample_novel. It is published
-through the same services an author's requests go through, so its versions,
-its published pointers and its glossary are what the API would have produced.
+The novel's text and glossary live in infra/seed/sample_novel; it is the base
+of the AI eval set. Shorter works in infra/seed/catalogue give the reader's
+homepage and the browse filters something to show. All of them are published
+through the same services an author's requests go through, so their versions,
+published pointers and glossaries are what the API would have produced.
 """
 
 import asyncio
@@ -21,11 +23,11 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import repository, service
-from api.auth.models import Locale, Role
+from api.auth.models import Locale, Role, User
 from api.author import repository as author_repository
 from api.author import service as author_service
 from api.author.schemas import GlossaryEntryCreate, WorkCreate
-from api.catalogue.models import WorkType
+from api.catalogue.models import WorkStatus, WorkType
 from api.core.config import get_settings
 from api.core.db import get_engine, get_sessionmaker
 from api.core.logging import configure_logging
@@ -50,6 +52,7 @@ SEED_ACCOUNTS = (
 
 SAMPLE_NOVEL_AUTHOR = "author@example.com"
 SAMPLE_NOVEL_DIRECTORY = "sample_novel"
+CATALOGUE_DIRECTORY = "catalogue"
 
 
 @dataclass(frozen=True)
@@ -63,6 +66,7 @@ class SampleNovel:
     work: WorkCreate
     episodes: tuple[SampleEpisode, ...]
     glossary: tuple[GlossaryEntryCreate, ...]
+    status: WorkStatus = WorkStatus.ONGOING
 
 
 def _require_local() -> None:
@@ -87,7 +91,10 @@ def load_sample_novel(directory: Path) -> SampleNovel:
             SampleEpisode(title, (directory / f"{number:02d}.html").read_text(encoding="utf-8"))
             for number, title in enumerate(data["episodes"], start=1)
         ),
-        glossary=tuple(GlossaryEntryCreate.model_validate(entry) for entry in data["glossary"]),
+        glossary=tuple(
+            GlossaryEntryCreate.model_validate(entry) for entry in data.get("glossary", [])
+        ),
+        status=WorkStatus(data.get("status", WorkStatus.ONGOING)),
     )
 
 
@@ -125,6 +132,33 @@ async def seed_sample_novel(session: AsyncSession) -> bool:
         raise RuntimeError("Seed the accounts before the sample novel.")
 
     novel = load_sample_novel(get_settings().seed_dir / SAMPLE_NOVEL_DIRECTORY)
+    return await _publish_sample(session, author, novel)
+
+
+def catalogue_directories() -> list[Path]:
+    """The sample works for the catalogue, one directory each, in a stable order."""
+    root = get_settings().seed_dir / CATALOGUE_DIRECTORY
+    return sorted(path for path in root.iterdir() if (path / "novel.toml").is_file())
+
+
+async def seed_catalogue_samples(session: AsyncSession) -> int:
+    """Publish the catalogue's sample works for the seeded author. Returns how many were new.
+
+    Like the sample novel, each is marked is_sample and left alone once it exists.
+    """
+    _require_local()
+    author = await repository.get_user_by_email(session, SAMPLE_NOVEL_AUTHOR)
+    if author is None:
+        raise RuntimeError("Seed the accounts before the sample works.")
+    created = 0
+    for directory in catalogue_directories():
+        if await _publish_sample(session, author, load_sample_novel(directory)):
+            created += 1
+    return created
+
+
+async def _publish_sample(session: AsyncSession, author: User, novel: SampleNovel) -> bool:
+    """Create and publish one sample work. False if the author already has it."""
     if await author_repository.find_sample_work(session, author.id, novel.work.title) is not None:
         return False
 
@@ -159,6 +193,10 @@ async def seed_sample_novel(session: AsyncSession) -> bool:
             session, author=author, episode_id=created.episode.id, body_html=episode.body_html
         )
         await author_service.publish_episode(session, author=author, episode_id=created.episode.id)
+    if novel.status != WorkStatus.ONGOING:
+        await author_service.update_work(
+            session, author=author, work_id=state.work.id, changes={"status": novel.status}
+        )
     return True
 
 
@@ -168,6 +206,7 @@ async def _main() -> None:
         async with get_sessionmaker()() as session:
             created = await seed(session)
             novel_created = await seed_sample_novel(session)
+            samples_created = await seed_catalogue_samples(session)
     finally:
         await get_engine().dispose()
     logger.info(
@@ -175,6 +214,7 @@ async def _main() -> None:
         created=len(created),
         existing=len(SEED_ACCOUNTS) - len(created),
         sample_novel_created=novel_created,
+        catalogue_samples_created=samples_created,
     )
 
 

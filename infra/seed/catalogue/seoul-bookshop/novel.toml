@@ -1,0 +1,15 @@
+# A sample work for the catalogue, written for this project (is_sample).
+# It gives the reader's homepage and browse filters content to show.
+
+title = "서울의 마지막 서점"
+synopsis = "재개발로 사라질 골목의 작은 헌책방. 서른 살의 회사원 윤서진은 돌아가신 할아버지가 남긴 서점을 정리하러 왔다가, 책 사이에 숨겨진 편지들과 매일 같은 시간에 찾아오는 낯선 손님을 만난다."
+language = "ko"
+status = "ongoing"
+genres = ["drama", "romance"]
+tags = ["서울", "헌책방", "가족"]
+
+# One per chapter file, in order: 01.html, 02.html, ...
+episodes = [
+    "먼지 쌓인 책장",
+    "매일 오후 네 시",
+]
