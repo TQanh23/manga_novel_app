@@ -196,6 +196,25 @@
     "author": "Author",
     "admin": "Admin"
   },
+  "home": {
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "greetingGuest": "Welcome, reader",
+    "tagline": "What will you read today?",
+    "featured": "Featured",
+    "readNow": "Read now",
+    "details": "Details",
+    "continueReading": "Continue reading",
+    "popular": "Popular",
+    "newReleases": "New releases",
+    "genres": "Genres",
+    "seeAll": "See all",
+    "browseAll": "Browse the whole catalogue",
+    "rank": "Number {{rank}}"
+  },
   "catalogue": {
     "title": "Browse",
     "all": "All",

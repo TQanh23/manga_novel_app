@@ -196,6 +196,25 @@
     "author": "Tác giả",
     "admin": "Quản trị viên"
   },
+  "home": {
+    "greeting": {
+      "morning": "Chào buổi sáng, {{name}}",
+      "afternoon": "Chào buổi chiều, {{name}}",
+      "evening": "Chào buổi tối, {{name}}"
+    },
+    "greetingGuest": "Chào mừng bạn đọc",
+    "tagline": "Hôm nay bạn muốn đọc gì?",
+    "featured": "Nổi bật",
+    "readNow": "Đọc ngay",
+    "details": "Chi tiết",
+    "continueReading": "Đọc tiếp",
+    "popular": "Thịnh hành",
+    "newReleases": "Mới cập nhật",
+    "genres": "Thể loại",
+    "seeAll": "Xem tất cả",
+    "browseAll": "Khám phá toàn bộ kho truyện",
+    "rank": "Hạng {{rank}}"
+  },
   "catalogue": {
     "title": "Khám phá",
     "all": "Tất cả",

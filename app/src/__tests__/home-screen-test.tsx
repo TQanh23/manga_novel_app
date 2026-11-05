@@ -1,169 +1,179 @@
 import { fireEvent, waitFor, within } from '@testing-library/react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { screen } from 'expo-router/testing-library';
+import { Text } from 'react-native';
 
-import { catalogueListGenres, catalogueListWorks } from '@/api/generated';
+import {
+  catalogueListEpisodes,
+  catalogueListGenres,
+  catalogueListWorks,
+  readerGetLibrary,
+  type UserResponse,
+} from '@/api/generated';
 import HomeScreen from '@/app/(tabs)/index';
+import { useSession } from '@/auth/session';
 import i18n from '@/i18n';
-import { fails, GENRES, ok, page, work } from '@/testing/api';
+import { episode, fails, GENRES, library, ok, page, READER, readingEntry, work } from '@/testing/api';
 import { openRouter } from '@/testing/router';
 
 jest.mock('@/api/generated');
+jest.mock('@/auth/session', () => ({ useSession: jest.fn() }));
 
 const listWorks = jest.mocked(catalogueListWorks);
 const listGenres = jest.mocked(catalogueListGenres);
+const listEpisodes = jest.mocked(catalogueListEpisodes);
+const getLibrary = jest.mocked(readerGetLibrary);
+const session = jest.mocked(useSession);
 
-const lantern = work();
+const LANTERN = work({ id: 'lantern' });
+const BAKERY = work({ id: 'bakery', title: 'The Dragon Who Ran a Bakery', language: 'en' });
+const BOOKSHOP = work({ id: 'bookshop', title: '서울의 마지막 서점', language: 'ko' });
+const FRESH = work({ id: 'fresh', title: '月夜の旅猫', language: 'ja' });
+
+function signedIn(user: UserResponse | null) {
+  session.mockReturnValue({ user, isLoading: false } as ReturnType<typeof useSession>);
+}
+
+/** Popular and newest are the same endpoint; answer each by its sort. */
+function catalogue({ popular = [LANTERN, BAKERY, BOOKSHOP], newest = [FRESH, LANTERN] } = {}) {
+  listWorks.mockImplementation(((options?: { query?: { sort?: string } }) =>
+    ok(page(options?.query?.sort === 'popular' ? popular : newest))) as typeof catalogueListWorks);
+}
 
 beforeEach(() => {
   jest.clearAllMocks();
+  signedIn(null);
+  catalogue();
   listGenres.mockReturnValue(ok(GENRES));
-  listWorks.mockReturnValue(ok(page([lantern])));
+  listEpisodes.mockReturnValue(ok([episode(1, { id: 'lantern-1' }), episode(2)]));
+  getLibrary.mockReturnValue(ok(library()));
 });
 
 afterEach(async () => {
   await i18n.changeLanguage('en');
 });
 
-async function openHome() {
-  return openRouter({ index: HomeScreen, 'works/[workId]': () => null }, '/');
+function BrowseStub() {
+  const { genre, sort } = useLocalSearchParams<{ genre?: string; sort?: string }>();
+  return <Text>{`browse genre=${genre ?? '-'} sort=${sort ?? '-'}`}</Text>;
 }
 
-/** The query of the most recent catalogue request. */
-function lastQuery() {
-  return listWorks.mock.lastCall?.[0]?.query;
-}
-
-async function choose(group: string, option: string) {
-  const row = screen.getByLabelText(group);
-  await fireEvent.press(within(row).getByRole('radio', { name: option }));
-}
-
-test('FR-RD-01: a guest sees the catalogue, newest first', async () => {
-  await openHome();
-
-  const card = await screen.findByRole('link', { name: 'Người Giữ Đèn Bến Sương' });
-  expect(within(card).getByText('by Nguyễn Tác Giả')).toBeOnTheScreen();
-  expect(within(card).getByText('Novel · Ongoing')).toBeOnTheScreen();
-  expect(within(card).getByText('Fantasy')).toBeOnTheScreen();
-  expect(within(card).getByText('Mystery')).toBeOnTheScreen();
-  expect(within(card).getByText(/^5 episodes · Updated /)).toBeOnTheScreen();
-  expect(lastQuery()).toEqual({ sort: 'newest', limit: 20, offset: 0 });
-});
-
-test('FR-RD-01: each filter narrows the request, and they combine', async () => {
-  await openHome();
-  await screen.findByRole('link', { name: lantern.title });
-
-  await choose('Format', 'Manga');
-  await waitFor(() => expect(lastQuery()).toMatchObject({ type: 'manga' }));
-
-  await choose('Status', 'Completed');
-  await waitFor(() => expect(lastQuery()).toMatchObject({ type: 'manga', status: 'completed' }));
-
-  await choose('Genre', 'Slice of Life');
-  await waitFor(() =>
-    expect(lastQuery()).toEqual({
-      type: 'manga',
-      status: 'completed',
-      genre: 'slice-of-life',
-      sort: 'newest',
-      limit: 20,
-      offset: 0,
-    }),
+function openHome() {
+  return openRouter(
+    {
+      index: HomeScreen,
+      browse: BrowseStub,
+      library: () => null,
+      'works/[workId]': () => null,
+      'read/[episodeId]': () => null,
+    },
+    '/',
   );
+}
 
-  await choose('Sort by', 'Popular');
-  await waitFor(() => expect(lastQuery()).toMatchObject({ sort: 'popular' }));
+test('FR-RD-01: a guest sees the featured work, the popular ranking, new releases and genres', async () => {
+  await openHome();
 
-  // "All" lifts one filter and leaves the others.
-  await choose('Format', 'All');
-  await waitFor(() =>
-    expect(lastQuery()).toEqual({
-      status: 'completed',
-      genre: 'slice-of-life',
-      sort: 'popular',
-      limit: 20,
-      offset: 0,
-    }),
+  const featured = await screen.findByRole('header', { name: LANTERN.title });
+  expect(featured).toBeOnTheScreen();
+  expect(screen.getByText('Welcome, reader')).toBeOnTheScreen();
+  expect(screen.getByRole('link', { name: `Number 1: ${LANTERN.title}` })).toBeOnTheScreen();
+  expect(screen.getByRole('link', { name: `Number 2: ${BAKERY.title}` })).toBeOnTheScreen();
+  expect(screen.getByRole('link', { name: `Number 3: ${BOOKSHOP.title}` })).toBeOnTheScreen();
+  expect(screen.getByRole('link', { name: FRESH.title })).toBeOnTheScreen();
+  expect(screen.getByRole('link', { name: 'Slice of Life' })).toBeOnTheScreen();
+  expect(listWorks).toHaveBeenCalledWith({ query: { sort: 'popular', limit: 5 } });
+  expect(listWorks).toHaveBeenCalledWith({ query: { sort: 'newest', limit: 10 } });
+  // A guest has no library, so it is never asked for.
+  expect(getLibrary).not.toHaveBeenCalled();
+  expect(screen.queryByText('Continue reading')).toBeNull();
+});
+
+test('FR-RD-01: "Read now" opens the featured work at its first episode', async () => {
+  const router = await openHome();
+  await screen.findByRole('header', { name: LANTERN.title });
+  await waitFor(() => expect(listEpisodes).toHaveBeenCalledWith({ path: { work_id: 'lantern' } }));
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Read now' }));
+
+  expect(router.pathname()).toBe('/read/lantern-1');
+});
+
+test('FR-RD-01: "Details" opens the featured work', async () => {
+  const router = await openHome();
+  await screen.findByRole('header', { name: LANTERN.title });
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Details' }));
+
+  expect(router.pathname()).toBe('/works/lantern');
+});
+
+test('FR-RD-05: a signed-in reader with history continues where they stopped', async () => {
+  signedIn(READER);
+  getLibrary.mockReturnValue(
+    ok(library({ reading: [readingEntry({ work: BAKERY, episode_id: 'bakery-2', episode_number: 2 })] })),
   );
-});
-
-test('FR-RD-01: the chosen filter is the selected one', async () => {
-  await openHome();
-  await screen.findByRole('link', { name: lantern.title });
-  const format = screen.getByLabelText('Format');
-
-  expect(within(format).getByRole('radio', { name: 'All' })).toBeSelected();
-
-  await choose('Format', 'Novel');
-
-  expect(within(format).getByRole('radio', { name: 'Novel' })).toBeSelected();
-  expect(within(format).getByRole('radio', { name: 'All' })).not.toBeSelected();
-});
-
-test('FR-RD-01: genres come from the API, translated where this build knows them', async () => {
-  listGenres.mockReturnValue(ok([...GENRES, { slug: 'isekai', name: 'Isekai' }]));
-  await openHome();
-  await screen.findByRole('link', { name: lantern.title });
-  const genres = screen.getByLabelText('Genre');
-
-  expect(within(genres).getAllByRole('radio')).toHaveLength(14);
-  expect(within(genres).getByRole('radio', { name: 'Sci-Fi' })).toBeOnTheScreen();
-  // No translation for it here, so the API's own name is shown.
-  expect(within(genres).getByRole('radio', { name: 'Isekai' })).toBeOnTheScreen();
-});
-
-test('FR-RD-01: an empty catalogue says so', async () => {
-  listWorks.mockReturnValue(ok(page([])));
-  await openHome();
-
-  expect(await screen.findByText('No works match these filters.')).toBeOnTheScreen();
-});
-
-test('FR-RD-01: a failed request can be tried again', async () => {
-  listWorks.mockReturnValueOnce(fails('rate_limited'));
-  await openHome();
-
-  expect(
-    await screen.findByText('Too many attempts. Wait a moment and try again.'),
-  ).toBeOnTheScreen();
-
-  await fireEvent.press(screen.getByRole('button', { name: 'Try again' }));
-
-  expect(await screen.findByRole('link', { name: lantern.title })).toBeOnTheScreen();
-  expect(listWorks).toHaveBeenCalledTimes(2);
-});
-
-test('FR-RD-01: more works load from where the list ends', async () => {
-  const older = work({ id: 'older', title: 'The Lantern Road' });
-  listWorks.mockReturnValueOnce(ok(page([lantern], true))).mockReturnValueOnce(ok(page([older])));
-  await openHome();
-  await screen.findByRole('link', { name: lantern.title });
-
-  await fireEvent.press(screen.getByRole('button', { name: 'Load more' }));
-
-  expect(await screen.findByRole('link', { name: 'The Lantern Road' })).toBeOnTheScreen();
-  expect(screen.getByRole('link', { name: lantern.title })).toBeOnTheScreen();
-  expect(lastQuery()).toMatchObject({ offset: 1 });
-  expect(screen.queryByRole('button', { name: 'Load more' })).toBeNull();
-});
-
-test('FR-RD-02: a card opens the page of its work', async () => {
   const router = await openHome();
 
-  await fireEvent.press(await screen.findByRole('link', { name: lantern.title }));
+  const tile = await screen.findByRole('link', { name: `Continue reading: ${BAKERY.title}` });
+  expect(within(tile).getByText('Episode 2')).toBeOnTheScreen();
+  expect(screen.getByText(/^Good (morning|afternoon|evening), Reader One$/)).toBeOnTheScreen();
 
-  expect(router.pathname()).toBe(`/works/${lantern.id}`);
+  await fireEvent.press(tile);
+
+  expect(router.pathname()).toBe('/read/bakery-2');
 });
 
-test('NFR-13: the catalogue is in Vietnamese when that is the language', async () => {
+test('FR-RD-05: a signed-in reader with nothing started sees no empty shelf', async () => {
+  signedIn(READER);
+  await openHome();
+  await screen.findByRole('header', { name: LANTERN.title });
+
+  await waitFor(() => expect(getLibrary).toHaveBeenCalled());
+  expect(screen.queryByText('Continue reading')).toBeNull();
+});
+
+test('FR-RD-01: a genre tile opens the catalogue filtered to that genre', async () => {
+  const router = await openHome();
+
+  await fireEvent.press(await screen.findByRole('link', { name: 'Fantasy' }));
+
+  expect(router.pathname()).toBe('/browse');
+  expect(screen.getByText('browse genre=fantasy sort=-')).toBeOnTheScreen();
+});
+
+test('FR-RD-01: "See all" opens the catalogue sorted as the section is', async () => {
+  await openHome();
+
+  await fireEvent.press(await screen.findByRole('link', { name: 'See all: New releases' }));
+
+  expect(screen.getByText('browse genre=- sort=newest')).toBeOnTheScreen();
+});
+
+test('FR-RD-01: a section that fails offers a retry while the others show', async () => {
+  listWorks.mockImplementation(((options?: { query?: { sort?: string } }) =>
+    options?.query?.sort === 'popular'
+      ? fails('rate_limited')
+      : ok(page([FRESH]))) as typeof catalogueListWorks);
+  await openHome();
+
+  expect(await screen.findByRole('link', { name: FRESH.title })).toBeOnTheScreen();
+  expect(screen.getAllByRole('button', { name: 'Try again' }).length).toBeGreaterThan(0);
+
+  catalogue();
+  await fireEvent.press(screen.getAllByRole('button', { name: 'Try again' })[0]);
+
+  expect(await screen.findByRole('header', { name: LANTERN.title })).toBeOnTheScreen();
+});
+
+test('NFR-13: the homepage is in Vietnamese when that is the language', async () => {
   await i18n.changeLanguage('vi');
   await openHome();
 
-  const card = await screen.findByRole('link', { name: lantern.title });
-  expect(screen.getByText('Khám phá')).toBeOnTheScreen();
-  expect(within(card).getByText('Tiểu thuyết · Đang ra')).toBeOnTheScreen();
-  expect(within(card).getByText('Kỳ ảo')).toBeOnTheScreen();
-  expect(within(card).getByText(/^5 chương · Cập nhật /)).toBeOnTheScreen();
-  expect(screen.getByLabelText('Thể loại')).toBeOnTheScreen();
+  await screen.findByRole('header', { name: LANTERN.title });
+  expect(screen.getByText('Chào mừng bạn đọc')).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: 'Đọc ngay' })).toBeOnTheScreen();
+  expect(screen.getByRole('header', { name: 'Thịnh hành' })).toBeOnTheScreen();
+  expect(screen.getByRole('link', { name: `Hạng 1: ${LANTERN.title}` })).toBeOnTheScreen();
+  expect(screen.getByRole('link', { name: 'Kỳ ảo' })).toBeOnTheScreen();
 });
