@@ -17,15 +17,15 @@ export function useTheme() {
   return Colors[useScheme()];
 }
 
-/** The look of a card or a tappable row in a list. */
+/** The outer, gold rule of a card or a tappable row; `OrnateFrame` draws the rest. */
 export function useCardStyle(): ViewStyle {
   const scheme = useScheme();
   const theme = Colors[scheme];
   return {
     backgroundColor: theme.surface,
-    borderColor: theme.border,
+    borderColor: theme.ornament,
     borderWidth: 1,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.md,
     boxShadow: Shadows[scheme],
   };
 }

@@ -18,11 +18,12 @@ import { useLoad } from '@/api/hooks';
 import { useSession } from '@/auth/session';
 import { Chip } from '@/components/chip';
 import { Button, ErrorText } from '@/components/form';
+import { Flourish, OrnateFrame } from '@/components/ornaments';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useCardStyle } from '@/hooks/use-theme';
+
 import { errorMessageKey, formatDate, genreName } from '@/i18n';
 
 const SEPARATOR = ' · ';
@@ -98,16 +99,19 @@ function WorkDetails({ work, episodes, actions }: WorkDetailsProps) {
   const { t } = useTranslation();
   return (
     <View style={styles.details}>
-      <ThemedText type="smallBold" themeColor="textSecondary">
-        {[t(`workType.${work.type}`), t(`workStatus.${work.status}`)].join(SEPARATOR)}
-      </ThemedText>
-      <ThemedText type="subtitle" accessibilityRole="header">
-        {work.title}
-      </ThemedText>
-      <ThemedText themeColor="textSecondary">
-        {t('work.by', { author: work.author.display_name })}
-      </ThemedText>
-      {actions}
+      <OrnateFrame style={styles.hero}>
+        <ThemedText type="eyebrow" themeColor="textSecondary">
+          {[t(`workType.${work.type}`), t(`workStatus.${work.status}`)].join(SEPARATOR)}
+        </ThemedText>
+        <ThemedText type="subtitle" accessibilityRole="header">
+          {work.title}
+        </ThemedText>
+        <ThemedText themeColor="textSecondary">
+          {t('work.by', { author: work.author.display_name })}
+        </ThemedText>
+        <Flourish />
+        {actions}
+      </OrnateFrame>
 
       {work.genres.length > 0 ? (
         <View style={styles.chips}>
@@ -121,7 +125,7 @@ function WorkDetails({ work, episodes, actions }: WorkDetailsProps) {
 
       {work.tags.length > 0 ? (
         <View style={styles.section}>
-          <ThemedText type="small" themeColor="textSecondary">
+          <ThemedText type="eyebrow" themeColor="textSecondary">
             {t('work.tags')}
           </ThemedText>
           <View style={styles.chips}>
@@ -132,8 +136,9 @@ function WorkDetails({ work, episodes, actions }: WorkDetailsProps) {
         </View>
       ) : null}
 
+      <Flourish />
       <View style={styles.section}>
-        <ThemedText type="smallBold">
+        <ThemedText type="eyebrow">
           {[t('work.episodes'), t('catalogue.episodeCount', { count: episodes.length })].join(
             SEPARATOR,
           )}
@@ -214,7 +219,6 @@ function ReaderActions({ workId, episodes, library, signedIn }: ReaderActionsPro
 /** An episode in the list. Opens the reader. */
 function EpisodeRow({ episode }: { episode: EpisodeSummary }) {
   const { t } = useTranslation();
-  const card = useCardStyle();
   const price =
     episode.price_coins === 0 ? t('work.free') : t('work.coins', { count: episode.price_coins });
   const terms = episode.wuf_eligible ? [price, t('work.waitUntilFree')] : [price];
@@ -225,9 +229,9 @@ function EpisodeRow({ episode }: { episode: EpisodeSummary }) {
         accessibilityRole="link"
         accessibilityLabel={episode.title}
         style={({ pressed }) => pressed && styles.pressed}>
-        {/* The card's look sits on a View: under <Link asChild> a style function's result is lost on web. */}
-        <View style={[styles.episode, card]}>
-          <ThemedText type="small" themeColor="textSecondary">
+        {/* The frame sits inside: on web, <Link asChild> drops a Pressable's style function. */}
+        <OrnateFrame style={styles.episode}>
+          <ThemedText type="eyebrow" themeColor="textSecondary">
             {[
               t('work.episodeNumber', { number: episode.number }),
               formatDate(episode.publish_at),
@@ -237,7 +241,7 @@ function EpisodeRow({ episode }: { episode: EpisodeSummary }) {
           <ThemedText type="smallBold" themeColor="textSecondary">
             {terms.join(SEPARATOR)}
           </ThemedText>
-        </View>
+        </OrnateFrame>
       </Pressable>
     </Link>
   );
@@ -250,6 +254,10 @@ const styles = StyleSheet.create({
   },
   details: {
     gap: Spacing.three,
+  },
+  hero: {
+    padding: Spacing.four,
+    gap: Spacing.two,
   },
   section: {
     gap: Spacing.two,

@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { catalogueListGenres, catalogueListWorks } from '@/api/generated';
 import { PAGE_SIZE, useLoad, usePagedWorks } from '@/api/hooks';
 import { FilterBar, type Filters, NO_FILTERS } from '@/components/filter-bar';
+import { SectionTitle } from '@/components/ornaments';
 import { Page } from '@/components/page';
-import { ThemedText } from '@/components/themed-text';
 import { WorkList } from '@/components/work-list';
 import { Spacing } from '@/constants/theme';
 
@@ -36,7 +36,7 @@ export default function HomeScreen() {
         emptyMessage={t('catalogue.empty')}
         header={
           <View style={styles.header}>
-            <ThemedText type="subtitle">{t('catalogue.title')}</ThemedText>
+            <SectionTitle title={t('catalogue.title')} />
             <FilterBar filters={filters} genres={genres.data ?? []} onChange={setFilters} />
           </View>
         }

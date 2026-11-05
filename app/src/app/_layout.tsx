@@ -1,10 +1,13 @@
 import '@/i18n';
 
+import { CormorantGaramond_700Bold } from '@expo-google-fonts/cormorant-garamond/700Bold';
+import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display/700Bold';
 import { DarkTheme, DefaultTheme, SplashScreen, Stack, ThemeProvider } from 'expo-router';
+import { useFonts } from 'expo-font';
 import { useTranslation } from 'react-i18next';
 
 import { SessionProvider, useSession } from '@/auth/session';
-import { Colors } from '@/constants/theme';
+import { Colors, DISPLAY_FONT, ENGRAVED_FONT } from '@/constants/theme';
 import { useScheme } from '@/hooks/use-theme';
 import { ReaderSettingsProvider } from '@/reader/settings';
 
@@ -43,8 +46,15 @@ export default function RootLayout() {
 function RootNavigator() {
   const { t } = useTranslation();
   const { user, isLoading } = useSession();
+  // Held for the fonts too, so headings never jump from a fallback face.
+  // A font that fails to load is not worth blocking the app for: the
+  // fallback serif takes its place.
+  const [fontsLoaded, fontError] = useFonts({
+    [DISPLAY_FONT]: PlayfairDisplay_700Bold,
+    [ENGRAVED_FONT]: CormorantGaramond_700Bold,
+  });
 
-  if (isLoading) {
+  if (isLoading || (!fontsLoaded && !fontError)) {
     return null;
   }
   SplashScreen.hide();
@@ -53,7 +63,11 @@ function RootNavigator() {
   // the sign-in screens are guarded from the other side: they are for people
   // who are signed out.
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        headerTitleStyle: { fontFamily: DISPLAY_FONT, fontWeight: 'normal' },
+      }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="works/[workId]" options={{ headerShown: true, title: t('work.title') }} />
       <Stack.Screen name="read/[episodeId]" options={{ headerShown: true, title: t('reader.title') }} />

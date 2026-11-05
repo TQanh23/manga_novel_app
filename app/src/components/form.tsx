@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { OrnateFrame } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Radius, Spacing } from '@/constants/theme';
@@ -22,15 +23,15 @@ const FORM_WIDTH = 420;
 /** Inside a narrow form column, buttons span it whatever the window's width. */
 const InFormColumn = createContext(false);
 
-/** Full-height, scrollable page with its content in a centred column. */
+/** Full-height, scrollable page with its content in a framed, centred panel. */
 export function Screen({ children }: PropsWithChildren) {
   return (
     <ThemedView style={styles.screen}>
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.column}>
+          <OrnateFrame frameStyle={styles.column} style={styles.panel}>
             <InFormColumn value={true}>{children}</InFormColumn>
-          </View>
+          </OrnateFrame>
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -44,7 +45,7 @@ export function TextField({ label, hint, style, onFocus, onBlur, ...input }: Tex
   const [focused, setFocused] = useState(false);
   return (
     <View style={styles.field}>
-      <ThemedText type="smallBold">{label}</ThemedText>
+      <ThemedText type="eyebrow">{label}</ThemedText>
       <TextInput
         accessibilityLabel={label}
         placeholderTextColor={theme.textSecondary}
@@ -98,15 +99,23 @@ export function Button({ label, variant = 'primary', busy = false, disabled, ...
         // On a wide window a button is as wide as its label, not the whole page.
         isWide && !inForm && styles.natural,
         primary
-          ? { backgroundColor: theme.accent }
-          : { backgroundColor: theme.backgroundElement, borderColor: theme.border, borderWidth: 1 },
+          ? { backgroundColor: theme.accent, borderColor: theme.accent }
+          : { backgroundColor: theme.surface, borderColor: theme.ornament },
         (pressed || busy) && styles.dimmed,
       ]}
       {...rest}>
+      {/* A cartouche: a hairline drawn just inside the edge. */}
+      <View
+        pointerEvents="none"
+        style={[
+          styles.inset,
+          primary ? { borderColor: theme.onAccent, opacity: 0.35 } : { borderColor: theme.border },
+        ]}
+      />
       {busy ? (
         <ActivityIndicator color={primary ? theme.onAccent : theme.text} />
       ) : (
-        <ThemedText type="smallBold" style={{ color: primary ? theme.onAccent : theme.text }}>
+        <ThemedText type="eyebrow" style={[styles.label, { color: primary ? theme.onAccent : theme.text }]}>
           {label}
         </ThemedText>
       )}
@@ -135,6 +144,9 @@ const styles = StyleSheet.create({
   column: {
     width: '100%',
     maxWidth: FORM_WIDTH,
+  },
+  panel: {
+    padding: Spacing.four,
     gap: Spacing.three,
   },
   field: {
@@ -149,10 +161,23 @@ const styles = StyleSheet.create({
   },
   button: {
     minHeight: 48,
+    borderWidth: 1,
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.three,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  inset: {
+    position: 'absolute',
+    top: 3,
+    right: 3,
+    bottom: 3,
+    left: 3,
+    borderWidth: 1,
+    borderRadius: Radius.sm,
+  },
+  label: {
+    fontSize: 16,
   },
   natural: {
     alignSelf: 'flex-start',

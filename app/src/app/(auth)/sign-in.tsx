@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSession } from '@/auth/session';
 import { Button, ErrorText, Screen, TextField } from '@/components/form';
 import { LanguageSwitch } from '@/components/language-switch';
+import { SectionTitle } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
 import { errorMessageKey } from '@/i18n';
 
@@ -24,7 +25,7 @@ export default function SignInScreen() {
 
   return (
     <Screen>
-      <ThemedText type="subtitle">{t('auth.signInTitle')}</ThemedText>
+      <SectionTitle title={t('auth.signInTitle')} />
       <TextField
         label={t('auth.email')}
         value={email}

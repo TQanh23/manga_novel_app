@@ -4,7 +4,16 @@ import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  type?:
+    | 'default'
+    | 'title'
+    | 'small'
+    | 'smallBold'
+    | 'subtitle'
+    | 'eyebrow'
+    | 'link'
+    | 'linkPrimary'
+    | 'code';
   themeColor?: ThemeColor;
 };
 
@@ -20,6 +29,7 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
         type === 'small' && styles.small,
         type === 'smallBold' && styles.smallBold,
         type === 'subtitle' && styles.subtitle,
+        type === 'eyebrow' && styles.eyebrow,
         type === 'link' && styles.link,
         type === 'linkPrimary' && [styles.linkPrimary, { color: theme.accent }],
         type === 'code' && styles.code,
@@ -46,17 +56,28 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: 500,
   },
+  // The faces are loaded at one weight each; a fontWeight on top would make
+  // Android fake a bolder one.
   title: {
+    fontFamily: Fonts.display,
     fontSize: 40,
-    fontWeight: 800,
-    lineHeight: 46,
-    letterSpacing: -0.5,
+    fontWeight: 'normal',
+    lineHeight: 52,
   },
   subtitle: {
-    fontSize: 28,
-    lineHeight: 36,
-    fontWeight: 700,
-    letterSpacing: -0.3,
+    fontFamily: Fonts.display,
+    fontSize: 30,
+    fontWeight: 'normal',
+    lineHeight: 40,
+  },
+  /** Small capitals, as if engraved: kinds, statuses, field labels. */
+  eyebrow: {
+    fontFamily: Fonts.engraved,
+    fontSize: 15,
+    fontWeight: 'normal',
+    lineHeight: 20,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
   link: {
     lineHeight: 30,

@@ -7,10 +7,11 @@ import { errorCode } from '@/api/client';
 import { authorCreateEpisode, authorListEpisodes, type EpisodeResponse } from '@/api/generated';
 import { useLoad } from '@/api/hooks';
 import { Button, ErrorText, TextField } from '@/components/form';
+import { OrnateFrame } from '@/components/ornaments';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useCardStyle } from '@/hooks/use-theme';
+
 import { useVisit } from '@/hooks/use-visit';
 import { errorMessageKey, formatDateTime } from '@/i18n';
 
@@ -52,7 +53,6 @@ export function EpisodeList({ workId }: { workId: string }) {
 
 function EpisodeRow({ episode }: { episode: EpisodeResponse }) {
   const { t } = useTranslation();
-  const card = useCardStyle();
   const status =
     episode.status === 'scheduled' && episode.publish_at
       ? t('studio.episodeStatus.scheduled', { date: formatDateTime(episode.publish_at) })
@@ -65,16 +65,16 @@ function EpisodeRow({ episode }: { episode: EpisodeResponse }) {
         accessibilityRole="link"
         accessibilityLabel={episode.title}
         style={({ pressed }) => pressed && styles.pressed}>
-        {/* The card's look sits on a View: under <Link asChild> a style function's result is lost on web. */}
-        <View style={[styles.row, card]}>
-          <ThemedText type="small" themeColor="textSecondary">
+        {/* The frame sits inside: on web, <Link asChild> drops a Pressable's style function. */}
+        <OrnateFrame style={styles.row}>
+          <ThemedText type="eyebrow" themeColor="textSecondary">
             {t('work.episodeNumber', { number: episode.number })}
           </ThemedText>
           <ThemedText>{episode.title}</ThemedText>
           <ThemedText type="smallBold" themeColor="textSecondary">
             {state.join(SEPARATOR)}
           </ThemedText>
-        </View>
+        </OrnateFrame>
       </Pressable>
     </Link>
   );

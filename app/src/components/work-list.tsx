@@ -58,7 +58,7 @@ export function WorkList({ works, header, emptyMessage }: WorkListProps) {
       data={items}
       keyExtractor={(work) => work.id}
       renderItem={({ item }) => (
-        <View style={[styles.cell, { maxWidth: `${100 / columns}%` }]}>
+        <View style={columns > 1 ? [styles.cell, { maxWidth: `${100 / columns}%` }] : undefined}>
           <WorkCard work={item} />
         </View>
       )}
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
   columns: {
     gap: Spacing.three,
   },
-  // Cells share a row equally; the cap keeps a short last row from stretching.
+  // In a grid, cells share a row equally; the cap keeps a short last row from stretching.
   cell: {
     flexGrow: 1,
     flexShrink: 1,

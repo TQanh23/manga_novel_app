@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useSession } from '@/auth/session';
 import { Button, ErrorText, Screen } from '@/components/form';
 import { LanguageSwitch } from '@/components/language-switch';
+import { SectionTitle } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Radius, Spacing } from '@/constants/theme';
@@ -22,7 +23,7 @@ export default function AccountScreen() {
   if (!user) {
     return (
       <Screen>
-        <ThemedText type="subtitle">{t('account.guestTitle')}</ThemedText>
+        <SectionTitle title={t('account.guestTitle')} />
         <ThemedText themeColor="textSecondary">{t('account.guestHint')}</ThemedText>
         <Button label={t('auth.signIn')} onPress={() => router.push('/sign-in')} />
         <Link href="/register">
@@ -41,7 +42,7 @@ export default function AccountScreen() {
 
   return (
     <Screen>
-      <ThemedText type="subtitle">{t('account.greeting', { name: user.display_name })}</ThemedText>
+      <SectionTitle title={t('account.greeting', { name: user.display_name })} />
 
       <View style={styles.section}>
         <ThemedText type="small" themeColor="textSecondary">

@@ -26,7 +26,7 @@ export function Chip({
   const style = [
     styles.chip,
     selected
-      ? { backgroundColor: theme.backgroundSelected, borderColor: theme.accent }
+      ? { backgroundColor: theme.backgroundSelected, borderColor: theme.ornament }
       : { backgroundColor: theme.backgroundElement, borderColor: 'transparent' },
     disabled && styles.disabled,
   ];
@@ -77,7 +77,7 @@ export function ChipGroup<T extends string>({ label, options, value, onChange }:
   ));
   return (
     <View style={styles.group} accessibilityRole="radiogroup" accessibilityLabel={label}>
-      <ThemedText type="small" themeColor="textSecondary">
+      <ThemedText type="eyebrow" themeColor="textSecondary">
         {label}
       </ThemedText>
       {isWide ? (
@@ -111,7 +111,7 @@ export function ChipSet<T extends string>({
   const full = values.length >= max;
   return (
     <View style={styles.group} accessibilityLabel={label}>
-      <ThemedText type="small" themeColor="textSecondary">
+      <ThemedText type="eyebrow" themeColor="textSecondary">
         {label}
       </ThemedText>
       <View style={styles.wrap}>

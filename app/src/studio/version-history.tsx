@@ -11,10 +11,11 @@ import {
 } from '@/api/generated';
 import { useLoad } from '@/api/hooks';
 import { Button, ErrorText } from '@/components/form';
+import { OrnateFrame } from '@/components/ornaments';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useCardStyle, useTheme } from '@/hooks/use-theme';
+import { useTheme } from '@/hooks/use-theme';
 import { errorMessageKey, formatDateTime } from '@/i18n';
 import NovelView from '@/reader/novel-view';
 
@@ -139,7 +140,6 @@ function VersionRow({
   onPress: () => void;
 }) {
   const { t } = useTranslation();
-  const card = useCardStyle();
   const when = formatDateTime(version.created_at);
   const marks = badges(t, isNewest, version.is_published);
   return (
@@ -147,17 +147,15 @@ function VersionRow({
       accessibilityRole="button"
       accessibilityLabel={when}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.row,
-        card,
-        pressed && styles.pressed,
-      ]}>
-      <ThemedText>{when}</ThemedText>
-      {marks.length > 0 ? (
-        <ThemedText type="smallBold" themeColor="textSecondary">
-          {marks.join(SEPARATOR)}
-        </ThemedText>
-      ) : null}
+      style={({ pressed }) => pressed && styles.pressed}>
+      <OrnateFrame style={styles.row}>
+        <ThemedText>{when}</ThemedText>
+        {marks.length > 0 ? (
+          <ThemedText type="smallBold" themeColor="textSecondary">
+            {marks.join(SEPARATOR)}
+          </ThemedText>
+        ) : null}
+      </OrnateFrame>
     </Pressable>
   );
 }

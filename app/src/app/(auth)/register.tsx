@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSession } from '@/auth/session';
 import { Button, ErrorText, Screen, TextField } from '@/components/form';
 import { LanguageSwitch } from '@/components/language-switch';
+import { SectionTitle } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
 import { currentLocale, errorMessageKey } from '@/i18n';
 
@@ -40,7 +41,7 @@ export default function RegisterScreen() {
 
   return (
     <Screen>
-      <ThemedText type="subtitle">{t('auth.registerTitle')}</ThemedText>
+      <SectionTitle title={t('auth.registerTitle')} />
       <TextField
         label={t('auth.displayName')}
         value={displayName}

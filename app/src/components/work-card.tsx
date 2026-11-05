@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 
 import type { WorkCard as Work } from '@/api/generated';
 import { Chip } from '@/components/chip';
+import { OrnateFrame } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
-import { Radius, Spacing } from '@/constants/theme';
-import { useCardStyle, useTheme } from '@/hooks/use-theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { formatDate, genreName } from '@/i18n';
 
 const SEPARATOR = ' · ';
@@ -15,7 +16,6 @@ const SEPARATOR = ' · ';
 export function WorkCard({ work }: { work: Work }) {
   const { t } = useTranslation();
   const theme = useTheme();
-  const card = useCardStyle();
 
   return (
     <Link href={{ pathname: '/works/[workId]', params: { workId: work.id } }} asChild>
@@ -23,10 +23,10 @@ export function WorkCard({ work }: { work: Work }) {
         accessibilityRole="link"
         accessibilityLabel={work.title}
         style={styles.fill}>
-        {/* The card's look sits on a View: on web, <Link asChild> drops a Pressable's style function. */}
-        <View style={[styles.card, card]}>
+        {/* The frame sits inside: on web, <Link asChild> drops a Pressable's style function. */}
+        <OrnateFrame style={styles.card} frameStyle={styles.fill}>
           <View style={[styles.kind, { backgroundColor: theme.highlight }]}>
-            <ThemedText type="smallBold" themeColor="textSecondary">
+            <ThemedText type="eyebrow" themeColor="textSecondary">
               {[t(`workType.${work.type}`), t(`workStatus.${work.status}`)].join(SEPARATOR)}
             </ThemedText>
           </View>
@@ -47,18 +47,18 @@ export function WorkCard({ work }: { work: Work }) {
               t('catalogue.updated', { date: formatDate(work.last_published_at) }),
             ].join(SEPARATOR)}
           </ThemedText>
-        </View>
+        </OrnateFrame>
       </Pressable>
     </Link>
   );
 }
 
 const styles = StyleSheet.create({
+  // Grow to fill a grid cell, but never below the content's height.
   fill: {
-    flex: 1,
+    flexGrow: 1,
   },
   card: {
-    flex: 1,
     padding: Spacing.three,
     gap: Spacing.one,
   },
@@ -73,9 +73,10 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   title: {
-    fontSize: 19,
-    lineHeight: 26,
-    fontWeight: 800,
+    fontFamily: Fonts.display,
+    fontSize: 21,
+    lineHeight: 30,
+    fontWeight: 'normal',
   },
   genres: {
     flexDirection: 'row',

@@ -7,7 +7,8 @@ import { Platform } from 'react-native';
  * #FFDDDD blush, #FFCED8 rose, #FFE8C4 peach) are surfaces; a deep rose is the
  * one accent, dark enough for white text. Dark mode keeps the warmth with a
  * near-black brown base and uses the pastels for the accent and the text.
- * Every text colour here reaches 4.5:1 against every surface it is used on.
+ * Every text colour here reaches 4.5:1 against every surface it is used on,
+ * and the gold ornament 3:1 (the bar for graphics).
  */
 export const Colors = {
   light: {
@@ -27,6 +28,8 @@ export const Colors = {
     accent: '#A3304A',
     onAccent: '#FFFFFF',
     danger: '#B42318',
+    /** Antique gold, for ornaments and rules only, never for text. */
+    ornament: '#8E6A24',
   },
   dark: {
     text: '#FFF4DE',
@@ -40,6 +43,7 @@ export const Colors = {
     accent: '#FFCED8',
     onAccent: '#3B1820',
     danger: '#FF9C8F',
+    ornament: '#D4AF6A',
   },
 } as const;
 
@@ -52,12 +56,22 @@ export const Shadows = {
   dark: 'none',
 } as const;
 
+/** Baroque frames are crisp, not bubbly; pills stay for chips, which read as cartouches. */
 export const Radius = {
-  sm: 10,
-  md: 14,
-  lg: 20,
+  sm: 4,
+  md: 6,
+  lg: 8,
   pill: 999,
 } as const;
+
+/**
+ * The two baroque faces, loaded in the root layout under these names. Both
+ * cover Vietnamese. Playfair Display is for headings; Cormorant Garamond, set
+ * in capitals, for the small engraved labels. Body text stays sans: Cormorant
+ * is too thin to read at paragraph sizes.
+ */
+export const DISPLAY_FONT = 'PlayfairDisplay_700Bold';
+export const ENGRAVED_FONT = 'CormorantGaramond_700Bold';
 
 export const Fonts = Platform.select({
   ios: {
@@ -69,18 +83,24 @@ export const Fonts = Platform.select({
     rounded: 'ui-rounded',
     /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
+    display: DISPLAY_FONT,
+    engraved: ENGRAVED_FONT,
   },
   default: {
     sans: 'normal',
     serif: 'serif',
     rounded: 'normal',
     mono: 'monospace',
+    display: DISPLAY_FONT,
+    engraved: ENGRAVED_FONT,
   },
   web: {
     sans: 'var(--font-display)',
     serif: 'var(--font-serif)',
     rounded: 'var(--font-rounded)',
     mono: 'var(--font-mono)',
+    display: `${DISPLAY_FONT}, Georgia, serif`,
+    engraved: `${ENGRAVED_FONT}, Georgia, serif`,
   },
 });
 
