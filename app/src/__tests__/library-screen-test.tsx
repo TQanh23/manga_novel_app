@@ -1,9 +1,10 @@
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, within } from '@testing-library/react-native';
 import { screen } from 'expo-router/testing-library';
 
 import { readerGetLibrary, type UserResponse } from '@/api/generated';
 import LibraryScreen from '@/app/(tabs)/library';
 import { useSession } from '@/auth/session';
+import i18n from '@/i18n';
 import { fails, library, ok, READER, readingEntry, work } from '@/testing/api';
 import { openRouter } from '@/testing/router';
 
@@ -35,6 +36,7 @@ function openLibrary() {
       'read/[episodeId]': () => null,
       'works/[workId]': () => null,
       'sign-in': () => null,
+      browse: () => null,
     },
     '/library',
   );
@@ -92,4 +94,39 @@ test('a guest is asked to sign in and nothing is fetched', async () => {
 
   expect(getLibrary).not.toHaveBeenCalled();
   expect(router.pathname()).toBe('/sign-in');
+});
+
+test('FR-RD-05: the library sums itself up and shows how far into each work the reader is', async () => {
+  await openLibrary();
+
+  expect(await screen.findByText('1 in progress · 1 favourite')).toBeOnTheScreen();
+  const card = screen.getByRole('link', { name: LANTERN.title });
+  expect(within(card).getByText('Episode 2 of 5')).toBeOnTheScreen();
+  expect(within(card).getByText(/^Read /)).toBeOnTheScreen();
+});
+
+test('FR-RD-05: a favourite shows its author', async () => {
+  await openLibrary();
+
+  const tile = await screen.findByRole('link', { name: SWORD.title });
+  expect(within(tile).getByText('by Nguyễn Tác Giả')).toBeOnTheScreen();
+});
+
+test('FR-RD-05: an empty shelf leads to the catalogue', async () => {
+  getLibrary.mockReturnValue(ok(library()));
+  const router = await openLibrary();
+
+  await screen.findByText('Stories you start reading show up here.');
+  await fireEvent.press(screen.getAllByRole('button', { name: 'Browse the whole catalogue' })[0]);
+
+  expect(router.pathname()).toBe('/browse');
+});
+
+test('NFR-13: the library is in Vietnamese when that is the language', async () => {
+  await i18n.changeLanguage('vi');
+  await openLibrary();
+
+  expect(await screen.findByText('1 truyện đang đọc · 1 truyện yêu thích')).toBeOnTheScreen();
+  expect(screen.getByText('Chương 2 / 5')).toBeOnTheScreen();
+  await i18n.changeLanguage('en');
 });

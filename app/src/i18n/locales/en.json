@@ -23,7 +23,11 @@
     "emptyReading": "Stories you start reading show up here.",
     "emptyFavourites": "Works you add to your favourites show up here.",
     "readOn": "Read {{date}}",
-    "guestHint": "Sign in to keep your place in a story and build your library."
+    "guestHint": "Sign in to keep your place in a story and build your library.",
+    "inProgress_one": "{{count}} in progress",
+    "inProgress_other": "{{count}} in progress",
+    "favouriteCount_one": "{{count}} favourite",
+    "favouriteCount_other": "{{count}} favourites"
   },
   "studio": {
     "title": "Studio",
