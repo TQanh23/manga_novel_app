@@ -84,6 +84,8 @@ type ButtonProps = Omit<PressableProps, 'children'> & {
   busy?: boolean;
   /** A glyph before the label; decoration, as the label names the button. */
   icon?: ComponentProps<typeof Ionicons>['name'];
+  /** Share a row equally with the buttons beside it, whatever the window's width. */
+  fill?: boolean;
 };
 
 export function Button({
@@ -91,6 +93,7 @@ export function Button({
   variant = 'primary',
   busy = false,
   icon,
+  fill = false,
   disabled,
   ...rest
 }: ButtonProps) {
@@ -107,7 +110,8 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         // On a wide window a button is as wide as its label, not the whole page.
-        isWide && !inForm && styles.natural,
+        isWide && !inForm && !fill && styles.natural,
+        fill && styles.fill,
         primary
           ? { backgroundColor: theme.accent, borderColor: theme.accent }
           : { backgroundColor: theme.surface, borderColor: theme.ornament },
@@ -135,7 +139,10 @@ export function Button({
               importantForAccessibility="no"
             />
           ) : null}
-          <ThemedText type="eyebrow" style={[styles.label, { color: primary ? theme.onAccent : theme.text }]}>
+          <ThemedText
+            type="eyebrow"
+            numberOfLines={2}
+            style={[styles.label, { color: primary ? theme.onAccent : theme.text }]}>
             {label}
           </ThemedText>
         </View>
@@ -200,6 +207,12 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
+    textAlign: 'center',
+    flexShrink: 1,
+  },
+  fill: {
+    flex: 1,
+    paddingHorizontal: Spacing.two,
   },
   labelRow: {
     flexDirection: 'row',

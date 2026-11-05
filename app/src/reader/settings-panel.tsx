@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ChipGroup } from '@/components/chip';
 import { OrnateFrame } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
-import { Fonts, Spacing } from '@/constants/theme';
+import { Fonts, MaxContentWidth, Spacing } from '@/constants/theme';
 import { FONT_SIZES, READER_FONTS, READER_THEMES, useReaderSettings } from '@/reader/settings';
 import { useTheme } from '@/hooks/use-theme';
 
@@ -48,8 +48,10 @@ export function SettingsPanel() {
 }
 
 const styles = StyleSheet.create({
+  // Centred in the text's column, now that the reader spans the window.
   sheet: {
-    margin: Spacing.two,
+    width: '100%',
+    maxWidth: MaxContentWidth,
   },
   frame: {
     padding: Spacing.three,

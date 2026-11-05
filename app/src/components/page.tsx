@@ -7,13 +7,18 @@ import { MaxContentWidth, MaxGridWidth } from '@/constants/theme';
 
 /**
  * Full-height page whose content sits in a centred column on wide screens.
- * `wide` gives a grid of works room for several columns.
+ * `wide` gives a grid of works room for several columns; `full` drops the
+ * column, for a screen that lays out its own width (the reader).
  */
-export function Page({ children, wide = false }: PropsWithChildren<{ wide?: boolean }>) {
+export function Page({
+  children,
+  wide = false,
+  full = false,
+}: PropsWithChildren<{ wide?: boolean; full?: boolean }>) {
   return (
     <ThemedView style={styles.fill}>
       <SafeAreaView style={styles.fill} edges={['top', 'left', 'right']}>
-        <View style={[styles.column, wide && styles.wide]}>{children}</View>
+        <View style={[styles.column, wide && styles.wide, full && styles.full]}>{children}</View>
       </SafeAreaView>
     </ThemedView>
   );
@@ -31,5 +36,8 @@ const styles = StyleSheet.create({
   },
   wide: {
     maxWidth: MaxGridWidth,
+  },
+  full: {
+    maxWidth: '100%',
   },
 });
