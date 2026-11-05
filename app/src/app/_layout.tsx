@@ -1,10 +1,15 @@
 import '@/i18n';
 
+import { EBGaramond_500Medium } from '@expo-google-fonts/eb-garamond/500Medium';
+import { EBGaramond_600SemiBold } from '@expo-google-fonts/eb-garamond/600SemiBold';
+import { EBGaramond_700Bold } from '@expo-google-fonts/eb-garamond/700Bold';
 import { DarkTheme, DefaultTheme, SplashScreen, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { useFonts } from 'expo-font';
 import { useTranslation } from 'react-i18next';
 
 import { SessionProvider, useSession } from '@/auth/session';
+import { BODY_FONT, Colors, DISPLAY_FONT, ENGRAVED_FONT } from '@/constants/theme';
+import { useScheme } from '@/hooks/use-theme';
 import { ReaderSettingsProvider } from '@/reader/settings';
 
 // Held until the silent sign-in has finished, so a signed-in user never sees
@@ -12,9 +17,24 @@ import { ReaderSettingsProvider } from '@/reader/settings';
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const scheme = useScheme();
+  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const colors = Colors[scheme];
+  // Headers, the stack's background and the tab bar's defaults follow the palette.
+  const navigationTheme = {
+    ...base,
+    colors: {
+      ...base.colors,
+      primary: colors.accent,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.border,
+      notification: colors.accent,
+    },
+  };
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={navigationTheme}>
       <SessionProvider>
         <ReaderSettingsProvider>
           <RootNavigator />
@@ -27,8 +47,16 @@ export default function RootLayout() {
 function RootNavigator() {
   const { t } = useTranslation();
   const { user, isLoading } = useSession();
+  // Held for the fonts too, so headings never jump from a fallback face.
+  // A font that fails to load is not worth blocking the app for: the
+  // platform's default face takes its place.
+  const [fontsLoaded, fontError] = useFonts({
+    [BODY_FONT]: EBGaramond_500Medium,
+    [ENGRAVED_FONT]: EBGaramond_600SemiBold,
+    [DISPLAY_FONT]: EBGaramond_700Bold,
+  });
 
-  if (isLoading) {
+  if (isLoading || (!fontsLoaded && !fontError)) {
     return null;
   }
   SplashScreen.hide();
@@ -37,7 +65,11 @@ function RootNavigator() {
   // the sign-in screens are guarded from the other side: they are for people
   // who are signed out.
   return (
-    <Stack screenOptions={{ headerShown: false }}>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        headerTitleStyle: { fontFamily: DISPLAY_FONT, fontWeight: 'normal' },
+      }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="works/[workId]" options={{ headerShown: true, title: t('work.title') }} />
       <Stack.Screen name="read/[episodeId]" options={{ headerShown: true, title: t('reader.title') }} />

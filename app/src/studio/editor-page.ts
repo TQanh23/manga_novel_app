@@ -243,6 +243,7 @@ export function editorPage({
   labels,
   placeholder,
   label,
+  fontCss = '',
 }: {
   html: string;
   appearance: EditorAppearance;
@@ -250,6 +251,8 @@ export function editorPage({
   placeholder: string;
   /** What the text area is called for screen readers. */
   label: string;
+  /** @font-face rules for the app's typeface, with the fonts as data URIs. */
+  fontCss?: string;
 }): string {
   // "<" escaped so no text can close the data element early.
   const data = JSON.stringify({ html }).replace(/</g, '\\u003c');
@@ -262,10 +265,11 @@ export function editorPage({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; font-src data:">
 <style>
+  ${fontCss}
   html, body { margin: 0; background: ${appearance.background}; color: ${appearance.text}; }
-  body { font-family: ${FONT_STACKS.sans}; font-size: 17px; line-height: 1.7; }
+  body { font-family: ${FONT_STACKS.serif}; font-size: 18px; line-height: 1.7; }
   #toolbar { position: sticky; top: 0; z-index: 1; display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 12px; background: ${appearance.toolbar}; }
   #toolbar button { min-width: 40px; min-height: 40px; border: none; border-radius: 8px; background: transparent; color: ${appearance.text}; font: inherit; font-size: 15px; }
   #toolbar button:active { background: ${appearance.background}; }

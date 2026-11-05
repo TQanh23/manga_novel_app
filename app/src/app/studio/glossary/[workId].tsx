@@ -14,11 +14,12 @@ import {
 } from '@/api/generated';
 import { useLoad } from '@/api/hooks';
 import { Button } from '@/components/form';
+import { OrnateFrame } from '@/components/ornaments';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+
 import {
   GLOSSARY_KINDS,
   type GlossaryEntryFields,
@@ -149,27 +150,24 @@ function Entries({
 
 function EntryRow({ entry, onPress }: { entry: GlossaryEntryResponse; onPress: () => void }) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const facts = Object.keys(entry.attributes).length;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={entry.name}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.row,
-        { backgroundColor: theme.backgroundElement },
-        pressed && styles.pressed,
-      ]}>
-      <ThemedText style={styles.name}>{entry.name}</ThemedText>
-      {entry.aliases.length > 0 ? (
-        <ThemedText type="small">{entry.aliases.join(', ')}</ThemedText>
-      ) : null}
-      {facts > 0 ? (
-        <ThemedText type="small" themeColor="textSecondary">
-          {t('studio.glossary.facts', { count: facts })}
-        </ThemedText>
-      ) : null}
+      style={({ pressed }) => pressed && styles.pressed}>
+      <OrnateFrame style={styles.row}>
+        <ThemedText style={styles.name}>{entry.name}</ThemedText>
+        {entry.aliases.length > 0 ? (
+          <ThemedText type="small">{entry.aliases.join(', ')}</ThemedText>
+        ) : null}
+        {facts > 0 ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            {t('studio.glossary.facts', { count: facts })}
+          </ThemedText>
+        ) : null}
+      </OrnateFrame>
     </Pressable>
   );
 }
@@ -186,7 +184,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   row: {
-    borderRadius: Spacing.two,
     padding: Spacing.three,
     gap: Spacing.half,
   },

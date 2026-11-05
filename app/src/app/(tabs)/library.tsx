@@ -11,12 +11,13 @@ import {
 import { useLoad } from '@/api/hooks';
 import { useSession } from '@/auth/session';
 import { Button, Screen } from '@/components/form';
+import { OrnateFrame, SectionTitle } from '@/components/ornaments';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { WorkCard } from '@/components/work-card';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+
 import { useVisit } from '@/hooks/use-visit';
 import { formatDate } from '@/i18n';
 
@@ -31,7 +32,7 @@ export default function LibraryScreen() {
   if (!user) {
     return (
       <Screen>
-        <ThemedText type="subtitle">{t('library.title')}</ThemedText>
+        <SectionTitle title={t('library.title')} />
         <ThemedText themeColor="textSecondary">{t('library.guestHint')}</ThemedText>
         <Button label={t('auth.signIn')} onPress={() => router.push('/sign-in')} />
       </Screen>
@@ -60,7 +61,7 @@ function SignedInLibrary({ user }: { user: UserResponse }) {
   return (
     <Page>
       <ScrollView contentContainerStyle={styles.content}>
-        <ThemedText type="subtitle">{t('library.title')}</ThemedText>
+        <SectionTitle title={t('library.title')} />
         {body()}
       </ScrollView>
     </Page>
@@ -98,26 +99,24 @@ function Shelves({ library }: { library: LibraryResponse }) {
 /** A work the reader is in. Opens the episode they read last, where they stopped. */
 function ReadingRow({ entry }: { entry: ReadingEntryResponse }) {
   const { t } = useTranslation();
-  const theme = useTheme();
   return (
     <Link href={{ pathname: '/read/[episodeId]', params: { episodeId: entry.episode_id } }} asChild>
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={entry.work.title}
-        style={({ pressed }) => [
-          styles.row,
-          { backgroundColor: theme.backgroundElement },
-          pressed && styles.pressed,
-        ]}>
-        <ThemedText style={styles.title}>{entry.work.title}</ThemedText>
-        <ThemedText type="small">
-          {[t('work.episodeNumber', { number: entry.episode_number }), entry.episode_title].join(
-            SEPARATOR,
-          )}
-        </ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {t('library.readOn', { date: formatDate(entry.read_at) })}
-        </ThemedText>
+        style={({ pressed }) => pressed && styles.pressed}>
+        {/* The frame sits inside: on web, <Link asChild> drops a Pressable's style function. */}
+        <OrnateFrame style={styles.row}>
+          <ThemedText style={styles.title}>{entry.work.title}</ThemedText>
+          <ThemedText type="small">
+            {[t('work.episodeNumber', { number: entry.episode_number }), entry.episode_title].join(
+              SEPARATOR,
+            )}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {t('library.readOn', { date: formatDate(entry.read_at) })}
+          </ThemedText>
+        </OrnateFrame>
       </Pressable>
     </Link>
   );
@@ -133,7 +132,6 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   row: {
-    borderRadius: Spacing.two,
     padding: Spacing.three,
     gap: Spacing.half,
   },

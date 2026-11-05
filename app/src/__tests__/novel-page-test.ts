@@ -62,9 +62,17 @@ test('a paragraph cannot break out of the data it is carried in', () => {
 test('the page allows no network access and no scripts but its own', () => {
   const html = novelPage({ paragraphs: [], position: 0, appearance: APPEARANCE });
 
+  // Fonts only as data the page carries, never fetched.
   expect(html).toContain(
-    `content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'"`,
+    `content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; font-src data:"`,
   );
+});
+
+test('the page carries the font rules it is given', () => {
+  const fontCss = '@font-face { font-family: "EB Garamond"; src: url("data:font/ttf;base64,AAAA"); }';
+  const html = novelPage({ paragraphs: [], position: 0, appearance: APPEARANCE, fontCss });
+
+  expect(html).toContain(fontCss);
 });
 
 test('the reader changes how the page looks without reloading it', () => {

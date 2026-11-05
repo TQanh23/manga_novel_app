@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 import type { PublishTimePickerProps } from './publish-time-picker';
@@ -38,13 +38,13 @@ export default function PublishTimePicker({ label, value, onChange }: PublishTim
           }
         }}
         style={{
-          borderRadius: Spacing.two,
-          border: 'none',
+          borderRadius: Radius.md,
+          border: `1px solid ${theme.border}`,
           padding: Spacing.three,
           fontSize: 16,
-          fontFamily: 'inherit',
+          fontFamily: Fonts.body,
           color: theme.text,
-          backgroundColor: theme.backgroundElement,
+          backgroundColor: theme.surface,
         }}
       />
     </View>

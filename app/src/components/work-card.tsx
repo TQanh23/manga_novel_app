@@ -4,8 +4,9 @@ import { useTranslation } from 'react-i18next';
 
 import type { WorkCard as Work } from '@/api/generated';
 import { Chip } from '@/components/chip';
+import { OrnateFrame } from '@/components/ornaments';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Fonts, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDate, genreName } from '@/i18n';
 
@@ -21,48 +22,61 @@ export function WorkCard({ work }: { work: Work }) {
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={work.title}
-        style={({ pressed }) => [
-          styles.card,
-          { backgroundColor: theme.backgroundElement },
-          pressed && styles.pressed,
-        ]}>
-        <ThemedText type="smallBold" themeColor="textSecondary">
-          {[t(`workType.${work.type}`), t(`workStatus.${work.status}`)].join(SEPARATOR)}
-        </ThemedText>
-        <ThemedText style={styles.title}>{work.title}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          {t('work.by', { author: work.author.display_name })}
-        </ThemedText>
-        {work.genres.length > 0 ? (
-          <View style={styles.genres}>
-            {work.genres.map((slug) => (
-              <Chip key={slug} label={genreName(slug)} />
-            ))}
+        style={styles.fill}>
+        {/* The frame sits inside: on web, <Link asChild> drops a Pressable's style function. */}
+        <OrnateFrame style={styles.card} frameStyle={styles.fill}>
+          <View style={[styles.kind, { backgroundColor: theme.highlight }]}>
+            <ThemedText type="eyebrow" themeColor="textSecondary">
+              {[t(`workType.${work.type}`), t(`workStatus.${work.status}`)].join(SEPARATOR)}
+            </ThemedText>
           </View>
-        ) : null}
-        <ThemedText type="small" themeColor="textSecondary">
-          {[
-            t('catalogue.episodeCount', { count: work.episode_count }),
-            t('catalogue.updated', { date: formatDate(work.last_published_at) }),
-          ].join(SEPARATOR)}
-        </ThemedText>
+          <ThemedText style={styles.title}>{work.title}</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {t('work.by', { author: work.author.display_name })}
+          </ThemedText>
+          {work.genres.length > 0 ? (
+            <View style={styles.genres}>
+              {work.genres.map((slug) => (
+                <Chip key={slug} label={genreName(slug)} />
+              ))}
+            </View>
+          ) : null}
+          <ThemedText type="small" themeColor="textSecondary">
+            {[
+              t('catalogue.episodeCount', { count: work.episode_count }),
+              t('catalogue.updated', { date: formatDate(work.last_published_at) }),
+            ].join(SEPARATOR)}
+          </ThemedText>
+        </OrnateFrame>
       </Pressable>
     </Link>
   );
 }
 
 const styles = StyleSheet.create({
+  // Grow to fill a grid cell, but never below the content's height.
+  fill: {
+    flexGrow: 1,
+  },
   card: {
-    borderRadius: Spacing.three,
     padding: Spacing.three,
     gap: Spacing.one,
+  },
+  kind: {
+    alignSelf: 'flex-start',
+    borderRadius: Radius.pill,
+    paddingHorizontal: Spacing.two + Spacing.one,
+    paddingVertical: Spacing.half,
+    marginBottom: Spacing.one,
   },
   pressed: {
     opacity: 0.7,
   },
   title: {
-    fontSize: 18,
-    fontWeight: 700,
+    fontFamily: Fonts.display,
+    fontSize: 21,
+    lineHeight: 30,
+    fontWeight: 'normal',
   },
   genres: {
     flexDirection: 'row',

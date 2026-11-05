@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { catalogueSearchWorks } from '@/api/generated';
 import { PAGE_SIZE, usePagedWorks } from '@/api/hooks';
 import { TextField } from '@/components/form';
+import { SectionTitle } from '@/components/ornaments';
 import { Page } from '@/components/page';
-import { ThemedText } from '@/components/themed-text';
 import { WorkList } from '@/components/work-list';
 import { Spacing } from '@/constants/theme';
 import { useDebounced } from '@/hooks/use-debounced';
@@ -25,13 +25,13 @@ export default function SearchScreen() {
   );
 
   return (
-    <Page>
+    <Page wide>
       <WorkList
         works={works}
         emptyMessage={query ? t('search.empty', { query }) : t('search.hint')}
         header={
           <View style={styles.header}>
-            <ThemedText type="subtitle">{t('search.title')}</ThemedText>
+            <SectionTitle title={t('search.title')} />
             <TextField
               label={t('search.title')}
               placeholder={t('search.placeholder')}

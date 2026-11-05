@@ -7,6 +7,7 @@ import { Button, ErrorText } from '@/components/form';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { WorkCard } from '@/components/work-card';
 import { Spacing } from '@/constants/theme';
+import { useLayout } from '@/hooks/use-layout';
 import { errorMessageKey } from '@/i18n';
 
 type WorkListProps = {
@@ -21,6 +22,7 @@ type WorkListProps = {
 export function WorkList({ works, header, emptyMessage }: WorkListProps) {
   const { t } = useTranslation();
   const { items, error, isLoading, isLoadingMore, hasMore, loadMore, reload } = works;
+  const { columns } = useLayout();
 
   const body = () => {
     if (isLoading) {
@@ -49,9 +51,17 @@ export function WorkList({ works, header, emptyMessage }: WorkListProps) {
 
   return (
     <FlatList
+      // A FlatList cannot change its number of columns in place.
+      key={columns}
+      numColumns={columns}
+      columnWrapperStyle={columns > 1 ? styles.columns : undefined}
       data={items}
       keyExtractor={(work) => work.id}
-      renderItem={({ item }) => <WorkCard work={item} />}
+      renderItem={({ item }) => (
+        <View style={columns > 1 ? [styles.cell, { maxWidth: `${100 / columns}%` }] : undefined}>
+          <WorkCard work={item} />
+        </View>
+      )}
       ListHeaderComponent={header}
       ListEmptyComponent={body}
       ListFooterComponent={footer}
@@ -74,6 +84,15 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.three,
     paddingBottom: Spacing.five,
+  },
+  columns: {
+    gap: Spacing.three,
+  },
+  // In a grid, cells share a row equally; the cap keeps a short last row from stretching.
+  cell: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
   },
   separator: {
     height: Spacing.three,

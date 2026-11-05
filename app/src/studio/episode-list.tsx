@@ -7,10 +7,11 @@ import { errorCode } from '@/api/client';
 import { authorCreateEpisode, authorListEpisodes, type EpisodeResponse } from '@/api/generated';
 import { useLoad } from '@/api/hooks';
 import { Button, ErrorText, TextField } from '@/components/form';
+import { OrnateFrame } from '@/components/ornaments';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
+
 import { useVisit } from '@/hooks/use-visit';
 import { errorMessageKey, formatDateTime } from '@/i18n';
 
@@ -52,7 +53,6 @@ export function EpisodeList({ workId }: { workId: string }) {
 
 function EpisodeRow({ episode }: { episode: EpisodeResponse }) {
   const { t } = useTranslation();
-  const theme = useTheme();
   const status =
     episode.status === 'scheduled' && episode.publish_at
       ? t('studio.episodeStatus.scheduled', { date: formatDateTime(episode.publish_at) })
@@ -64,18 +64,17 @@ function EpisodeRow({ episode }: { episode: EpisodeResponse }) {
       <Pressable
         accessibilityRole="link"
         accessibilityLabel={episode.title}
-        style={({ pressed }) => [
-          styles.row,
-          { backgroundColor: theme.backgroundElement },
-          pressed && styles.pressed,
-        ]}>
-        <ThemedText type="small" themeColor="textSecondary">
-          {t('work.episodeNumber', { number: episode.number })}
-        </ThemedText>
-        <ThemedText>{episode.title}</ThemedText>
-        <ThemedText type="smallBold" themeColor="textSecondary">
-          {state.join(SEPARATOR)}
-        </ThemedText>
+        style={({ pressed }) => pressed && styles.pressed}>
+        {/* The frame sits inside: on web, <Link asChild> drops a Pressable's style function. */}
+        <OrnateFrame style={styles.row}>
+          <ThemedText type="eyebrow" themeColor="textSecondary">
+            {t('work.episodeNumber', { number: episode.number })}
+          </ThemedText>
+          <ThemedText>{episode.title}</ThemedText>
+          <ThemedText type="smallBold" themeColor="textSecondary">
+            {state.join(SEPARATOR)}
+          </ThemedText>
+        </OrnateFrame>
       </Pressable>
     </Link>
   );
@@ -130,7 +129,6 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   row: {
-    borderRadius: Spacing.two,
     padding: Spacing.three,
     gap: Spacing.half,
   },

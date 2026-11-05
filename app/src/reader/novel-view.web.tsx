@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 
 import { FONT_STACKS, type NovelViewProps, TOP_GAP } from './novel-page';
 import { sanitizeBlock } from './sanitize';
+import { useTextFontCss } from './text-font';
 
 export type { NovelAppearance } from './novel-page';
 
@@ -14,6 +15,8 @@ export default function NovelView({ paragraphs, initialPosition, appearance, onP
   const container = useRef<HTMLDivElement>(null);
   const top = useRef(initialPosition);
   const blocks = useMemo(() => paragraphs.map(sanitizeBlock), [paragraphs]);
+  // The app's typeface for the serif setting; until it loads, the fallback serif.
+  const fontCss = useTextFontCss() ?? '';
 
   // Open at the saved paragraph, and keep the same one at the top when the
   // text is laid out again in another font or size.
@@ -60,6 +63,7 @@ export default function NovelView({ paragraphs, initialPosition, appearance, onP
         lineHeight: 1.7,
       }}>
       <style>{`
+        ${fontCss}
         .novel blockquote { margin: 1em 0; padding-left: 1em; border-left: 3px solid ${appearance.muted}; }
         .novel hr { border: none; border-top: 1px solid ${appearance.muted}; margin: 2em 0; }
         .novel h2, .novel h3 { line-height: 1.3; }

@@ -1,3 +1,5 @@
+import { TEXT_FAMILY } from '@/constants/theme';
+
 import { PAGE_CLEANER } from './sanitize';
 
 export type NovelAppearance = {
@@ -19,10 +21,12 @@ export type NovelViewProps = {
   onPosition: (position: number) => void;
 };
 
-// Stacks that cover Vietnamese, Korean and Japanese on Android and on desktop browsers.
+// Stacks that cover Vietnamese, Korean and Japanese on Android and on desktop
+// browsers. Serif is the app's own typeface (Latin and Vietnamese); Korean and
+// Japanese fall through to Noto Serif CJK.
 export const FONT_STACKS = {
   sans: 'system-ui, -apple-system, Roboto, "Noto Sans", "Noto Sans CJK KR", "Noto Sans CJK JP", sans-serif',
-  serif: 'Georgia, "Noto Serif", "Noto Serif CJK KR", "Noto Serif CJK JP", "Times New Roman", serif',
+  serif: `"${TEXT_FAMILY}", Georgia, "Noto Serif", "Noto Serif CJK KR", "Noto Serif CJK JP", "Times New Roman", serif`,
 } as const;
 
 /** Space kept above the paragraph at the top, in CSS pixels. */
@@ -117,10 +121,13 @@ export function novelPage({
   paragraphs,
   position,
   appearance,
+  fontCss = '',
 }: {
   paragraphs: string[];
   position: number;
   appearance: NovelAppearance;
+  /** @font-face rules for the app's typeface, with the fonts as data URIs. */
+  fontCss?: string;
 }): string {
   // "<" escaped so no paragraph can close the data element early.
   const data = JSON.stringify({ paragraphs, position, appearance }).replace(/</g, '\\u003c');
@@ -129,8 +136,9 @@ export function novelPage({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; font-src data:">
 <style>
+  ${fontCss}
   html, body { margin: 0; background: var(--background); color: var(--text); }
   body { font-family: var(--font); font-size: var(--size); line-height: 1.7; }
   article { max-width: 40em; margin: 0 auto; padding: 16px 20px 96px; overflow-wrap: break-word; }
