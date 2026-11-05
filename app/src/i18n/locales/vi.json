@@ -280,7 +280,21 @@
     "continue": "Đọc tiếp: chương {{number}}",
     "favourite": "Thêm vào yêu thích",
     "unfavourite": "Bỏ khỏi yêu thích",
-    "notFound": "Truyện này không tồn tại hoặc chưa có chương nào được đăng."
+    "notFound": "Truyện này không tồn tại hoặc chưa có chương nào được đăng.",
+    "synopsis": "Tóm tắt",
+    "readMore": "Xem thêm",
+    "readLess": "Thu gọn",
+    "progress": "Chương {{number}} / {{count}}",
+    "oldestFirst": "Cũ nhất trước",
+    "newestFirst": "Mới nhất trước",
+    "reading": "Đang đọc",
+    "moreLikeThis": "Truyện tương tự",
+    "stats": {
+      "episodes": "Số chương",
+      "status": "Trạng thái",
+      "language": "Ngôn ngữ",
+      "updated": "Cập nhật"
+    }
   },
   "reader": {
     "title": "Đang đọc",
@@ -304,7 +318,11 @@
     "locked": "Cần mở khoá chương này trước khi đọc.",
     "notFound": "Chương này không tồn tại hoặc chưa được đăng.",
     "notANovel": "Chương này là manga; hãy mở bằng trình đọc manga.",
-    "empty": "Chương này chưa có nội dung."
+    "empty": "Chương này chưa có nội dung.",
+    "contents": "Mục lục",
+    "endOfEpisode": "Hết chương {{number}}",
+    "progress": "{{percent}}%",
+    "preview": "Aa: Người giữ đèn bến sương"
   },
   "errors": {
     "invalid_credentials": "Email hoặc mật khẩu không đúng.",

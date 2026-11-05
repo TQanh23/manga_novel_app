@@ -280,7 +280,21 @@
     "continue": "Continue: episode {{number}}",
     "favourite": "Add to favourites",
     "unfavourite": "Remove from favourites",
-    "notFound": "This work does not exist or has nothing published yet."
+    "notFound": "This work does not exist or has nothing published yet.",
+    "synopsis": "Synopsis",
+    "readMore": "Read more",
+    "readLess": "Show less",
+    "progress": "Episode {{number}} of {{count}}",
+    "oldestFirst": "Oldest first",
+    "newestFirst": "Newest first",
+    "reading": "Reading",
+    "moreLikeThis": "More like this",
+    "stats": {
+      "episodes": "Episodes",
+      "status": "Status",
+      "language": "Language",
+      "updated": "Updated"
+    }
   },
   "reader": {
     "title": "Reading",
@@ -304,7 +318,11 @@
     "locked": "This episode has to be unlocked before you can read it.",
     "notFound": "This episode does not exist or is not published.",
     "notANovel": "This episode is manga; it opens in the manga reader.",
-    "empty": "This episode has no text."
+    "empty": "This episode has no text.",
+    "contents": "Contents",
+    "endOfEpisode": "End of episode {{number}}",
+    "progress": "{{percent}}%",
+    "preview": "Aa: the quick brown fox"
   },
   "errors": {
     "invalid_credentials": "Email or password is incorrect.",

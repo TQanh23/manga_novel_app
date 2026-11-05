@@ -1,4 +1,5 @@
 import { Link, type Href } from 'expo-router';
+import type { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
@@ -10,10 +11,12 @@ type SectionHeaderProps = {
   title: string;
   /** Where "See all" leads; without it there is no link. */
   seeAll?: Href;
+  /** Anything else for the right-hand side, such as a sort toggle. */
+  action?: ReactNode;
 };
 
-/** A homepage section's heading: the title, an optional "See all", a flourish under both. */
-export function SectionHeader({ title, seeAll }: SectionHeaderProps) {
+/** A section's heading: the title, an optional "See all" or other action, a flourish under both. */
+export function SectionHeader({ title, seeAll, action }: SectionHeaderProps) {
   const { t } = useTranslation();
   return (
     <View style={styles.header}>
@@ -26,6 +29,7 @@ export function SectionHeader({ title, seeAll }: SectionHeaderProps) {
             <ThemedText type="linkPrimary">{t('home.seeAll')}</ThemedText>
           </Link>
         ) : null}
+        {action}
       </View>
       <Flourish />
     </View>

@@ -1,4 +1,5 @@
-import { createContext, type PropsWithChildren, use, useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { type ComponentProps, createContext, type PropsWithChildren, use, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -81,9 +82,18 @@ type ButtonProps = Omit<PressableProps, 'children'> & {
   label: string;
   variant?: 'primary' | 'secondary';
   busy?: boolean;
+  /** A glyph before the label; decoration, as the label names the button. */
+  icon?: ComponentProps<typeof Ionicons>['name'];
 };
 
-export function Button({ label, variant = 'primary', busy = false, disabled, ...rest }: ButtonProps) {
+export function Button({
+  label,
+  variant = 'primary',
+  busy = false,
+  icon,
+  disabled,
+  ...rest
+}: ButtonProps) {
   const theme = useTheme();
   const { isWide } = useLayout();
   const inForm = use(InFormColumn);
@@ -115,9 +125,20 @@ export function Button({ label, variant = 'primary', busy = false, disabled, ...
       {busy ? (
         <ActivityIndicator color={primary ? theme.onAccent : theme.text} />
       ) : (
-        <ThemedText type="eyebrow" style={[styles.label, { color: primary ? theme.onAccent : theme.text }]}>
-          {label}
-        </ThemedText>
+        <View style={styles.labelRow}>
+          {icon ? (
+            <Ionicons
+              name={icon}
+              size={16}
+              color={primary ? theme.onAccent : theme.accent}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            />
+          ) : null}
+          <ThemedText type="eyebrow" style={[styles.label, { color: primary ? theme.onAccent : theme.text }]}>
+            {label}
+          </ThemedText>
+        </View>
       )}
     </Pressable>
   );
@@ -179,6 +200,11 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 15,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   natural: {
     alignSelf: 'flex-start',

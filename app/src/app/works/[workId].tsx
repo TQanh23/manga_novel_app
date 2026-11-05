@@ -1,34 +1,29 @@
-import { Link, Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { type ReactNode, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Stack, useLocalSearchParams } from 'expo-router';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { errorCode } from '@/api/client';
 import {
   catalogueGetWork,
   catalogueListEpisodes,
-  type EpisodeSummary,
   type LibraryResponse,
-  readerAddFavourite,
   readerGetLibrary,
-  readerRemoveFavourite,
-  type WorkDetail,
 } from '@/api/generated';
 import { useLoad } from '@/api/hooks';
 import { useSession } from '@/auth/session';
 import { Chip } from '@/components/chip';
-import { Button, ErrorText } from '@/components/form';
-import { Flourish, OrnateFrame } from '@/components/ornaments';
 import { Page } from '@/components/page';
 import { EmptyState, ErrorState, LoadingState } from '@/components/state-views';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
+import { EpisodeTable } from '@/work/episode-table';
+import { MoreLikeThis } from '@/work/more-like-this';
+import { Synopsis } from '@/work/synopsis';
+import { WorkHero } from '@/work/work-hero';
 
-import { errorMessageKey, formatDate, genreName } from '@/i18n';
-
-const SEPARATOR = ' · ';
-
-/** A work's page: what it is about, and its published episodes. */
+/**
+ * A work's page (FR-RD-02): cover and facts, how far the reader has got,
+ * what it is about, its episodes, and what to read after it.
+ */
 export default function WorkScreen() {
   const { t } = useTranslation();
   const { workId } = useLocalSearchParams<{ workId: string }>();
@@ -63,21 +58,34 @@ export default function WorkScreen() {
         />
       );
     }
+    const reading = library.data?.reading.find((entry) => entry.work.id === workId);
     return (
-      <WorkDetails
-        work={work.data}
-        episodes={episodes.data}
-        actions={
-          <ReaderActions
-            workId={work.data.id}
-            episodes={episodes.data}
-            // Without its library (still loading, or it failed) the page still works:
-            // reading starts at episode 1 and the favourite button waits.
-            library={library.data}
-            signedIn={user !== null}
-          />
-        }
-      />
+      <View style={styles.details}>
+        <WorkHero
+          work={work.data}
+          episodes={episodes.data}
+          // Without its library (still loading, or it failed) the page still works:
+          // reading starts at episode 1 and the favourite button waits.
+          library={library.data}
+          reading={reading}
+          signedIn={user !== null}
+        />
+        {work.data.synopsis ? <Synopsis text={work.data.synopsis} /> : null}
+        {work.data.tags.length > 0 ? (
+          <View style={styles.section}>
+            <ThemedText type="eyebrow" themeColor="textSecondary">
+              {t('work.tags')}
+            </ThemedText>
+            <View style={styles.chips}>
+              {work.data.tags.map((tag) => (
+                <Chip key={tag} label={tag} />
+              ))}
+            </View>
+          </View>
+        ) : null}
+        <EpisodeTable episodes={episodes.data} readingId={reading?.episode_id} />
+        <MoreLikeThis work={work.data} />
+      </View>
     );
   };
 
@@ -89,175 +97,13 @@ export default function WorkScreen() {
   );
 }
 
-type WorkDetailsProps = {
-  work: WorkDetail;
-  episodes: EpisodeSummary[];
-  actions: ReactNode;
-};
-
-function WorkDetails({ work, episodes, actions }: WorkDetailsProps) {
-  const { t } = useTranslation();
-  return (
-    <View style={styles.details}>
-      <OrnateFrame style={styles.hero}>
-        <ThemedText type="eyebrow" themeColor="textSecondary">
-          {[t(`workType.${work.type}`), t(`workStatus.${work.status}`)].join(SEPARATOR)}
-        </ThemedText>
-        <ThemedText type="subtitle" accessibilityRole="header">
-          {work.title}
-        </ThemedText>
-        <ThemedText themeColor="textSecondary">
-          {t('work.by', { author: work.author.display_name })}
-        </ThemedText>
-        <Flourish />
-        {actions}
-      </OrnateFrame>
-
-      {work.genres.length > 0 ? (
-        <View style={styles.chips}>
-          {work.genres.map((slug) => (
-            <Chip key={slug} label={genreName(slug)} />
-          ))}
-        </View>
-      ) : null}
-
-      {work.synopsis ? <ThemedText>{work.synopsis}</ThemedText> : null}
-
-      {work.tags.length > 0 ? (
-        <View style={styles.section}>
-          <ThemedText type="eyebrow" themeColor="textSecondary">
-            {t('work.tags')}
-          </ThemedText>
-          <View style={styles.chips}>
-            {work.tags.map((tag) => (
-              <Chip key={tag} label={tag} />
-            ))}
-          </View>
-        </View>
-      ) : null}
-
-      <Flourish />
-      <View style={styles.section}>
-        <ThemedText type="eyebrow">
-          {[t('work.episodes'), t('catalogue.episodeCount', { count: episodes.length })].join(
-            SEPARATOR,
-          )}
-        </ThemedText>
-        {episodes.map((episode) => (
-          <EpisodeRow key={episode.id} episode={episode} />
-        ))}
-      </View>
-    </View>
-  );
-}
-
-type ReaderActionsProps = {
-  workId: string;
-  episodes: EpisodeSummary[];
-  library: LibraryResponse | null;
-  signedIn: boolean;
-};
-
-/** Read on (or start), and keep the work as a favourite (FR-RD-05). */
-function ReaderActions({ workId, episodes, library, signedIn }: ReaderActionsProps) {
-  const { t } = useTranslation();
-  const router = useRouter();
-  // What the reader set here; until they do, what their library says.
-  const [chosen, setChosen] = useState<boolean | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const reading = library?.reading.find((entry) => entry.work.id === workId);
-  const favourite = chosen ?? library?.favourites.some((work) => work.id === workId) ?? false;
-  const first = episodes[0];
-
-  const toggleFavourite = async () => {
-    const next = !favourite;
-    setChosen(next);
-    setBusy(true);
-    setError(null);
-    const call = next ? readerAddFavourite : readerRemoveFavourite;
-    const failure = await call({ path: { work_id: workId } }).then(
-      ({ error: failed }) => (failed === undefined ? null : errorCode(failed)),
-      () => 'network_error',
-    );
-    if (failure) {
-      // Put the button back as it was.
-      setChosen(!next);
-      setError(failure);
-    }
-    setBusy(false);
-  };
-
-  const read = (episodeId: string) =>
-    router.push({ pathname: '/read/[episodeId]', params: { episodeId } });
-
-  return (
-    <View style={styles.actions}>
-      {reading ? (
-        <Button
-          label={t('work.continue', { number: reading.episode_number })}
-          onPress={() => read(reading.episode_id)}
-        />
-      ) : first ? (
-        <Button label={t('work.start')} onPress={() => read(first.id)} />
-      ) : null}
-      {signedIn ? (
-        <Button
-          label={favourite ? t('work.unfavourite') : t('work.favourite')}
-          variant="secondary"
-          busy={busy}
-          disabled={busy || library === null}
-          onPress={() => void toggleFavourite()}
-        />
-      ) : null}
-      {error ? <ErrorText>{t(errorMessageKey(error))}</ErrorText> : null}
-    </View>
-  );
-}
-
-/** An episode in the list. Opens the reader. */
-function EpisodeRow({ episode }: { episode: EpisodeSummary }) {
-  const { t } = useTranslation();
-  const price =
-    episode.price_coins === 0 ? t('work.free') : t('work.coins', { count: episode.price_coins });
-  const terms = episode.wuf_eligible ? [price, t('work.waitUntilFree')] : [price];
-
-  return (
-    <Link href={{ pathname: '/read/[episodeId]', params: { episodeId: episode.id } }} asChild>
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel={episode.title}
-        style={({ pressed }) => pressed && styles.pressed}>
-        {/* The frame sits inside: on web, <Link asChild> drops a Pressable's style function. */}
-        <OrnateFrame style={styles.episode}>
-          <ThemedText type="eyebrow" themeColor="textSecondary">
-            {[
-              t('work.episodeNumber', { number: episode.number }),
-              formatDate(episode.publish_at),
-            ].join(SEPARATOR)}
-          </ThemedText>
-          <ThemedText>{episode.title}</ThemedText>
-          <ThemedText type="smallBold" themeColor="textSecondary">
-            {terms.join(SEPARATOR)}
-          </ThemedText>
-        </OrnateFrame>
-      </Pressable>
-    </Link>
-  );
-}
-
 const styles = StyleSheet.create({
   content: {
     padding: Spacing.three,
-    paddingBottom: Spacing.five,
+    paddingBottom: Spacing.six,
   },
   details: {
-    gap: Spacing.three,
-  },
-  hero: {
-    padding: Spacing.four,
-    gap: Spacing.two,
+    gap: Spacing.five,
   },
   section: {
     gap: Spacing.two,
@@ -265,16 +111,6 @@ const styles = StyleSheet.create({
   chips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  episode: {
-    padding: Spacing.three,
-    gap: Spacing.half,
-  },
-  pressed: {
-    opacity: 0.7,
-  },
-  actions: {
     gap: Spacing.two,
   },
 });

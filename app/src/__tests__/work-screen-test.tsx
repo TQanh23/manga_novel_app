@@ -1,10 +1,11 @@
-import { act, fireEvent } from '@testing-library/react-native';
+import { act, fireEvent, within } from '@testing-library/react-native';
 import { Stack } from 'expo-router';
 import { screen } from 'expo-router/testing-library';
 
 import {
   catalogueGetWork,
   catalogueListEpisodes,
+  catalogueListWorks,
   readerAddFavourite,
   readerGetLibrary,
   readerRemoveFavourite,
@@ -20,6 +21,7 @@ import {
   library,
   ok,
   READER,
+  page,
   readingEntry,
   work,
   workDetail,
@@ -32,6 +34,7 @@ jest.mock('@/auth/session', () => ({ useSession: jest.fn() }));
 const getWork = jest.mocked(catalogueGetWork);
 const listEpisodes = jest.mocked(catalogueListEpisodes);
 const getLibrary = jest.mocked(readerGetLibrary);
+const listWorks = jest.mocked(catalogueListWorks);
 const addFavourite = jest.mocked(readerAddFavourite);
 const removeFavourite = jest.mocked(readerRemoveFavourite);
 const session = jest.mocked(useSession);
@@ -50,6 +53,7 @@ beforeEach(() => {
   addFavourite.mockReturnValue(ok(undefined));
   removeFavourite.mockReturnValue(ok(undefined));
   getWork.mockReturnValue(ok(detail));
+  listWorks.mockReturnValue(ok(page([work({ id: 'lantern' })])));
   listEpisodes.mockReturnValue(
     ok([
       episode(1),
@@ -65,7 +69,12 @@ afterEach(async () => {
 
 function openWork(id = 'lantern') {
   return openRouter(
-    { _layout: () => <Stack />, 'works/[workId]': WorkScreen, 'read/[episodeId]': () => null },
+    {
+      _layout: () => <Stack />,
+      'works/[workId]': WorkScreen,
+      'read/[episodeId]': () => null,
+      browse: () => null,
+    },
     `/works/${id}`,
   );
 }
@@ -209,4 +218,89 @@ test('NFR-13: the work page is in Vietnamese when that is the language', async (
   expect(screen.getByText('Danh sách chương · 3 chương')).toBeOnTheScreen();
   expect(screen.getByText('Miễn phí')).toBeOnTheScreen();
   expect(screen.getByText('3 coin · Chờ miễn phí')).toBeOnTheScreen();
+});
+
+test('FR-RD-02: the hero shows the work in figures', async () => {
+  await openWork();
+  await screen.findByRole('header', { name: detail.title });
+
+  for (const [label, value] of [
+    ['Episodes', '3'],
+    ['Status', 'Ongoing'],
+    ['Language', 'Vietnamese'],
+  ]) {
+    expect(screen.getByText(label)).toBeOnTheScreen();
+    expect(screen.getAllByText(value).length).toBeGreaterThan(0);
+  }
+});
+
+test('FR-RD-05: a reader in the work sees how far they are, and their episode is marked', async () => {
+  signedIn(READER);
+  getLibrary.mockReturnValue(
+    ok(library({ reading: [readingEntry({ work: work({ id: 'lantern' }), episode_id: episode(2).id })] })),
+  );
+  await openWork();
+
+  expect(await screen.findByText('Episode 2 of 3')).toBeOnTheScreen();
+  const row = screen.getByRole('link', { name: episode(2).title });
+  expect(within(row).getByText('Reading')).toBeOnTheScreen();
+  expect(within(screen.getByRole('link', { name: episode(1).title })).queryByText('Reading')).toBeNull();
+});
+
+test('FR-RD-02: a guest has no progress line', async () => {
+  await openWork();
+  await screen.findByRole('header', { name: detail.title });
+
+  expect(screen.queryByText(/^Episode \d+ of \d+$/)).toBeNull();
+});
+
+test('FR-RD-02: episodes can be listed newest first and back', async () => {
+  await openWork();
+  await screen.findByRole('header', { name: detail.title });
+  const order = () =>
+    screen.getAllByRole('link').map((link) => link.props.accessibilityLabel as string).filter((name) => name.startsWith('Chương'));
+
+  expect(order()).toEqual(['Chương 1', 'Chương 2', 'Chương 3']);
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Newest first' }));
+  expect(order()).toEqual(['Chương 3', 'Chương 2', 'Chương 1']);
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Oldest first' }));
+  expect(order()).toEqual(['Chương 1', 'Chương 2', 'Chương 3']);
+});
+
+test('FR-RD-02: a long synopsis folds and unfolds', async () => {
+  getWork.mockReturnValue(ok(workDetail({ synopsis: 'Sương lên. '.repeat(60) })));
+  await openWork();
+  await screen.findByRole('header', { name: detail.title });
+
+  await fireEvent.press(screen.getByRole('button', { name: 'Read more' }));
+  expect(screen.getByRole('button', { name: 'Show less' })).toBeOnTheScreen();
+});
+
+test('FR-RD-02: more like this lists other works of its first genre, never this one', async () => {
+  listWorks.mockReturnValue(
+    ok(page([work({ id: 'lantern' }), work({ id: 'europa', title: 'The Last Lighthouse on Europa' })])),
+  );
+  await openWork();
+
+  expect(await screen.findByRole('link', { name: 'The Last Lighthouse on Europa' })).toBeOnTheScreen();
+  expect(screen.getByRole('header', { name: 'More like this' })).toBeOnTheScreen();
+  expect(listWorks).toHaveBeenCalledWith({ query: { genre: 'fantasy', sort: 'popular', limit: 7 } });
+});
+
+test('FR-RD-02: more like this is left out when nothing else is in the genre', async () => {
+  await openWork();
+  await screen.findByRole('header', { name: detail.title });
+  await act(async () => {});
+
+  expect(screen.queryByRole('header', { name: 'More like this' })).toBeNull();
+});
+
+test('FR-RD-02: a work without genres asks for nothing similar', async () => {
+  getWork.mockReturnValue(ok(workDetail({ genres: [] })));
+  await openWork();
+  await screen.findByRole('header', { name: detail.title });
+
+  expect(listWorks).not.toHaveBeenCalled();
 });
