@@ -23,7 +23,11 @@
     "emptyReading": "Truyện bạn bắt đầu đọc sẽ hiện ở đây.",
     "emptyFavourites": "Truyện bạn thêm vào yêu thích sẽ hiện ở đây.",
     "readOn": "Đọc ngày {{date}}",
-    "guestHint": "Đăng nhập để lưu vị trí đang đọc và xây tủ truyện của riêng bạn."
+    "guestHint": "Đăng nhập để lưu vị trí đang đọc và xây tủ truyện của riêng bạn.",
+    "inProgress_one": "{{count}} truyện đang đọc",
+    "inProgress_other": "{{count}} truyện đang đọc",
+    "favouriteCount_one": "{{count}} truyện yêu thích",
+    "favouriteCount_other": "{{count}} truyện yêu thích"
   },
   "studio": {
     "title": "Sáng tác",
